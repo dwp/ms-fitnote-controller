@@ -39,8 +39,8 @@
         <jaxb.version>2.3.0</jaxb.version>
 
         <localstack.version>0.1.15</localstack.version>
-        <aws.sqs.version>1.11.458</aws.sqs.version>
-        <aws.sns.version>1.11.458</aws.sns.version>
+        <aws.sqs.version>1.11.955</aws.sqs.version>
+        <aws.sns.version>1.11.955</aws.sns.version>
     </properties>
 
     <dependencies>
@@ -342,7 +342,7 @@
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.7</version>
                 <configuration>
-                    <check></check>
+                    <check/>
                     <formats>
                         <format>xml</format>
                     </formats>
