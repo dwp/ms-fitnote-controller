@@ -21,7 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lettuce-redis.version>5.2.0.RELEASE</lettuce-redis.version>
         <javax.activation.version>1.1.1</javax.activation.version>
-        <google-guava.version>25.0-jre</google-guava.version>
+        <google-guava.version>29.0-jre</google-guava.version>
         <cucumber-core.version>1.2.4</cucumber-core.version>
         <cucumber-jvm.version>1.0.3</cucumber-jvm.version>
         <tesseract.version>4.0.0-1.4.4</tesseract.version>
