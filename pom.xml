@@ -51,7 +51,7 @@
         <pdfbox.version>2.0.24</pdfbox.version>
         <jacoco.version>0.8.2</jacoco.version>
         <owasp.version>6.0.2</owasp.version>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.13.1</junit.version>
         <zxing.version>2.2</zxing.version>
         <jaxb.version>2.3.0</jaxb.version>
         <httpclient.version>4.5.13</httpclient.version>
