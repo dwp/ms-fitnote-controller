@@ -55,7 +55,7 @@
         <zxing.version>2.2</zxing.version>
         <jaxb.version>2.3.0</jaxb.version>
         <httpclient.version>4.5.13</httpclient.version>
-        <netty.version>4.1.65.Final</netty.version>
+        <netty.version>4.1.68.Final</netty.version>
 
         <log4j-over-sl4j.version>1.7.30</log4j-over-sl4j.version>
 
@@ -526,7 +526,7 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <exlude></exlude>
+                                        <exlude/>
                                         <!-- Image Storage excluded as it is covered in integration tests -->
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.ImageStorage</exclude>
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException</exclude>
