@@ -29,7 +29,7 @@
 
         <doxia.version>1.8</doxia.version>
 
-        <sl4j.version>2.13.3</sl4j.version>
+        <sl4j.version>2.15.0</sl4j.version>
         <log4j.version>2.13.3</log4j.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
 
