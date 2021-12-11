@@ -30,7 +30,7 @@
         <doxia.version>1.8</doxia.version>
 
         <sl4j.version>2.13.3</sl4j.version>
-        <log4j.version>2.13.3</log4j.version>
+        <log4j.version>2.15.0</log4j.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,7 +42,7 @@
         <tesseract.version>4.1.1-1.5.5</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
         <jetty.version>9.4.43.v20210629</jetty.version>
-        <dropwizard.version>2.0.25</dropwizard.version>
+        <dropwizard.version>2.0.26</dropwizard.version>
         <snakeyml.version>1.27</snakeyml.version>
         <commons-io.version>2.8.0</commons-io.version>
         <wiremock.version>2.6.0</wiremock.version>
@@ -526,7 +526,7 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <exlude></exlude>
+                                        <exlude/>
                                         <!-- Image Storage excluded as it is covered in integration tests -->
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.ImageStorage</exclude>
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException</exclude>
