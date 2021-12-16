@@ -29,7 +29,7 @@
 
         <doxia.version>1.8</doxia.version>
 
-        <log4j.version>2.15.0</log4j.version>
+        <log4j.version>2.16.0</log4j.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -524,7 +524,7 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <exlude></exlude>
+                                        <exlude/>
                                         <!-- Image Storage excluded as it is covered in integration tests -->
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.ImageStorage</exclude>
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException</exclude>
