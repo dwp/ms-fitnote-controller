@@ -41,7 +41,7 @@
         <tesseract.version>4.1.1-1.5.5</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
         <jetty.version>9.4.43.v20210629</jetty.version>
-        <dropwizard.version>2.0.28</dropwizard.version>
+        <dropwizard.version>2.0.29</dropwizard.version>
         <snakeyml.version>1.27</snakeyml.version>
         <commons-io.version>2.8.0</commons-io.version>
         <wiremock.version>2.6.0</wiremock.version>
@@ -530,7 +530,7 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <exlude></exlude>
+                                        <exlude/>
                                         <!-- Image Storage excluded as it is covered in integration tests -->
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.ImageStorage</exclude>
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException</exclude>
