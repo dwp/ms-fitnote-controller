@@ -38,7 +38,7 @@
         <cucumber-jvm.version>1.0.3</cucumber-jvm.version>
         <tesseract.version>4.1.1-1.5.5</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>2.0.28</dropwizard.version>
+        <dropwizard.version>2.1.0</dropwizard.version>
         <commons-io.version>2.11.0</commons-io.version>
         <wiremock.version>2.6.0</wiremock.version>
         <mockito.version>2.24.5</mockito.version>
@@ -431,7 +431,7 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <exlude></exlude>
+                                        <exlude/>
                                         <!-- Image Storage excluded as it is covered in integration tests -->
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.ImageStorage</exclude>
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException</exclude>
