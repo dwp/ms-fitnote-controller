@@ -31,4 +31,10 @@
    ]]></notes>
         <cve>CVE-2021-28168</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+    log4j-core-2.18.0.jar - vulnerability has not been addressed by maintainer
+    ]]></notes>
+        <cve>CVE-2022-33915</cve>
+    </suppress>
 </suppressions>

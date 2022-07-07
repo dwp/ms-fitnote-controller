@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>1.9.0</version>
+    <version>1.10.0</version>
 
     <properties>
         <dwp.message-utility.version>2.3.0-5de751dd</dwp.message-utility.version>
@@ -29,7 +29,7 @@
 
         <doxia.version>1.8</doxia.version>
 
-        <log4j.version>2.17.1</log4j.version>
+        <log4j.version>2.18.0</log4j.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,13 +38,13 @@
         <cucumber-jvm.version>1.0.3</cucumber-jvm.version>
         <tesseract.version>4.1.1-1.5.5</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>2.0.28</dropwizard.version>
+        <dropwizard.version>2.0.31</dropwizard.version>
         <commons-io.version>2.11.0</commons-io.version>
         <wiremock.version>2.6.0</wiremock.version>
         <mockito.version>2.24.5</mockito.version>
         <jackson.version>2.13.2.2</jackson.version>
         <pdfbox.version>2.0.24</pdfbox.version>
-        <owasp.version>7.0.1</owasp.version>
+        <owasp.version>7.1.1</owasp.version>
         <junit.version>4.13.2</junit.version>
         <zxing.version>2.2</zxing.version>
         <netty.version>4.1.77.Final</netty.version>

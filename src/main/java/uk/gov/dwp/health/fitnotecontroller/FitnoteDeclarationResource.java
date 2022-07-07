@@ -159,7 +159,7 @@ public class FitnoteDeclarationResource extends AbstractResource {
     drsMetadata.setBenefitType(37);
 
     if (imagePayload.getClaimantAddress() != null) {
-      drsMetadata.setPostCode(imagePayload.getClaimantAddress().getPostcode());
+      drsMetadata.setPostCode(imagePayload.getClaimantAddress().getPostcode().replace(" ", ""));
     }
 
     if (imagePayload.getMobileNumber() != null

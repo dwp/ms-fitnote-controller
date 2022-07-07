@@ -73,9 +73,10 @@ public class ImagePayload {
     if (nino == null) {
       return null;
     } else {
-      return (nino.length() == 9)
-          ? new NinoValidator(nino.substring(0, 8), nino.substring(8))
-          : new NinoValidator(nino, "");
+      String sanitisedNino = nino.toUpperCase().replace(" ", "");
+      return (sanitisedNino.length() == 9)
+          ? new NinoValidator(sanitisedNino.substring(0, 8), sanitisedNino.substring(8))
+          : new NinoValidator(sanitisedNino, "");
     }
   }
 

@@ -1,3 +1,9 @@
+<a name="1.10.0"></a>
+# 1.10.0 (2022-07-06)
+## Features
+
+* **feat:** sanitise nino and postcode before submission ([671d10ad](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/671d10ad))
+
 <a name="1.9.0"></a>
 # 1.9.0 (2022-05-25)
 ## Features
