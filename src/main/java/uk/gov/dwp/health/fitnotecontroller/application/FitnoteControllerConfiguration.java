@@ -125,6 +125,10 @@ public class FitnoteControllerConfiguration extends Configuration {
   @JsonProperty("redisEncryptMessages")
   private boolean redisEncryptMessages;
 
+  @NotNull
+  @JsonProperty("redisEncryptionTransit")
+  private boolean redisEncryptionTransit;
+
   @JsonProperty("snsKmsCryptoConfiguration")
   private CryptoConfig snsKmsCryptoConfiguration;
 
@@ -241,6 +245,10 @@ public class FitnoteControllerConfiguration extends Configuration {
 
   public boolean isRedisEncryptMessages() {
     return redisEncryptMessages;
+  }
+
+  public boolean isRedisEncryptionTransit() {
+    return redisEncryptionTransit;
   }
 
   public long getSessionExpiryTimeInSeconds() {

@@ -16,6 +16,7 @@ imageHashSalt: ${IMAGE_HASH_SALT:-NoNeedForAPerEnvHash}
 
 redisStoreURI: ${REDIS_STORE_URI}
 redisEncryptMessages: ${REDIS_ENCRYPT_MESSAGES:-true}
+redisEncryptionTransit: ${REDIS_ENCRYPTION_TRANSIT:-false}
 
 redisKmsCryptoConfiguration:
   kmsEndpointOverride: ${KMS_ENDPOINT_OVERRIDE:-null}

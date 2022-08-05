@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
 
     <properties>
         <dwp.message-utility.version>2.3.0-5de751dd</dwp.message-utility.version>
@@ -33,12 +33,12 @@
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lettuce-redis.version>6.0.1.RELEASE</lettuce-redis.version>
+        <lettuce-redis.version>6.2.0.RELEASE</lettuce-redis.version>
         <cucumber-core.version>1.2.4</cucumber-core.version>
         <cucumber-jvm.version>1.0.3</cucumber-jvm.version>
         <tesseract.version>4.1.1-1.5.5</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>2.0.31</dropwizard.version>
+        <dropwizard.version>2.0.32</dropwizard.version>
         <commons-io.version>2.11.0</commons-io.version>
         <wiremock.version>2.6.0</wiremock.version>
         <mockito.version>2.24.5</mockito.version>

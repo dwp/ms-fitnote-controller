@@ -14,7 +14,7 @@ imageReplayExpirySeconds: 30
 maxAllowedImageReplay: 10
 imageHashSalt: salty
 
-redisStoreURI: redis://redis-cluster:7000
+redisStoreURI: redis-cluster:7000
 
 snsTopicName: fitnote-topic-exchange
 snsRoutingKey: sns.fitnote.new

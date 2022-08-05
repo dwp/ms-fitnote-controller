@@ -1,9 +1,13 @@
 package uk.gov.dwp.health.fitnotecontroller.application;
 
 import com.amazonaws.services.sns.model.MessageAttributeValue;
+
+import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import io.lettuce.core.RedisURI;
 import io.lettuce.core.cluster.RedisClusterClient;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
 import uk.gov.dwp.health.crypto.MessageEncoder;
@@ -14,9 +18,6 @@ import uk.gov.dwp.health.fitnotecontroller.FitnoteDeclarationResource;
 import uk.gov.dwp.health.fitnotecontroller.FitnoteQueryResource;
 import uk.gov.dwp.health.fitnotecontroller.FitnoteSubmitResource;
 import uk.gov.dwp.health.fitnotecontroller.ImageStorage;
-import io.dropwizard.Application;
-import io.dropwizard.setup.Environment;
-
 import uk.gov.dwp.health.messageq.amazon.sns.MessagePublisher;
 import uk.gov.dwp.health.version.HealthCheckResource;
 import uk.gov.dwp.health.version.ServiceInfoResource;
@@ -58,8 +59,16 @@ public class FitnoteControllerApplication extends Application<FitnoteControllerC
           new CryptoDataManager(fitnoteControllerConfiguration.getRedisKmsCryptoConfiguration());
     }
 
-    final RedisClusterClient redisClient =
-        RedisClusterClient.create(fitnoteControllerConfiguration.getRedisStoreURI());
+    RedisClusterClient redisClient = null;
+    if (fitnoteControllerConfiguration.isRedisEncryptionTransit()) {
+      RedisURI redisUri = RedisURI
+          .create("rediss://" + fitnoteControllerConfiguration.getRedisStoreURI());
+      redisClient = RedisClusterClient.create(redisUri);
+    } else {
+      redisClient = RedisClusterClient
+          .create("redis://" + fitnoteControllerConfiguration.getRedisStoreURI());
+    }
+
     final ImageStorage imageStorage =
         new ImageStorage(fitnoteControllerConfiguration, redisClient, redisMqKmsCrypto);
 

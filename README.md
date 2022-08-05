@@ -272,6 +272,7 @@ Return code :-
 * `IMAGE_HASH_SALT` : the 'salt' to use when creating the image hash for the replay cache
 * `REDIS_STORE_URI`: the URI of the Redis instance (eg. redis://localhost:6379)
 * `REDIS_ENCRYPT_MESSAGES`: whether to encrypt the ImagePayload before persisting to Redis
+* `REDIS_ENCRYPTION_TRANSIT`: whether to SSL encrypt the connection to redis
 * `KMS_ENDPOINT_OVERRIDE/REDIS_DATA_KEY_REQUESTID`: The `CryptoConfig` object for KMS interaction for redis activities (when `redisEncryptMessages is true)
 * `SNS_ROUTING_KEY` : the routing key (added to the headers) for SNS published messages
 * `SNS_TOPIC_NAME` : the SNS topic exchange name

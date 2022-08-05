@@ -1,3 +1,9 @@
+<a name="1.11.0"></a>
+# 1.11.0 (2022-07-21)
+## Features
+
+* **feat:** Enable ElastiCache in transit encryption ([0c62e7b7](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/0c62e7b7))
+
 <a name="1.10.0"></a>
 # 1.10.0 (2022-07-06)
 ## Features
@@ -9,7 +15,6 @@
 ## Features
 
 * **feat:** add error message for too many identical submissions ([45656737](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/45656737))
-
 
 <a name="1.8.0"></a>
 # 1.8.0 (2022-04-21)
