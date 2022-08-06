@@ -16,7 +16,7 @@
         <dwp.postcode.version>1.1.0</dwp.postcode.version>
         <dwp.drsinteg.version>1.6.0</dwp.drsinteg.version>
         <dwp.crypto.version>2.4.0-9e3c09fb</dwp.crypto.version>
-        <dwp.nino.version>1.3.0</dwp.nino.version>
+        <dwp.nino.version>1.3.1</dwp.nino.version>
         <dwp.vinfo.version>1.0.0-3c2add75</dwp.vinfo.version>
 
         <plugin.projectinfo.version>2.4</plugin.projectinfo.version>
@@ -431,7 +431,7 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <exlude></exlude>
+                                        <exlude/>
                                         <!-- Image Storage excluded as it is covered in integration tests -->
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.ImageStorage</exclude>
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException</exclude>
