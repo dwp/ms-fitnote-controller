@@ -42,7 +42,7 @@
         <commons-io.version>2.11.0</commons-io.version>
         <wiremock.version>2.6.0</wiremock.version>
         <mockito.version>2.24.5</mockito.version>
-        <jackson.version>2.13.2.2</jackson.version>
+        <jackson.version>2.13.4.2</jackson.version>
         <pdfbox.version>2.0.24</pdfbox.version>
         <owasp.version>7.1.1</owasp.version>
         <junit.version>4.13.2</junit.version>
@@ -431,7 +431,7 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <exlude></exlude>
+                                        <exlude/>
                                         <!-- Image Storage excluded as it is covered in integration tests -->
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.ImageStorage</exclude>
                                         <exclude>uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException</exclude>
