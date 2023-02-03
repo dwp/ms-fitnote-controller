@@ -61,7 +61,12 @@ All api endpoints check for existence of a sessionId in the redis store.  If the
 
     {
         "image":"base64-encoded-string",
-        "sessionId":"session1"
+        "sessionId":"session1",
+        "fileType": "application/pdf",
+        "fileName": "fitnote.pdf",
+        "browser": "Chrome",
+        "device": "desktop",
+        "os": "MacOS"
     }
 
 Returns:-
@@ -310,3 +315,6 @@ The CI pipeline has a stage which sets up a schedule to run the `develop` branch
 ## Production Release
 
 To create production artefacts the following process must be followed https://confluence.service.dwpcloud.uk/display/DHWA/SRE
+
+**Run Docker Tests**
+docker-compose up --exit-code-from  cucumber-tests

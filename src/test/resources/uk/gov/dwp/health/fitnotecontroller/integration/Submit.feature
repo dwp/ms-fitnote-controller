@@ -5,7 +5,7 @@ Feature: Fitnote submit
       Given the http client is up
       When I hit the service url "http://localhost:9101/photo" with the following json body
         | image     | /OcrTest.jpg |
-        | sessionId | "3"             |
+        | sessionId | "3"          |
       Then I receive a HTTP response of 202
       And I hit the service url "http://localhost:9101/imagestatus" with session id "3" getting return status 200 and finally containing the following json body
         | fitnoteStatus | SUCCEEDED |

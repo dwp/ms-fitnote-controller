@@ -1,4 +1,5 @@
-FROM gcr.io/distroless/java11@sha256:5814a55f4ec3b2cebedab0e35f6073dbaa0554393026a333a905bf2578d5a481
+FROM gcr.io/distroless/java11@sha256:266203e60c9d67792f3a0e16d9e4b95caca61d7ea23d044171618c17e26ce2a9
+USER nonroot
 EXPOSE 3004
 COPY ./target/ms-fitnote-controller*.jar /ms-fitnote-controller.jar
 COPY ./src/main/properties/tessdata /tessdata

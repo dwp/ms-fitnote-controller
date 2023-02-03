@@ -13,6 +13,7 @@ import uk.gov.dwp.health.fitnotecontroller.exception.ImageCompressException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageTransformException;
+import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.ImageCompressor;
 import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import uk.gov.dwp.health.fitnotecontroller.utils.MemoryChecker;
@@ -20,7 +21,6 @@ import uk.gov.dwp.health.fitnotecontroller.utils.PdfImageExtractor;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
-import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.GET;
@@ -115,16 +115,21 @@ public class FitnoteSubmitResource extends AbstractResource {
           Runtime.getRuntime(), controllerConfiguration.getEstimatedRequestMemoryMb())) {
         incomingPayload =
             jsonValidator.validateAndTranslateSubmission(json.replaceAll(LOG_STANDARD_REGEX, ""));
+        LOG.info("Processing image for {} ", incomingPayload.getLogMessage());
         imageStore.updateImageHashStore(incomingPayload);
+        LOG.info("Updated image hashstore for {}", incomingPayload.getLogMessage());
 
         ImagePayload storedPayload = imageStore.getPayload(incomingPayload.getSessionId());
+        LOG.info("Retrieved image payload for {}", incomingPayload.getLogMessage());
         storedPayload.setFitnoteCheckStatus(incomingPayload.getFitnoteCheckStatus());
         storedPayload.setImage(incomingPayload.getImage());
         imageStore.updateImageDetails(storedPayload);
+        LOG.info("Updated image details for {}", incomingPayload.getLogMessage());
 
         response =
             createResponseOf(
                 HttpStatus.SC_ACCEPTED, createSessionOnlyResponseFrom(incomingPayload));
+        LOG.info("Sent Successful response for {}", incomingPayload.getLogMessage());
         LOG.debug("Json Validated correctly");
         checkAsynchronously(storedPayload);
 
@@ -134,18 +139,33 @@ public class FitnoteSubmitResource extends AbstractResource {
 
     }  catch (ImageHashException e) {
       response = createResponseOf(HttpStatus.SC_ACCEPTED, incomingPayload);
+      LOG.error("Throwing ImageHashException while processing {}",
+              getLogMessage(incomingPayload));
       LOG.error("ImageHashException :: {}", e.getMessage());
     } catch (IOException e) {
       response = createResponseOf(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR_RESPONSE);
+      LOG.error("Throwing IOException while processing {}",
+              getLogMessage(incomingPayload));
       LOG.error("IOException :: {}", e.getMessage());
       LOG.debug(ERROR_RESPONSE, e);
-    } catch (ImagePayloadException | CryptoException e) {
+    } catch (CryptoException e) {
       response = createResponseOf(HttpStatus.SC_BAD_REQUEST, ERROR_RESPONSE);
+      LOG.error("Throwing CryptoException while processing {}",
+              getLogMessage(incomingPayload));
+      formatAndLogError(e.getClass().getName(), e.getMessage());
+      LOG.debug(ERROR_RESPONSE, e);
+    } catch (ImagePayloadException  e) {
+      response = createResponseOf(HttpStatus.SC_BAD_REQUEST, ERROR_RESPONSE);
+      LOG.error("Throwing ImagePayloadException while processing {}",
+              getLogMessage(incomingPayload));
       formatAndLogError(e.getClass().getName(), e.getMessage());
       LOG.debug(ERROR_RESPONSE, e);
     }
 
-    LOG.debug("Completed /photo, send back status {}", response.getStatusInfo().getStatusCode());
+
+    LOG.debug("Completed /photo, send back status {} while "
+            + "processing {}", response.getStatusInfo().getStatusCode(),
+            getLogMessage(incomingPayload));
     return response;
   }
 
@@ -350,5 +370,9 @@ public class FitnoteSubmitResource extends AbstractResource {
     if (compressedImage == null) {
       throw new ImageCompressException("The compressed image return a null byte array");
     }
+  }
+
+  private String getLogMessage(ImagePayload incomingPayload) {
+    return (incomingPayload != null ? incomingPayload.getLogMessage() : "ImagePayload is null");
   }
 }

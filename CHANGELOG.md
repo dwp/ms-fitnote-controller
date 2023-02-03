@@ -1,3 +1,10 @@
+<a name="1.12.0"></a>
+# 1.12.0 (2023-02-02)
+## Features
+
+* **feat:** upgrade message utility ([b3e78572](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/b3e78572))
+* **feat:** update dockerfile user ([41dd51d6](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/41dd51d6))
+
 <a name="1.11.0"></a>
 # 1.11.0 (2022-07-21)
 ## Features

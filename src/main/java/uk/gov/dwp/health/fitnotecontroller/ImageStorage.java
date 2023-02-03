@@ -22,6 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
+
 public class ImageStorage {
   private static final Logger LOG = LoggerFactory.getLogger(ImageStorage.class.getName());
   private static final String NULL_PAYLOAD_MSG = "Null payload object rejected";
@@ -146,11 +147,16 @@ public class ImageStorage {
         storedPayload.setFitnoteCheckStatus(ImagePayload.Status.FAILED_IMG_MAX_REPLAY);
         updateImageDetails(storedPayload);
 
+        LOG.error("Image replay limit exceeded, rejected for {} ",
+                incomingPayload.getLogMessage());
+
         throw new ImageHashException("Image replay limited exceeded, rejecting");
       }
 
     } catch (NoSuchAlgorithmException | IOException e) {
       LOG.debug(e.getClass().getName(), e);
+      LOG.error("Exception thrown when updating Image hashstore for {}",
+            incomingPayload.getLogMessage());
       LOG.error(e.getMessage());
     }
   }

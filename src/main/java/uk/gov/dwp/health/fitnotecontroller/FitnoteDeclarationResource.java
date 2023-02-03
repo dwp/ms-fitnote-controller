@@ -15,7 +15,6 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import uk.gov.dwp.components.drs.DrsPayloadBuilder;
 import uk.gov.dwp.health.messageq.amazon.sns.MessagePublisher;
-import uk.gov.dwp.health.messageq.exceptions.EventsManagerException;
 import uk.gov.dwp.health.messageq.items.event.EventMessage;
 import uk.gov.dwp.health.messageq.items.event.MetaData;
 
@@ -132,8 +131,32 @@ public class FitnoteDeclarationResource extends AbstractResource {
     } catch (ImagePayloadException e) {
       return createImage500ErrorResponse(e, LOG);
 
-    } catch (EventsManagerException e) {
-      LOG.error("Publishing events manager exception :: {}", e.getMessage());
+    } catch (EventsMessageException e) {
+      LOG.error("Events message exception :: {}", e.getMessage());
+      LOG.debug(e.getClass().getName(), e);
+
+      return createResponseOf(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR_RESPONSE);
+
+    } catch (InvocationTargetException e) {
+      LOG.error("Invocation target exception :: {}", e.getMessage());
+      LOG.debug(e.getClass().getName(), e);
+
+      return createResponseOf(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR_RESPONSE);
+
+    } catch (NoSuchMethodException e) {
+      LOG.error("No such method exception :: {}", e.getMessage());
+      LOG.debug(e.getClass().getName(), e);
+
+      return createResponseOf(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR_RESPONSE);
+
+    } catch (InstantiationException e) {
+      LOG.error("Instantiation exception :: {}", e.getMessage());
+      LOG.debug(e.getClass().getName(), e);
+
+      return createResponseOf(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR_RESPONSE);
+
+    } catch (IllegalAccessException e) {
+      LOG.error("Illegal access exception :: {}", e.getMessage());
       LOG.debug(e.getClass().getName(), e);
 
       return createResponseOf(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR_RESPONSE);
@@ -147,7 +170,8 @@ public class FitnoteDeclarationResource extends AbstractResource {
   }
 
   private String drsDispatchPayload(ImagePayload imagePayload)
-      throws IOException, EventsManagerException {
+          throws IOException, EventsMessageException, CryptoException, InvocationTargetException,
+          NoSuchMethodException, InstantiationException, IllegalAccessException {
     FitnoteMetadata drsMetadata = new FitnoteMetadata();
     final ObjectMapper mapper = new ObjectMapper();
 
@@ -196,7 +220,7 @@ public class FitnoteDeclarationResource extends AbstractResource {
         | EventsMessageException
         | CryptoException e) {
 
-      throw new EventsManagerException(e.getMessage());
+      throw e;
     }
 
     return correlationId.toString();

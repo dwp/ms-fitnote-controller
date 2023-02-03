@@ -271,6 +271,106 @@ public class FitnoteDeclarationResourceTest {
         verify(snsPublisher, times(1)).publishMessageToSnsTopic(eq(false), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
     }
 
+    @Test
+    public void returns500WhenCryptoExceptionIsThrown() throws DeclarationException, IOException, ImagePayloadException, CryptoException, NoSuchMethodException, IllegalAccessException, InstantiationException, EventsMessageException, InvocationTargetException {
+        Declaration declaration = new ObjectMapper().readValue(ACCEPTED_DECLARATION, Declaration.class);
+        ImagePayload payload = buildImagePayload("i am image", "123456", "AA370773A", "123456", true);
+
+        payload.setClaimantAddress(new ObjectMapper().readValue(VALID_NEW_ADDRESS, Address.class));
+
+        when(jsonValidator.validateAndTranslateDeclaration(ACCEPTED_DECLARATION)).thenReturn(declaration);
+        when(imageStore.getPayload("123456")).thenReturn(payload);
+        when(config.isSnsEncryptMessages()).thenReturn(true);
+        doThrow(new CryptoException("i am an exception!"))
+                .when(snsPublisher).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+
+        Response response = resource.submitDeclaration(ACCEPTED_DECLARATION);
+        assertThat(response.getStatus(), is(500));
+
+        verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
+        verify(snsPublisher, times(1)).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+    }
+
+    @Test
+    public void returns500WhenNoSuchMethodExceptionIsThrown() throws DeclarationException, IOException, ImagePayloadException, CryptoException, NoSuchMethodException, IllegalAccessException, InstantiationException, EventsMessageException, InvocationTargetException {
+        Declaration declaration = new ObjectMapper().readValue(ACCEPTED_DECLARATION, Declaration.class);
+        ImagePayload payload = buildImagePayload("i am image", "123456", "AA370773A", "123456", true);
+
+        payload.setClaimantAddress(new ObjectMapper().readValue(VALID_NEW_ADDRESS, Address.class));
+
+        when(jsonValidator.validateAndTranslateDeclaration(ACCEPTED_DECLARATION)).thenReturn(declaration);
+        when(imageStore.getPayload("123456")).thenReturn(payload);
+        when(config.isSnsEncryptMessages()).thenReturn(true);
+        doThrow(new NoSuchMethodException("No such method exception!"))
+                .when(snsPublisher).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+
+        Response response = resource.submitDeclaration(ACCEPTED_DECLARATION);
+        assertThat(response.getStatus(), is(500));
+
+        verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
+        verify(snsPublisher, times(1)).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+    }
+
+    @Test
+    public void returns500WhenInvocationTargetExceptionIsThrown() throws DeclarationException, IOException, ImagePayloadException, CryptoException, NoSuchMethodException, IllegalAccessException, InstantiationException, EventsMessageException, InvocationTargetException {
+        Declaration declaration = new ObjectMapper().readValue(ACCEPTED_DECLARATION, Declaration.class);
+        ImagePayload payload = buildImagePayload("i am image", "123456", "AA370773A", "123456", true);
+
+        payload.setClaimantAddress(new ObjectMapper().readValue(VALID_NEW_ADDRESS, Address.class));
+
+        when(jsonValidator.validateAndTranslateDeclaration(ACCEPTED_DECLARATION)).thenReturn(declaration);
+        when(imageStore.getPayload("123456")).thenReturn(payload);
+        when(config.isSnsEncryptMessages()).thenReturn(true);
+        doThrow(new InvocationTargetException(new Throwable(), "No such method exception!"))
+                .when(snsPublisher).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+
+        Response response = resource.submitDeclaration(ACCEPTED_DECLARATION);
+        assertThat(response.getStatus(), is(500));
+
+        verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
+        verify(snsPublisher, times(1)).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+    }
+
+    @Test
+    public void returns500WhenIllegalAccessExceptionIsThrown() throws DeclarationException, IOException, ImagePayloadException, CryptoException, NoSuchMethodException, IllegalAccessException, InstantiationException, EventsMessageException, InvocationTargetException {
+        Declaration declaration = new ObjectMapper().readValue(ACCEPTED_DECLARATION, Declaration.class);
+        ImagePayload payload = buildImagePayload("i am image", "123456", "AA370773A", "123456", true);
+
+        payload.setClaimantAddress(new ObjectMapper().readValue(VALID_NEW_ADDRESS, Address.class));
+
+        when(jsonValidator.validateAndTranslateDeclaration(ACCEPTED_DECLARATION)).thenReturn(declaration);
+        when(imageStore.getPayload("123456")).thenReturn(payload);
+        when(config.isSnsEncryptMessages()).thenReturn(true);
+        doThrow(new IllegalAccessException("No such method exception!")).when(snsPublisher)
+                .publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+
+        Response response = resource.submitDeclaration(ACCEPTED_DECLARATION);
+        assertThat(response.getStatus(), is(500));
+
+        verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
+        verify(snsPublisher, times(1)).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+    }
+
+    @Test
+    public void returns500WhenInstantiationExceptionIsThrown() throws DeclarationException, IOException, ImagePayloadException, CryptoException, NoSuchMethodException, IllegalAccessException, InstantiationException, EventsMessageException, InvocationTargetException {
+        Declaration declaration = new ObjectMapper().readValue(ACCEPTED_DECLARATION, Declaration.class);
+        ImagePayload payload = buildImagePayload("i am image", "123456", "AA370773A", "123456", true);
+
+        payload.setClaimantAddress(new ObjectMapper().readValue(VALID_NEW_ADDRESS, Address.class));
+
+        when(jsonValidator.validateAndTranslateDeclaration(ACCEPTED_DECLARATION)).thenReturn(declaration);
+        when(imageStore.getPayload("123456")).thenReturn(payload);
+        when(config.isSnsEncryptMessages()).thenReturn(true);
+        doThrow(new InstantiationException("No such method exception!")).when(snsPublisher)
+                .publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+
+        Response response = resource.submitDeclaration(ACCEPTED_DECLARATION);
+        assertThat(response.getStatus(), is(500));
+
+        verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
+        verify(snsPublisher, times(1)).publishMessageToSnsTopic(eq(true), eq(TOPIC_NAME), eq(SUBJECT_NAME), any(EventMessage.class), eq(null));
+    }
+
     /*
      * private methods
      */

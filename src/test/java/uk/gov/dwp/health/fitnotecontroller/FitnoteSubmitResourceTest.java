@@ -52,6 +52,10 @@ import static org.mockito.Mockito.*;
 public class FitnoteSubmitResourceTest {
 
   private static final String SESSION = "session1";
+
+  private static final String OCR_LOGGING_DATA =
+      "\"fileType\": \"application/pdf\", \"fileName\": \"fitnote.pdf\", \"browser\": \"Chrome\", \"device\": \"desktop\", \"os\": \"MacOS”,";
+
   private static byte[] COMPRESSED_PAGE_LARGE;
   private static byte[] COMPRESSED_PAGE_FINAL;
 
@@ -94,9 +98,9 @@ public class FitnoteSubmitResourceTest {
     PORTRAIT_FITNOTE_IMAGE = Base64.encodeFromFile("src/test/resources/FullPage_Portrait.jpg");
     PDF_FITNOTE_IMAGE = Base64.encodeFromFile("src/test/resources/FullPage_Portrait.pdf");
 
-    PORTRAIT_JSON = "{\"image\":\"" + PORTRAIT_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
-    VALID_JSON = "{\"image\":\"" + LANDSCAPE_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
-    PDF_JSON = "{\"image\":\"" + PDF_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    PORTRAIT_JSON = "{" + OCR_LOGGING_DATA +  "\"image\":\"" + PORTRAIT_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    VALID_JSON = "{" + OCR_LOGGING_DATA  + "\"image\":\"" + LANDSCAPE_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    PDF_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
   }
 
   @Before

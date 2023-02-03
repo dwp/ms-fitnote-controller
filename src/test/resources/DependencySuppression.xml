@@ -1,48 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
-        <notes><![CDATA[
-   file name: bc-fips-1.0.2.jar vulnerability has not been addressed by maintainer
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.bouncycastle/bc\-fips@.*$</packageUrl>
-        <cve>CVE-2020-26939</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: amqp-client-5.0.0.jar - vulnerability has not been addressed by maintainer
-   ]]></notes>
-        <cve>CVE-2018-11087</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: bc-fips-1.0.2.jar - vulnerability has not been addressed by maintainer
-   ]]></notes>
-        <cve>CVE-2020-15522</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: jackson-dataformat-cbor-2.6.7.jar - vulnerability has not been addressed by maintainer
-   ]]></notes>
-        <cve>CVE-2020-28491</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: jersey-common-2.33.jar - vulnerability has not been addressed by maintainer
-   ]]></notes>
-        <cve>CVE-2021-28168</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-    log4j-core-2.18.0.jar - vulnerability has not been addressed by maintainer
-    ]]></notes>
-        <cve>CVE-2022-33915</cve>
+        <notes>
+            <![CDATA[
+            file name: snakeyaml-1.33.jar - until a fix is available this is the latest version
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+        <cve>CVE-2022-1471</cve>
     </suppress>
     <suppress>
         <notes>
-            <![CDATA[ 
-            file name: aws-java-sdk-s3-1.11.475.jar - vulnerabiliity has not been addressed by maintainer
+            <![CDATA[
+            file name: bc-fips-1.0.2.3.jar until a fix is available this is the latest version
             ]]>
         </notes>
-        <cve>CVE-2022-31159</cve>
+        <packageUrl regex="true">^pkg:maven/org\.bouncycastle/bc\-fips@.*$</packageUrl>
+        <cve>CVE-2022-45146</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+                file name: hk2-utils-2.6.1.jar Suppressed until Dropwizard version is updated
+                ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.glassfish\.hk2/hk2\-utils@.*$</packageUrl>
+        <cve>CVE-2021-4277</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+                file name: snakeyaml-1.33.jar Suppressed until maintainer addresses the vulnerability.
+                ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+        <cve>CVE-2022-3064</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+                file name: snakeyaml-1.33.jar Suppressed until maintainer addresses the vulnerability.
+                ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+        <cve>CVE-2021-4235</cve>
     </suppress>
 </suppressions>

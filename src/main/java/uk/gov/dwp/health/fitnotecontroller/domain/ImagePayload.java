@@ -43,6 +43,17 @@ public class ImagePayload {
   private String sessionId;
 
   private byte[] image;
+
+  private String fileType;
+
+  private String fileName;
+
+  private String browser;
+
+  private String device;
+
+  private String os;
+
   private long expiryTime;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -117,6 +128,46 @@ public class ImagePayload {
     return sessionId;
   }
 
+  public String getFileType() {
+    return fileType;
+  }
+
+  public void setFileType(String fileType) {
+    this.fileType = fileType;
+  }
+
+  public String getFileName() {
+    return fileName;
+  }
+
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
+  }
+
+  public String getBrowser() {
+    return browser;
+  }
+
+  public void setBrowser(String browser) {
+    this.browser = browser;
+  }
+
+  public String getDevice() {
+    return device;
+  }
+
+  public void setDevice(String device) {
+    this.device = device;
+  }
+
+  public String getOs() {
+    return os;
+  }
+
+  public void setOs(String os) {
+    this.os = os;
+  }
+
   public void setFitnoteCheckStatus(Status fitnoteCheckStatus) {
     this.fitnoteCheckStatus = fitnoteCheckStatus;
   }
@@ -131,6 +182,12 @@ public class ImagePayload {
 
   public void setClaimantAddress(Address claimantAddress) {
     this.claimantAddress = claimantAddress;
+  }
+
+  public String getLogMessage() {
+    return String.format(" SessionId(%s), FileType(%s), FileName(%s),"
+                    + " Browser(%s), Device(%s) and OS(%s)",
+          sessionId, fileType, fileName, browser, device, os);
   }
 
   private byte[] compress(String str) {
@@ -170,4 +227,6 @@ public class ImagePayload {
     }
     return null;
   }
+
+
 }
