@@ -50,7 +50,7 @@
         <owasp.version>7.4.4</owasp.version>
         <junit.version>4.13.2</junit.version>
         <zxing.version>2.2</zxing.version>
-        <netty.version>4.1.87.Final</netty.version>
+        <netty.version>4.1.94.Final</netty.version>
     </properties>
 
     <dependencies>
