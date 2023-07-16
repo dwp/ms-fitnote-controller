@@ -32,7 +32,7 @@
 
         <log4j.version>2.18.0</log4j.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
-        <snakeyaml.version>1.33</snakeyaml.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
         <bc-fips.version>1.0.2.3</bc-fips.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
