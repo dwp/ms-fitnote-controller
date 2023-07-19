@@ -1,16 +1,18 @@
 package uk.gov.dwp.health.fitnotecontroller.utils.fitnotes;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
 import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
-import gherkin.deps.net.iharder.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,10 +22,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -66,11 +68,16 @@ public class FITNOTE_OcrCheckerTest {
   }
 
   private ImagePayload getTestImage(String imageFile) throws IOException {
-    String imageString = Base64.encodeFromFile(this.getClass().getResource(imageFile).getPath());
+    String imageString = getEncodedImage(this.getClass().getResource(imageFile).getPath());
     ImagePayload payload = new ImagePayload();
     payload.setImage(imageString);
     payload.setSessionId(UUID.randomUUID().toString());
     return payload;
+  }
+
+  private String getEncodedImage(String imageFileName) throws IOException {
+    File file = new File(imageFileName);
+    return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
   }
 
   @Test

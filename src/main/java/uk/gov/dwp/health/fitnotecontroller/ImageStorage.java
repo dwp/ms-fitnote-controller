@@ -1,6 +1,7 @@
 package uk.gov.dwp.health.fitnotecontroller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
@@ -41,7 +42,16 @@ public class ImageStorage {
     this.cryptoDataManager = cryptoDataManager;
     this.configuration = configuration;
     this.redisClient = redis;
+    this.initialiseMapper();
   }
+
+  private void initialiseMapper() {
+    mapper.getFactory().setStreamReadConstraints(StreamReadConstraints
+            .builder()
+            .maxStringLength(configuration.getObjectMaxStringLength())
+            .build());
+  }
+
 
   private synchronized RedisAdvancedClusterCommands<String, String> getSynchronousCommands() {
     if (redisConnection == null || !redisConnection.isOpen()) {

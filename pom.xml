@@ -6,63 +6,82 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>1.12.0</version>
+    <version>2.0.0</version>
 
     <properties>
         <dwp.message-utility.version>4.0.0-5bc46d5a</dwp.message-utility.version>
-        <dwp.secure-sockets.version>1.9.0-fd63f993</dwp.secure-sockets.version>
+        <dwp.secure-sockets.version>1.10.0-c057ae20</dwp.secure-sockets.version>
         <dwp.securestrings.version>1.7.0-7d6dd346</dwp.securestrings.version>
-        <dwp.encoded-log.version>2.2.3-112b45f6</dwp.encoded-log.version>
-        <dwp.postcode.version>1.3.0-f0fc5e75</dwp.postcode.version>
+        <dwp.encoded-log.version>2.3.0-c5d6b343</dwp.encoded-log.version>
+        <dwp.postcode.version>1.3.1-3aba24cb</dwp.postcode.version>
         <dwp.drsinteg.version>1.7.0-008b5a52</dwp.drsinteg.version>
-        <dwp.crypto.version>2.8.0-e92423de</dwp.crypto.version>
+        <dwp.cryptography.version>2.8.0-e92423de</dwp.cryptography.version>
         <dwp.nino.version>1.3.2-7c450b4d</dwp.nino.version>
-        <dwp.vinfo.version>1.1.0-1af801fa</dwp.vinfo.version>
+        <dwp.vinfo.version>2.0.0-0f63d3b5</dwp.vinfo.version>
 
-        <plugin.compiler.version>3.10.1</plugin.compiler.version>
-        <plugin.projectinfo.version>2.4</plugin.projectinfo.version>
-        <plugin.pmd.version>3.10.0</plugin.pmd.version>
-        <plugin.spotbugs.version>4.0.0</plugin.spotbugs.version>
-        <plugin.surefire.version>3.0.0-M5</plugin.surefire.version>
-        <plugin.jacoco.version>0.8.8</plugin.jacoco.version>
-        <plugin.jxr.version>2.5</plugin.jxr.version>
-        <plugin.site.version>3.7.1</plugin.site.version>
+        <java.source.version>17</java.source.version>
+        <java.target.version>17</java.target.version>
 
-        <doxia.version>1.8</doxia.version>
+        <plugin.spring-boot.version>3.1.0</plugin.spring-boot.version>
+        <plugin.compiler.version>3.11.0</plugin.compiler.version>
+        <plugin.maven.spotbugs.version>4.7.3.4</plugin.maven.spotbugs.version>
+        <plugin.spotbugs.version>4.7.3</plugin.spotbugs.version>
+        <plugin.surefire.version>3.1.0</plugin.surefire.version>
+        <plugin.jacoco.version>0.8.10</plugin.jacoco.version>
+        <plugin.site.version>4.0.0-M8</plugin.site.version>
 
-        <log4j.version>2.18.0</log4j.version>
-        <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
-        <snakeyaml.version>1.33</snakeyaml.version>
-        <bc-fips.version>1.0.2.3</bc-fips.version>
+        <doxia.version>2.0.0-M6</doxia.version>
+
+        <log4j.version>2.20.0</log4j.version>
+        <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lettuce-redis.version>6.2.0.RELEASE</lettuce-redis.version>
-        <cucumber-core.version>1.2.4</cucumber-core.version>
-        <cucumber-jvm.version>1.0.3</cucumber-jvm.version>
-        <tesseract.version>4.1.1-1.5.5</tesseract.version>
+        <lettuce-redis.version>6.2.4.RELEASE</lettuce-redis.version>
+        <cucumber-core.version>7.12.0</cucumber-core.version>
+        <tesseract.version>5.3.1-1.5.9</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>2.1.4</dropwizard.version>
-        <commons-io.version>2.11.0</commons-io.version>
-        <wiremock.version>2.6.0</wiremock.version>
-        <mockito.version>2.24.5</mockito.version>
-        <jackson.version>2.14.1</jackson.version>
-        <pdfbox.version>2.0.24</pdfbox.version>
-        <owasp.version>7.4.4</owasp.version>
+        <dropwizard.version>4.0.0</dropwizard.version>
+        <commons-io.version>2.12.0</commons-io.version>
+        <wiremock.version>2.27.2</wiremock.version>
+        <mockito.version>4.11.0</mockito.version>
+        <jackson.version>2.15.2</jackson.version>
+        <pdfbox.version>2.0.28</pdfbox.version>
+        <owasp.version>8.2.1</owasp.version>
         <junit.version>4.13.2</junit.version>
-        <zxing.version>2.2</zxing.version>
-        <netty.version>4.1.87.Final</netty.version>
+        <zxing.version>3.5.1</zxing.version>
+        <netty.version>4.1.94.Final</netty.version>
+        <slf4j.version>2.0.7</slf4j.version>
+        <guava.version>32.0.0-jre</guava.version>
+        <tika.version>2.4.1</tika.version>
+        <im4java.version>1.4.0</im4java.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.im4java</groupId>
+            <artifactId>im4java</artifactId>
+            <version>${im4java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>${snakeyaml.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bc-fips</artifactId>
-            <version>${bc-fips.version}</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -143,7 +162,7 @@
         <dependency>
             <groupId>uk.gov.dwp.health.crypto</groupId>
             <artifactId>data-cryptography</artifactId>
-            <version>${dwp.crypto.version}</version>
+            <version>${dwp.cryptography.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.dwp.regex</groupId>
@@ -162,19 +181,19 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>info.cukes</groupId>
-            <artifactId>cucumber-jvm-deps</artifactId>
-            <version>${cucumber-jvm.version}</version>
+            <groupId>io.dropwizard.modules</groupId>
+            <artifactId>dropwizard-testing-junit4</artifactId>
+            <version>${dropwizard.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>info.cukes</groupId>
+            <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
             <version>${cucumber-core.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>info.cukes</groupId>
+            <groupId>io.cucumber</groupId>
             <artifactId>cucumber-junit</artifactId>
             <version>${cucumber-core.version}</version>
             <scope>test</scope>
@@ -353,6 +372,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${plugin.surefire.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit47</artifactId>
+                        <version>${plugin.surefire.version}</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <argLine>${jacocoArgLine} -Xmx12g</argLine>
                     <rerunFailingTestsCount>1</rerunFailingTestsCount>
@@ -366,7 +392,10 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>${plugin.spotbugs.version}</version>
+                <version>${plugin.maven.spotbugs.version}</version>
+                <configuration>
+                    <excludeFilterFile>/spotbugs-ignore.xml</excludeFilterFile>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>com.github.spotbugs</groupId>
@@ -456,8 +485,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${plugin.compiler.version}</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -477,7 +506,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.3.5.RELEASE</version>
+                <version>${plugin.spring-boot.version}</version>
                 <executions>
                     <execution>
                         <goals>

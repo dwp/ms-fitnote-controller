@@ -38,6 +38,7 @@ public class ExpectedFitnoteFormat {
   private String failureReason;
   private int diagonalTarget;
   private int highTarget;
+  private int matchAngle;
 
   public ExpectedFitnoteFormat(FitnoteControllerConfiguration config) {
     initialise(config);
@@ -63,10 +64,19 @@ public class ExpectedFitnoteFormat {
     setDiagonalTarget(config.getDiagonalTarget());
     setHighTarget(config.getHighTarget());
     setFinalImage(null);
+    setMatchAngle(0);
   }
 
   public BufferedImage getFinalImage() {
     return finalImage;
+  }
+
+  public int getMatchAngle() {
+    return matchAngle;
+  }
+
+  public void setMatchAngle(int angle) {
+    matchAngle = angle;
   }
 
   public void setFinalImage(BufferedImage finalImage) {

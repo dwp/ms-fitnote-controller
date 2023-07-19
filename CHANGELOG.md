@@ -1,3 +1,11 @@
+<a name="2-0-0"></a>
+# 2-0-0 (2023-07-18)
+
+* feat: heic support ([64c48f8](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/64c48f8))
+* bug: fix version info resources not working ([500889e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/500889e))
+* chore: update automerge/common-ci-updates ([c8bc6c9](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/c8bc6c9))
+* ci: update to java 17 ([f4ec19c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/f4ec19c))
+
 <a name="1.12.0"></a>
 # 1.12.0 (2023-02-02)
 ## Features
@@ -249,6 +257,3 @@
 * **redis:** implementing the in-memory redis and the use of lettuce.  much more robust ([ccc0771](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/ccc0771))
 * **update:** new updates to support both the encoded-logger but also the messaging ([271e08e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/271e08e))
 * **validation:** update mobile phone validation acceptable lengths ([a19f8d1](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/commit/a19f8d1))
-
-
-

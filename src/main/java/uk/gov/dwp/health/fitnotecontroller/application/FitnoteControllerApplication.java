@@ -2,11 +2,12 @@ package uk.gov.dwp.health.fitnotecontroller.application;
 
 import com.amazonaws.services.sns.model.MessageAttributeValue;
 
-import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.Application;
+
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.cluster.RedisClusterClient;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
@@ -32,59 +33,62 @@ public class FitnoteControllerApplication extends Application<FitnoteControllerC
 
   @Override
   public void run(
-      FitnoteControllerConfiguration fitnoteControllerConfiguration, Environment environment)
-      throws Exception {
+          FitnoteControllerConfiguration fitnoteControllerConfiguration, Environment environment)
+          throws Exception {
 
     CryptoDataManager mqKmsCrypto = null;
     if (fitnoteControllerConfiguration.isSnsEncryptMessages()
-        && null == fitnoteControllerConfiguration.getSnsKmsCryptoConfiguration()) {
+            && null == fitnoteControllerConfiguration.getSnsKmsCryptoConfiguration()) {
       throw new CryptoException(
-          "SnsEncryptMessages is TRUE.  "
+              "SnsEncryptMessages is TRUE.  "
               + "Cannot encrypt without a valid 'snsKmsCryptoConfiguration' configuration item");
 
     } else if (fitnoteControllerConfiguration.isSnsEncryptMessages()) {
       mqKmsCrypto =
-          new CryptoDataManager(fitnoteControllerConfiguration.getSnsKmsCryptoConfiguration());
+              new CryptoDataManager(fitnoteControllerConfiguration.getSnsKmsCryptoConfiguration());
     }
 
     CryptoDataManager redisMqKmsCrypto = null;
     if (fitnoteControllerConfiguration.isRedisEncryptMessages()
-        && null == fitnoteControllerConfiguration.getRedisKmsCryptoConfiguration()) {
+            && null == fitnoteControllerConfiguration.getRedisKmsCryptoConfiguration()) {
       throw new CryptoException(
-          "RedisEncryptMessages is TRUE.  "
+              "RedisEncryptMessages is TRUE.  "
               + "Cannot encrypt without a valid 'redisKmsCryptoConfiguration' configuration item");
 
     } else if (fitnoteControllerConfiguration.isRedisEncryptMessages()) {
       redisMqKmsCrypto =
-          new CryptoDataManager(fitnoteControllerConfiguration.getRedisKmsCryptoConfiguration());
+              new CryptoDataManager(
+                      fitnoteControllerConfiguration.getRedisKmsCryptoConfiguration());
     }
 
     RedisClusterClient redisClient = null;
     if (fitnoteControllerConfiguration.isRedisEncryptionTransit()) {
       RedisURI redisUri = RedisURI
-          .create("rediss://" + fitnoteControllerConfiguration.getRedisStoreURI());
+              .create("rediss://" + fitnoteControllerConfiguration.getRedisStoreURI());
       redisClient = RedisClusterClient.create(redisUri);
     } else {
       redisClient = RedisClusterClient
-          .create("redis://" + fitnoteControllerConfiguration.getRedisStoreURI());
+              .create("redis://" + fitnoteControllerConfiguration.getRedisStoreURI());
     }
 
     final ImageStorage imageStorage =
-        new ImageStorage(fitnoteControllerConfiguration, redisClient, redisMqKmsCrypto);
+            new ImageStorage(fitnoteControllerConfiguration, redisClient, redisMqKmsCrypto);
 
     final MessageEncoder<MessageAttributeValue> messageEncoder =
-        new MessageEncoder<>(mqKmsCrypto, MessageAttributeValue.class);
+            new MessageEncoder<>(mqKmsCrypto, MessageAttributeValue.class);
     final MessagePublisher snsPublisher =
-        new MessagePublisher(messageEncoder, fitnoteControllerConfiguration.getSnsConfiguration());
+            new MessagePublisher(messageEncoder,
+                    fitnoteControllerConfiguration.getSnsConfiguration());
 
     final FitnoteSubmitResource resource =
-        new FitnoteSubmitResource(fitnoteControllerConfiguration, imageStorage);
+            new FitnoteSubmitResource(fitnoteControllerConfiguration, imageStorage);
     final FitnoteConfirmationResource confirmationResource =
-        new FitnoteConfirmationResource(imageStorage);
+            new FitnoteConfirmationResource(imageStorage);
     final FitnoteAddressResource addressResource = new FitnoteAddressResource(imageStorage);
     final FitnoteQueryResource queryResource = new FitnoteQueryResource(imageStorage);
     final FitnoteDeclarationResource declarationResource =
-        new FitnoteDeclarationResource(imageStorage, snsPublisher, fitnoteControllerConfiguration);
+            new FitnoteDeclarationResource(
+                    imageStorage, snsPublisher, fitnoteControllerConfiguration);
 
     environment.jersey().register(resource);
     environment.jersey().register(confirmationResource);
@@ -96,20 +100,19 @@ public class FitnoteControllerApplication extends Application<FitnoteControllerC
 
     if (fitnoteControllerConfiguration.isApplicationInfoEnabled()) {
       environment.jersey()
-          .register(
-              new ServiceInfoResource(
-                  new PropertyFileInfoProvider("application.yml")
-              )
-          );
+              .register(
+                      new ServiceInfoResource(
+                              new PropertyFileInfoProvider("application.yml")
+                      ));
     }
   }
 
   @Override
   public void initialize(Bootstrap<FitnoteControllerConfiguration> bootstrap) {
     bootstrap.setConfigurationSourceProvider(
-        new SubstitutingSourceProvider(
-            bootstrap.getConfigurationSourceProvider(),
-            new EnvironmentVariableSubstitutor(false)));
+            new SubstitutingSourceProvider(
+                    bootstrap.getConfigurationSourceProvider(),
+                    new EnvironmentVariableSubstitutor(false)));
   }
 
   public static void main(String[] args) throws Exception {

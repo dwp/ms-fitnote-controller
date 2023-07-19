@@ -2,6 +2,7 @@ package uk.gov.dwp.health.fitnotecontroller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,18 +13,18 @@ import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.domain.Address;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
-import javax.ws.rs.core.Response;
+
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -48,7 +49,7 @@ public class FitnoteQueryResourceTest {
         assertThat("should get 400", response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
         assertThat("error text", response.getEntity().toString(), is(equalTo(ERROR_MSG)));
 
-        verifyZeroInteractions(imageStorage);
+        verifyNoInteractions(imageStorage);
     }
 
     @Test
@@ -58,7 +59,7 @@ public class FitnoteQueryResourceTest {
         assertThat("should get 400", response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
         assertThat("error text", response.getEntity().toString(), is(equalTo(ERROR_MSG)));
 
-        verifyZeroInteractions(imageStorage);
+        verifyNoInteractions(imageStorage);
     }
 
     @Test
@@ -68,7 +69,7 @@ public class FitnoteQueryResourceTest {
         assertThat("should get 400", response.getStatus(), is(equalTo(HttpStatus.SC_BAD_REQUEST)));
         assertThat("error text", response.getEntity().toString(), is(equalTo(ERROR_MSG)));
 
-        verifyZeroInteractions(imageStorage);
+        verifyNoInteractions(imageStorage);
     }
 
     @Test

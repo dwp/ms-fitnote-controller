@@ -3,6 +3,12 @@ package uk.gov.dwp.health.fitnotecontroller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
@@ -12,17 +18,12 @@ import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 @Path("/")
 public class FitnoteConfirmationResource extends AbstractResource {
   private static final Logger LOG =
-      LoggerFactory.getLogger(FitnoteConfirmationResource.class.getName());
+          LoggerFactory.getLogger(FitnoteConfirmationResource.class.getName());
 
   public FitnoteConfirmationResource(ImageStorage imageStore) {
     super(imageStore);
@@ -86,8 +87,10 @@ public class FitnoteConfirmationResource extends AbstractResource {
   }
 
   private String createResponseFrom(ImagePayload payload) throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
+    ObjectMapper mapper = JsonMapper
+            .builder()
+            .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
+            .build();
     return mapper.writerWithView(Views.SessionOnly.class).writeValueAsString(payload);
   }
 }

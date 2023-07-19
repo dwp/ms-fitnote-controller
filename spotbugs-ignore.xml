@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.AbstractResource"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.FitnoteDeclarationResource"/>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.FitnoteSubmitResource"/>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.ImageStorage"/>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration"/>
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat"/>
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat"/>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.domain.FitnoteMetadata"/>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.domain.FitnoteMetadata"/>
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker"/>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.utils.ImageCompressor"/>
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+</FindBugsFilter>

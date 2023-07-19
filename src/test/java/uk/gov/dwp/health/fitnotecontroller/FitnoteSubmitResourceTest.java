@@ -3,11 +3,9 @@ package uk.gov.dwp.health.fitnotecontroller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.junittoolbox.PollingWait;
 import com.googlecode.junittoolbox.RunnableAssert;
-import gherkin.deps.net.iharder.Base64;
+import jakarta.ws.rs.core.Response;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.util.EntityUtils;
-import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,8 +25,6 @@ import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import uk.gov.dwp.health.fitnotecontroller.utils.MemoryChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 
-import javax.sound.midi.SysexMessage;
-import javax.ws.rs.core.Response;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -36,15 +32,25 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_ACCEPTED;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"squid:S1192", "squid:S3008", "squid:S00116"})
@@ -54,7 +60,7 @@ public class FitnoteSubmitResourceTest {
   private static final String SESSION = "session1";
 
   private static final String OCR_LOGGING_DATA =
-      "\"fileType\": \"application/pdf\", \"fileName\": \"fitnote.pdf\", \"browser\": \"Chrome\", \"device\": \"desktop\", \"os\": \"MacOS”,";
+          "\"fileType\": \"application/pdf\", \"fileName\": \"fitnote.pdf\", \"browser\": \"Chrome\", \"device\": \"desktop\", \"os\": \"MacOS”,";
 
   private static byte[] COMPRESSED_PAGE_LARGE;
   private static byte[] COMPRESSED_PAGE_FINAL;
@@ -67,9 +73,17 @@ public class FitnoteSubmitResourceTest {
   private static String LANDSCAPE_FITNOTE_IMAGE;
   private static String PORTRAIT_FITNOTE_IMAGE;
   private static String PDF_FITNOTE_IMAGE;
+  private static String LARGE_JPG_IMAGE;
+  private static String HEIC_IMAGE;
+  private static String EXR_IMAGE;
+
   private static String PORTRAIT_JSON;
   private static String VALID_JSON;
+  private static String LARGE_VALID_JSON;
   private static String PDF_JSON;
+  private static String HEIC_JSON;
+  private static String EXR_JSON;
+
   private int OVER_MAX_MEMORY;
 
   private FitnoteSubmitResource resourceUnderTest;
@@ -91,26 +105,39 @@ public class FitnoteSubmitResourceTest {
 
   @BeforeClass
   public static void init() throws IOException {
+    // needed for testing locally, please comment out when committing code
+    // you need ImageMagick installed (https://imagemagick.org)
+    // String myPath="imagemagickinstalledbinlocation";
+    //ProcessStarter.setGlobalSearchPath(myPath);
+    // -------------
+
     COMPRESSED_PAGE_LARGE = FileUtils.readFileToByteArray(new File("src/test/resources/EmptyPageBigger.jpg"));
     COMPRESSED_PAGE_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/EmptyPage.jpg"));
 
-    LANDSCAPE_FITNOTE_IMAGE = Base64.encodeFromFile("src/test/resources/FullPage_Landscape.jpg");
-    PORTRAIT_FITNOTE_IMAGE = Base64.encodeFromFile("src/test/resources/FullPage_Portrait.jpg");
-    PDF_FITNOTE_IMAGE = Base64.encodeFromFile("src/test/resources/FullPage_Portrait.pdf");
+    LANDSCAPE_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Landscape.jpg");
+    PORTRAIT_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.jpg");
+    PDF_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.pdf");
+    HEIC_IMAGE = getEncodedImage("src/test/resources/DarkPage.heic");
+    EXR_IMAGE = getEncodedImage("src/test/resources/test-fail-type.txt");
+    LARGE_JPG_IMAGE = getEncodedImage("src/test/resources/DarkPageLargeSize.jpg");
 
     PORTRAIT_JSON = "{" + OCR_LOGGING_DATA +  "\"image\":\"" + PORTRAIT_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     VALID_JSON = "{" + OCR_LOGGING_DATA  + "\"image\":\"" + LANDSCAPE_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    LARGE_VALID_JSON = "{" + OCR_LOGGING_DATA  + "\"image\":\"" + LARGE_JPG_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     PDF_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + HEIC_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    EXR_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXR_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
   }
 
   @Before
   public void setup() throws IOException, ImagePayloadException, ImageCompressException, CryptoException {
-    when(imageCompressor.compressBufferedImage(any(BufferedImage.class), eq(3), eq(false))).thenReturn(COMPRESSED_PAGE_LARGE);
-    when(imageCompressor.compressBufferedImage(any(BufferedImage.class), eq(2), eq(true))).thenReturn(COMPRESSED_PAGE_FINAL);
+    when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), eq(3), eq(false))).thenReturn(COMPRESSED_PAGE_LARGE);
+    when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), eq(2), eq(true))).thenReturn(COMPRESSED_PAGE_FINAL);
     when(controllerConfiguration.getEstimatedRequestMemoryMb()).thenReturn(3);
     when(controllerConfiguration.getScanTargetImageSizeKb()).thenReturn(3);
     when(controllerConfiguration.getTargetImageSizeKB()).thenReturn(2);
     when(controllerConfiguration.isGreyScale()).thenReturn(true);
+    when(controllerConfiguration.getMaxSizeBeforeCompressionBytes()).thenReturn(10000000);
 
     resourceUnderTest = new FitnoteSubmitResource(controllerConfiguration, validator, ocrChecker, imageStorage, imageCompressor);
 
@@ -131,8 +158,8 @@ public class FitnoteSubmitResourceTest {
 
   @Test
   public void checkFitnoteCallWhenImageStoreThrowsException() throws ImagePayloadException, IOException, CryptoException {
-   ImagePayload imagePayload = new ImagePayload();
-   imagePayload.setFitnoteCheckStatus(ImagePayload.Status.FAILED_IMG_MAX_REPLAY);
+    ImagePayload imagePayload = new ImagePayload();
+    imagePayload.setFitnoteCheckStatus(ImagePayload.Status.FAILED_IMG_MAX_REPLAY);
     when(imageStorage.getPayload(anyString())).thenReturn(imagePayload);
     Response response = resourceUnderTest.checkFitnote(UNKNOWN_SESSION_ID);
     assertThat(response.getStatus(), is(equalTo(SC_OK)));
@@ -187,13 +214,50 @@ public class FitnoteSubmitResourceTest {
   }
 
   @Test
+  public void jsonIsPassedIntoServiceWithOcrEnabledAnd202IsReturnedLargeJpg() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException {
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(LARGE_JPG_IMAGE);
+    createAndValidateImage(LARGE_VALID_JSON, true, imagePayload);
+    when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
+            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+
+    Response response = resourceUnderTest.submitFitnote(LARGE_VALID_JSON);
+    verify(validator).validateAndTranslateSubmission(LARGE_VALID_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
+
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+  @Test
+  public void jsonIsPassedIntoServiceWithOcrEnabledAnd202IsReturnedHeic() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException {
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(HEIC_IMAGE);
+    createAndValidateImage(HEIC_JSON, true, imagePayload);
+    when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
+            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+
+    Response response = resourceUnderTest.submitFitnote(HEIC_JSON);
+    verify(validator).validateAndTranslateSubmission(HEIC_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
+
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+
+  @Test
   public void jsonIsPassedIntoServiceWithOcrEnabledAnd202IsReturnedJpg() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException {
     when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
     ImagePayload imagePayload = imageStorage.getPayload(SESSION);
     imagePayload.setImage(LANDSCAPE_FITNOTE_IMAGE);
     createAndValidateImage(VALID_JSON, true, imagePayload);
     when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
-        .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
 
     Response response = resourceUnderTest.submitFitnote(VALID_JSON);
     verify(validator).validateAndTranslateSubmission(VALID_JSON);
@@ -201,7 +265,7 @@ public class FitnoteSubmitResourceTest {
 
     examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
 
-    verify(imageCompressor, times(2)).compressBufferedImage(any(BufferedImage.class), anyInt(), anyBoolean());
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -214,14 +278,14 @@ public class FitnoteSubmitResourceTest {
     createAndValidateImage(PDF_JSON, true, imagePayload);
 
     when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
-        .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
     Response response = resourceUnderTest.submitFitnote(PDF_JSON);
     verify(validator).validateAndTranslateSubmission(PDF_JSON);
     assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
 
     examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
 
-    verify(imageCompressor, times(2)).compressBufferedImage(any(BufferedImage.class), anyInt(), anyBoolean());
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -236,7 +300,7 @@ public class FitnoteSubmitResourceTest {
 
     examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
 
-    verify(imageCompressor, times(1)).compressBufferedImage(any(BufferedImage.class), anyInt(), anyBoolean());
+    verify(imageCompressor, times(1)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -311,15 +375,15 @@ public class FitnoteSubmitResourceTest {
 
   @Test
   public void confirmWhenImagePassesOCRCheckButFailsCompression200IsReturned() throws ImagePayloadException, IOException, ImageCompressException, InterruptedException {
-    when(imageCompressor.compressBufferedImage(any(BufferedImage.class), any(int.class), eq(true))).thenReturn(null);
+    when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), any(int.class), eq(true))).thenReturn(null);
     ImagePayload imagePayload = new ImagePayload();
-    imagePayload.setImage(Base64.encodeBytes(COMPRESSED_PAGE_LARGE));
+    imagePayload.setImage(getEncodedImage(COMPRESSED_PAGE_LARGE));
     imagePayload.setSessionId(SESSION);
     createAndValidateImage(VALID_JSON, true, imagePayload);
     Response response = resourceUnderTest.submitFitnote(VALID_JSON);
     assertThat(response.getStatus(), is(SC_ACCEPTED));
 
-    examineImageStatusResponseForValueOrTimeout("FAILED_ERROR");
+    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_COMPRESS");
   }
 
   @Test
@@ -334,13 +398,13 @@ public class FitnoteSubmitResourceTest {
 
     examineImageStatusResponseForValueOrTimeout("FAILED_IMG_OCR");
 
-    verify(imageCompressor, times(1)).compressBufferedImage(any(BufferedImage.class), anyInt(), anyBoolean());
+    verify(imageCompressor, times(1)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
   }
 
   @Test
   public void failedImagePersistCausesInternalServiceException() throws IOException, CryptoException, ImagePayloadException, InterruptedException {
     ImagePayload imagePayload = imageStorage.getPayload(SESSION);
-    imagePayload.setImage(Base64.encodeBytes(COMPRESSED_PAGE_LARGE));
+    imagePayload.setImage(getEncodedImage(COMPRESSED_PAGE_LARGE));
 
     when(ocrChecker.imageContainsReadableText(any(ImagePayload.class))).thenThrow(new IOException("hello"));
     when(validator.validateAndTranslateSubmission(VALID_JSON)).thenReturn(imagePayload);
@@ -355,7 +419,7 @@ public class FitnoteSubmitResourceTest {
   @Test
   public void imageHashExceptionReturnsOk() throws ImageHashException, IOException, ImagePayloadException, CryptoException {
     ImagePayload imagePayload = imageStorage.getPayload(SESSION);
-    imagePayload.setImage(Base64.encodeBytes(COMPRESSED_PAGE_LARGE));
+    imagePayload.setImage(getEncodedImage(COMPRESSED_PAGE_LARGE));
     when(validator.validateAndTranslateSubmission(any(String.class))).thenReturn(imagePayload);
     doThrow(new ImageHashException("")).when(imageStorage).updateImageHashStore(imagePayload);
     Response response = resourceUnderTest.submitFitnote(PORTRAIT_JSON);
@@ -364,7 +428,20 @@ public class FitnoteSubmitResourceTest {
     assertThat(entity, is(equalTo("{\"sessionId\":\"session1\"}")));
   }
 
-    private void examineImageStatusResponseForValueOrTimeout(String expectedStatus) throws InterruptedException {
+  @Test
+  public void failedImageType() throws IOException, CryptoException, ImagePayloadException, InterruptedException {
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(EXR_IMAGE);
+
+    when(validator.validateAndTranslateSubmission(EXR_JSON)).thenReturn(imagePayload);
+
+    Response response = resourceUnderTest.submitFitnote(EXR_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_FILE_TYPE");
+  }
+
+  private void examineImageStatusResponseForValueOrTimeout(String expectedStatus) throws InterruptedException {
     TimeUnit.SECONDS.sleep(1); // pause before first execution to allow for async processes to begin/end
     PollingWait wait = new PollingWait().timeoutAfter(59, SECONDS).pollEvery(1, SECONDS);
 
@@ -380,11 +457,20 @@ public class FitnoteSubmitResourceTest {
   private void createAndValidateImage(String json, boolean isValid, ImagePayload imagePayload) throws ImagePayloadException, IOException {
     when(validator.validateAndTranslateSubmission(json)).thenReturn(imagePayload);
     when(ocrChecker.imageContainsReadableText(imagePayload))
-        .thenReturn(new ExpectedFitnoteFormat(isValid ? ExpectedFitnoteFormat.Status.SUCCESS
-            : ExpectedFitnoteFormat.Status.FAILED, ""));
+            .thenReturn(new ExpectedFitnoteFormat(isValid ? ExpectedFitnoteFormat.Status.SUCCESS
+                    : ExpectedFitnoteFormat.Status.FAILED, ""));
   }
 
   private StatusItem decodeResponse(String response) throws IOException {
     return new ObjectMapper().readValue(response, StatusItem.class);
+  }
+
+  private static String getEncodedImage(String imageFileName) throws IOException {
+    File file = new File(imageFileName);
+    return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
+  }
+
+  private String getEncodedImage(byte[] imageAsBytes)  {
+    return Base64.encodeBase64String(imageAsBytes);
   }
 }

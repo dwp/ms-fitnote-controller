@@ -23,7 +23,7 @@ services:
 
   redis-cluster:
     container_name: redis-cluster
-    image: grokzen/redis-cluster:latest
+    image: grokzen/redis-cluster:6.0.7
     networks:
       - test
     expose:
@@ -40,8 +40,9 @@ services:
     entrypoint: /bin/bash -c
     command:
       - |
+        sh /usr/src/scripts/InstallImageMagick.sh
         sleep 5 #wait for keys to be created once localstack services are available (aws cli not available)
-        mvn clean -Dtest=uk.gov.dwp.health.fitnotecontroller.integration.RunCukesTest ${MVN_OPTS} ${MVN_CLI_OPTS} test
+        mvn -Dtest=uk.gov.dwp.health.fitnotecontroller.integration.RunCukesTest ${MVN_OPTS} ${MVN_CLI_OPTS} test
     working_dir: /usr/src
     volumes:
       - .:/usr/src

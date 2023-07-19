@@ -3,43 +3,31 @@
     <suppress>
         <notes>
             <![CDATA[
-            file name: snakeyaml-1.33.jar - until a fix is available this is the latest version
-            ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-        <cve>CVE-2022-1471</cve>
-    </suppress>
-    <suppress>
-        <notes>
-            <![CDATA[
-            file name: bc-fips-1.0.2.3.jar until a fix is available this is the latest version
+                file name: bc-fips-1.0.2.3.jar until a fix is available this is the latest version
             ]]>
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.bouncycastle/bc\-fips@.*$</packageUrl>
         <cve>CVE-2022-45146</cve>
     </suppress>
     <suppress>
-        <notes><![CDATA[
-                file name: hk2-utils-2.6.1.jar Suppressed until Dropwizard version is updated
-                ]]>
+        <notes>
+            <![CDATA[
+                file name: metrics-httpclient5-4.2.18.jar
+            ]]>
         </notes>
-        <packageUrl regex="true">^pkg:maven/org\.glassfish\.hk2/hk2\-utils@.*$</packageUrl>
-        <cve>CVE-2021-4277</cve>
+        <packageUrl regex="true">^pkg:maven/io\.dropwizard\.metrics/metrics\-httpclient5@.*$</packageUrl>
+        <cve>CVE-2020-13956</cve>
+        <cve>CVE-2014-3577</cve>
     </suppress>
     <suppress>
-        <notes><![CDATA[
-                file name: snakeyaml-1.33.jar Suppressed until maintainer addresses the vulnerability.
-                ]]>
+        <notes>
+            <![CDATA[
+                file name: jackson-databind-2.15.2.jar
+            ]]>
         </notes>
-        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-        <cve>CVE-2022-3064</cve>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cve>CVE-2023-35116</cve>
     </suppress>
-    <suppress>
-        <notes><![CDATA[
-                file name: snakeyaml-1.33.jar Suppressed until maintainer addresses the vulnerability.
-                ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-        <cve>CVE-2021-4235</cve>
-    </suppress>
+
+
 </suppressions>

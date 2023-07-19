@@ -1,6 +1,11 @@
 package uk.gov.dwp.health.fitnotecontroller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.crypto.exceptions.EventsMessageException;
@@ -18,11 +23,6 @@ import uk.gov.dwp.health.messageq.amazon.sns.MessagePublisher;
 import uk.gov.dwp.health.messageq.items.event.EventMessage;
 import uk.gov.dwp.health.messageq.items.event.MetaData;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -31,22 +31,22 @@ import java.util.UUID;
 @Path("/")
 public class FitnoteDeclarationResource extends AbstractResource {
   private static final Logger LOG =
-      LoggerFactory.getLogger(FitnoteDeclarationResource.class.getName());
+          LoggerFactory.getLogger(FitnoteDeclarationResource.class.getName());
   private FitnoteControllerConfiguration config;
   private MessagePublisher snsPublisher;
 
   public FitnoteDeclarationResource(
-      ImageStorage imageStore,
-      MessagePublisher snsPublisher,
-      FitnoteControllerConfiguration config) {
+          ImageStorage imageStore,
+          MessagePublisher snsPublisher,
+          FitnoteControllerConfiguration config) {
     this(imageStore, new JsonValidator(), snsPublisher, config);
   }
 
   public FitnoteDeclarationResource(
-      ImageStorage imageStore,
-      JsonValidator jsonValidator,
-      MessagePublisher snsPublisher,
-      FitnoteControllerConfiguration config) {
+          ImageStorage imageStore,
+          JsonValidator jsonValidator,
+          MessagePublisher snsPublisher,
+          FitnoteControllerConfiguration config) {
     super(imageStore, jsonValidator);
 
     this.jsonValidator = jsonValidator;
@@ -76,33 +76,33 @@ public class FitnoteDeclarationResource extends AbstractResource {
       if (imagePayloadToSubmit.getImage() == null) {
         LOG.debug("REJECT :: no image data to process for session {}", declaration.getSessionId());
         return Response.status(HttpStatus.SC_BAD_REQUEST)
-            .entity("Cannot process declaration without a Fitnote Image")
-            .build();
+                .entity("Cannot process declaration without a Fitnote Image")
+                .build();
       }
 
       if (!imagePayloadToSubmit.getFitnoteCheckStatus().equals(ImagePayload.Status.SUCCEEDED)) {
         LOG.debug(
-            "REJECT :: the fitnote image was not scanned successfully for session {}",
-            declaration.getSessionId());
+                "REJECT :: the fitnote image was not scanned successfully for session {}",
+                declaration.getSessionId());
         return Response.status(HttpStatus.SC_BAD_REQUEST)
-            .entity("Cannot process declaration without a successfully scanned Fitnote Image")
-            .build();
+                .entity("Cannot process declaration without a successfully scanned Fitnote Image")
+                .build();
       }
 
       if (imagePayloadToSubmit.getNino() == null || imagePayloadToSubmit.getNino().isEmpty()) {
         LOG.debug("REJECT :: no NINO specified for session {}", declaration.getSessionId());
         return Response.status(HttpStatus.SC_BAD_REQUEST)
-            .entity("Cannot process declaration without a valid NINO")
-            .build();
+                .entity("Cannot process declaration without a valid NINO")
+                .build();
       }
 
       if (imagePayloadToSubmit.getClaimantAddress() == null) {
         LOG.debug(
-            "REJECT :: Claimant address has not been specified for session {}",
-            declaration.getSessionId());
+                "REJECT :: Claimant address has not been specified for session {}",
+                declaration.getSessionId());
         return Response.status(HttpStatus.SC_BAD_REQUEST)
-            .entity("Address must be specified")
-            .build();
+                .entity("Address must be specified")
+                .build();
       }
 
       LOG.debug("Address on fitnote is supplied");
@@ -111,9 +111,9 @@ public class FitnoteDeclarationResource extends AbstractResource {
       String transactionId = drsDispatchPayload(imagePayloadToSubmit);
 
       LOG.info(
-          "Clear all data for session {} with correlation id '{}'",
-          declaration.getSessionId(),
-          transactionId);
+              "Clear all data for session {} with correlation id '{}'",
+              declaration.getSessionId(),
+              transactionId);
       imageStore.clearSession(declaration.getSessionId());
 
       LOG.info("Successfully posted image data to SNS topic ({})", config.getSnsTopicName());
@@ -187,7 +187,7 @@ public class FitnoteDeclarationResource extends AbstractResource {
     }
 
     if (imagePayload.getMobileNumber() != null
-        && !imagePayload.getMobileNumber().trim().isEmpty()) {
+            && !imagePayload.getMobileNumber().trim().isEmpty()) {
       drsMetadata.setCustomerMobileNumber(imagePayload.getMobileNumber());
     }
 
@@ -200,25 +200,25 @@ public class FitnoteDeclarationResource extends AbstractResource {
     EventMessage messageQueueEvent = new EventMessage();
     messageQueueEvent.setMetaData(metaData);
     messageQueueEvent.setBodyContents(
-        mapper.readValue(
-            new DrsPayloadBuilder<ImagePayload, FitnoteMetadata>()
-                .getDrsPayloadJson(imagePayload, drsMetadata),
-            Object.class));
+            mapper.readValue(
+                    new DrsPayloadBuilder<ImagePayload, FitnoteMetadata>()
+                            .getDrsPayloadJson(imagePayload, drsMetadata),
+                    Object.class));
 
     try {
       snsPublisher.publishMessageToSnsTopic(
-          config.isSnsEncryptMessages(),
-          config.getSnsTopicName(),
-          config.getSnsSubject(),
-          messageQueueEvent,
-          null);
+              config.isSnsEncryptMessages(),
+              config.getSnsTopicName(),
+              config.getSnsSubject(),
+              messageQueueEvent,
+              null);
 
     } catch (NoSuchMethodException
-        | InstantiationException
-        | IllegalAccessException
-        | InvocationTargetException
-        | EventsMessageException
-        | CryptoException e) {
+             | InstantiationException
+             | IllegalAccessException
+             | InvocationTargetException
+             | EventsMessageException
+             | CryptoException e) {
 
       throw e;
     }

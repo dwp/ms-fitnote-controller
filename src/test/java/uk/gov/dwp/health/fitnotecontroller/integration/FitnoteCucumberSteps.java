@@ -4,13 +4,15 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cucumber.api.java.Before;
-import cucumber.api.java.en.And;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
-import gherkin.deps.net.iharder.Base64;
+import io.cucumber.java.Before;
+import io.cucumber.java.DataTableType;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import io.lettuce.core.cluster.RedisClusterClient;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -19,7 +21,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.CryptoConfig;
@@ -33,6 +34,7 @@ import uk.gov.dwp.health.messageq.amazon.utils.AmazonQueueUtilities;
 
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +48,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("squid:S1192") // all string literals
 public class FitnoteCucumberSteps {
@@ -65,8 +69,8 @@ public class FitnoteCucumberSteps {
 
 
     @Before
-    public void startServiceMocks() throws CryptoException, InvalidKeyException, IllegalBlockSizeException, 
-        NoSuchPaddingException, NoSuchAlgorithmException, IOException {
+    public void startServiceMocks() throws CryptoException, InvalidKeyException, IllegalBlockSizeException,
+            NoSuchPaddingException, NoSuchAlgorithmException, IOException {
         String redisHost = "redis-cluster";
         regexFileExtension = Pattern.compile("\\.(\\w+)");
 
@@ -75,9 +79,9 @@ public class FitnoteCucumberSteps {
         System.setProperty("aws.secretKey", "abcd123456789");
 
         LOG.info("Flushing redis contents : {}", RedisClusterClient.create("redis://" + redisHost + ":7000")
-            .connect()
-            .sync()
-            .flushall());
+                .connect()
+                .sync()
+                .flushall());
 
         AmazonConfigBase snsConfig = new AmazonConfigBase();
         snsConfig.setEndpointOverride(LOCALSTACK_HOST);
@@ -100,6 +104,11 @@ public class FitnoteCucumberSteps {
         CryptoConfig cryptoConfig = new CryptoConfig("alias/test_request_id");
         cryptoConfig.setKmsEndpointOverride(LOCALSTACK_HOST);
         awsKmsCryptoClass = new CryptoDataManager(cryptoConfig);
+    }
+
+    @DataTableType(replaceWithEmptyString = "[blank]")
+    public String stringType(String cell) {
+        return cell;
     }
 
     @Given("^the http client is up$")
@@ -164,7 +173,7 @@ public class FitnoteCucumberSteps {
     @Then("^I receive a HTTP response of (\\d+) with the following json body$")
     public void iReceiveAHTTPResponseOfWithFollowingJsonBody(int expectedStatusCode,
                                                              Map<String, String> jsonValues)
-      throws IOException {
+            throws IOException {
         String expectedJsonResponseBody = buildJsonBody(jsonValues);
         int actualStatusCode = response.getStatusLine().getStatusCode();
         assertThat(actualStatusCode, is(expectedStatusCode));
@@ -197,7 +206,7 @@ public class FitnoteCucumberSteps {
     public void thereIsPendingMessageOnQueue(int totalMessages, String queueName) throws IOException {
         queueMessages = queueUtilities.receiveMessages(queueName, queueUtilities.getS3Sqs());
 
-        Assert.assertThat("mismatched messages", queueMessages.size(), is(equalTo(totalMessages)));
+        assertThat("mismatched messages", queueMessages.size(), is(equalTo(totalMessages)));
 
         assertNotNull("queue contents are null", queueMessages);
         queueUtilities.deleteMessageFromQueue(queueName, queueMessages.get(0).getReceiptHandle());
@@ -297,7 +306,8 @@ public class FitnoteCucumberSteps {
     }
 
     private String getEncodedImage(String imageFileName) throws IOException {
-        return Base64.encodeFromFile(this.getClass().getResource(imageFileName).getPath());
+        File file = new File(this.getClass().getResource(imageFileName).getPath());
+        return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
     }
 
     private void performHttpPostWithUriOf(String uri, String body) throws IOException {

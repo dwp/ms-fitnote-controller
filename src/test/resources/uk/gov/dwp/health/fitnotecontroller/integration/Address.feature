@@ -44,5 +44,5 @@ Feature: Fitnote address
    Scenario: Submit invalid json as a new address
      Given the http client is up
      When I hit the service url "http://localhost:9101/address" with the following json body
-     |||
+       | [blank] | [blank] |
      Then I receive a HTTP response of 400

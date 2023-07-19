@@ -14,14 +14,14 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @SuppressWarnings({"squid:S1192", "squid:S00116", "squid:S5976"}) // allow string literals and non-standard variable names for clarity
-// not using parameterized test as not using latest junit 
+// not using parameterized test as not using latest junit
 public class JsonValidatorTest extends JsonValidator {
     private static final String JPG_IMAGE_LANDSCAPE = "src/test/resources/FullPage_Landscape.jpg";
     private String ENCODED_LANDSCAPE_STRING = null;

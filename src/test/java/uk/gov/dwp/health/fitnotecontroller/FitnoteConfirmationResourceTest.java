@@ -1,9 +1,6 @@
 package uk.gov.dwp.health.fitnotecontroller;
 
-import uk.gov.dwp.health.crypto.exception.CryptoException;
-import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
-import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
-import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
+import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.core.Is;
 import org.junit.Before;
@@ -11,15 +8,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.dwp.health.crypto.exception.CryptoException;
+import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
+import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
+import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -68,11 +67,11 @@ public class FitnoteConfirmationResourceTest {
         ImagePayload newPayload = buildNinoPayload(sessionId, nino);
 
         when(jsonValidator.validateAndTranslateConfirmation(json))
-            .thenReturn(newPayload);
+                .thenReturn(newPayload);
 
         doThrow(new CryptoException("CRYPTO"))
-            .when(imageStore)
-            .updateNinoDetails(newPayload);
+                .when(imageStore)
+                .updateNinoDetails(newPayload);
 
         Response response = resourceUnderTest.confirmFitnote(json);
 
@@ -88,11 +87,11 @@ public class FitnoteConfirmationResourceTest {
         ImagePayload newPayload = buildNinoPayload(sessionId, nino);
 
         when(jsonValidator.validateAndTranslateConfirmation(json))
-            .thenReturn(newPayload);
+                .thenReturn(newPayload);
 
         doThrow(new IOException("IO Exception"))
-            .when(imageStore)
-            .updateNinoDetails(newPayload);
+                .when(imageStore)
+                .updateNinoDetails(newPayload);
 
         Response response = resourceUnderTest.confirmFitnote(json);
 
@@ -102,7 +101,7 @@ public class FitnoteConfirmationResourceTest {
 
     @Test
     public void sendMobileToServiceRespondsWith200ForKnownSessionId() throws IOException,
-        ImagePayloadException, CryptoException {
+            ImagePayloadException, CryptoException {
 
         String sessionId = "123456";
         String mobileNumber = "0113999999";
@@ -128,7 +127,7 @@ public class FitnoteConfirmationResourceTest {
         String json = buildMobileJsonPayload(sessionId, mobileNumber);
 
         when(jsonValidator.validateAndTranslateMobileConfirmation(json))
-            .thenThrow(new ImagePayloadException("EXCEPTION"));
+                .thenThrow(new ImagePayloadException("EXCEPTION"));
 
         Response response = resourceUnderTest.confirmMobile(json);
 
@@ -144,11 +143,11 @@ public class FitnoteConfirmationResourceTest {
         ImagePayload newPayload = buildMobilePayload(sessionId, mobileNumber);
 
         when(jsonValidator.validateAndTranslateMobileConfirmation(json))
-            .thenReturn(newPayload);
+                .thenReturn(newPayload);
 
         doThrow(new CryptoException("CRYPTO"))
-            .when(imageStore)
-            .updateMobileDetails(newPayload);
+                .when(imageStore)
+                .updateMobileDetails(newPayload);
 
         Response response = resourceUnderTest.confirmMobile(json);
 
@@ -164,11 +163,11 @@ public class FitnoteConfirmationResourceTest {
         ImagePayload newPayload = buildMobilePayload(sessionId, mobileNumber);
 
         when(jsonValidator.validateAndTranslateMobileConfirmation(json))
-            .thenReturn(newPayload);
+                .thenReturn(newPayload);
 
         doThrow(new IOException("IO Exception"))
-            .when(imageStore)
-            .updateMobileDetails(newPayload);
+                .when(imageStore)
+                .updateMobileDetails(newPayload);
 
         Response response = resourceUnderTest.confirmMobile(json);
 

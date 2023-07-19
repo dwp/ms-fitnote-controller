@@ -1,6 +1,7 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
-import gherkin.deps.net.iharder.Base64;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,15 +11,16 @@ import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfigur
 import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
@@ -60,7 +62,7 @@ public class OcrCheckerTest {
   }
 
   private ImagePayload getTestImage(String imageFile) throws IOException {
-    String imageString = Base64.encodeFromFile(this.getClass().getResource(imageFile).getPath());
+    String imageString = getEncodedImage(this.getClass().getResource(imageFile).getPath());
     ImagePayload payload = new ImagePayload();
     payload.setImage(imageString);
     payload.setSessionId(UUID.randomUUID().toString());
@@ -120,8 +122,6 @@ public class OcrCheckerTest {
     assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.FAILED)));
   }
 
-  // Ignoring this test for now as it conflicts with pitests.
-  // Ticket has been raised
   @Test
   public void testTesseractFailure() throws IOException {
     when(mockConfig.getTesseractFolderPath()).thenReturn("");
@@ -140,5 +140,10 @@ public class OcrCheckerTest {
         System.setProperty(tessdataLabel, tessdataPrefix);
       }
     }
+  }
+
+  private String getEncodedImage(String imageFileName) throws IOException {
+    File file = new File(imageFileName);
+    return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
   }
 }

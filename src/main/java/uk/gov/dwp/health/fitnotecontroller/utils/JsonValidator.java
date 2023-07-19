@@ -1,7 +1,9 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
+import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
 import uk.gov.dwp.health.fitnotecontroller.domain.Address;
 import uk.gov.dwp.health.fitnotecontroller.domain.Declaration;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
@@ -14,6 +16,8 @@ import uk.gov.dwp.regex.NinoValidator;
 import uk.gov.dwp.regex.PostCodeValidator;
 
 import java.io.IOException;
+
+import static com.fasterxml.jackson.core.StreamReadConstraints.DEFAULT_MAX_STRING_LEN;
 
 public class JsonValidator {
   private static final Logger LOG = LoggerFactory.getLogger(JsonValidator.class.getName());
@@ -29,6 +33,16 @@ public class JsonValidator {
   static final String CITY_NAME_LENGTH_EXCEPTION = "City name length exception";
   static final String POSTCODE_VALIDATION_FAILED = "Postcode validation failed";
   static final String NO_JSON = "No Json";
+
+  private int maxStringLength;
+
+  public JsonValidator() {
+  }
+
+  public JsonValidator(FitnoteControllerConfiguration config) {
+    this.maxStringLength = config.getObjectMaxStringLength();
+  }
+
 
   public ImagePayload validateAndTranslateSubmission(String json) throws ImagePayloadException {
     ImagePayload payload;
@@ -134,7 +148,14 @@ public class JsonValidator {
     if (json == null) {
       throw new ObjectBuildException(NO_JSON);
     }
-    return new ObjectMapper().readValue(json, objectToBuild);
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.getFactory()
+            .setStreamReadConstraints(StreamReadConstraints
+                    .builder()
+                    .maxStringLength(maxStringLength == 0 ? DEFAULT_MAX_STRING_LEN
+                            : maxStringLength)
+                    .build());
+    return objectMapper.readValue(json, objectToBuild);
   }
 
   private boolean invalidString(String str) {

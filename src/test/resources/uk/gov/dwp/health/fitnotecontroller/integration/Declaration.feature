@@ -31,7 +31,7 @@ Feature: Fitnote declaration
       | claimantAddress | {"sessionId":"11","houseNameOrNumber":"254","street":null,"city":null,"postcode":"NE12 9PG"} |
     And I hit the service url "http://localhost:9101/queryMobile" with a POST and session id "11" getting return status 200 the following json body
       | sessionId    | 11 |
-      | mobileNumber |    |
+      | mobileNumber | [blank] |
     When I hit the service url "http://localhost:9101/declaration" with the following json body
       | sessionId | "11" |
       | accepted  | true |
@@ -69,7 +69,7 @@ Feature: Fitnote declaration
       | claimantAddress | {"sessionId":null,"houseNameOrNumber":null,"street":null,"city":null,"postcode":null} |
     And I hit the service url "http://localhost:9101/queryMobile" with a POST and session id "12" getting return status 200 the following json body
       | sessionId    | 12 |
-      | mobileNumber |    |
+      | mobileNumber | [blank] |
     When I hit the service url "http://localhost:9101/declaration" with the following json body
       | sessionId | "12"  |
       | accepted  | false |
@@ -95,7 +95,7 @@ Feature: Fitnote declaration
       | claimantAddress | {"sessionId":null,"houseNameOrNumber":null,"street":null,"city":null,"postcode":null} |
     And I hit the service url "http://localhost:9101/queryMobile" with a POST and session id "13" getting return status 200 the following json body
       | sessionId    | 13 |
-      | mobileNumber |    |
+      | mobileNumber | [blank] |
     When I hit the service url "http://localhost:9101/declaration" with the following json body
       | sessionId | "13" |
       | accepted  | true |
@@ -126,7 +126,7 @@ Feature: Fitnote declaration
       | claimantAddress | {"sessionId":null,"houseNameOrNumber":null,"street":null,"city":null,"postcode":null} |
     And I hit the service url "http://localhost:9101/queryMobile" with a POST and session id "14" getting return status 200 the following json body
       | sessionId    | 14 |
-      | mobileNumber |    |
+      | mobileNumber | [blank] |
     When I hit the service url "http://localhost:9101/declaration" with the following json body
       | sessionId | "14" |
       | accepted  | true |
@@ -175,9 +175,9 @@ Feature: Fitnote declaration
       | claimantAddress | {"sessionId":null,"houseNameOrNumber":null,"street":null,"city":null,"postcode":null} |
     And I hit the service url "http://localhost:9101/queryMobile" with a POST and session id "17" getting return status 200 the following json body
       | sessionId    | 17 |
-      | mobileNumber |    |
+      | mobileNumber | [blank] |
     When I hit the service url "http://localhost:9101/declaration" with the following json body
-      |  |  |
+      | [blank] | [blank] |
     Then I receive a HTTP response of 400
     And there are no pending messages on queue "test-6"
     And I hit the service url "http://localhost:9101/imagestatus" with session id "17" getting return status 200 and finally containing the following json body
@@ -249,7 +249,7 @@ Feature: Fitnote declaration
       | claimantAddress | {"sessionId":"22","houseNameOrNumber":"254","street":null,"city":null,"postcode":"NE12 9PG"} |
     And I hit the service url "http://localhost:9101/queryMobile" with a POST and session id "22" getting return status 200 the following json body
       | sessionId    | 22 |
-      | mobileNumber |    |
+      | mobileNumber | [blank] |
     When I hit the service url "http://localhost:9101/declaration" with the following json body
       | sessionId | "22" |
       | accepted  | true |

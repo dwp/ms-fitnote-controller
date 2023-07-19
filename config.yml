@@ -47,7 +47,7 @@ rejectingOversizeImages: ${REJECTING_OVERSIZE_IMAGES:-true}
 targetImageSizeKB: ${TARGET_IMAGE_SIZE_KB:-500}
 greyScale: ${GREY_SCALE:-true}
 
-pdfScanDPI: ${PDF_SCAN_DPI:-72}
+pdfScanDPI: ${PDF_SCAN_DPI:-150}
 scanTargetImageSize: ${SCAN_TARGET_IMAGE_SIZE:-1000}
 
 highTarget: ${HIGH_TARGET:-100}
@@ -65,6 +65,7 @@ topLeftText:
 topRightText:
   - "what to do now"
   - "may be collected"
+  - "What your advice means"
 baseLeftText:
   - "Unique ID: Med 3"
 baseRightText:

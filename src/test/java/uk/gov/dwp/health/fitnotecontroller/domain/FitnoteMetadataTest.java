@@ -7,10 +7,10 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 public class FitnoteMetadataTest {
     private static final String EXPECTED_SERIALISED_CLASS = "{\"businessUnitID\":null,\"classification\":0,\"documentType\":0,\"documentSource\":0,\"postCode\":\"LS6 4PT\",\"nino\":null,\"benefitType\":99,\"customerMobileNumber\":\"0113 25678886\"}";

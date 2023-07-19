@@ -27,8 +27,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("squid:S1192") // allow string literals
 public class ImageStorageTest {
+
   private static final ObjectMapper mapper = new ObjectMapper();
   private static final long SYSTEM_TIME_FAKE_VALUE = 0;
   private static final String REDIS_HOST = "redis-cluster";
@@ -71,17 +72,17 @@ public class ImageStorageTest {
     when(configuration.isRedisEncryptMessages()).thenReturn(true);
 
     instance =
-        new ImageStorage(configuration, redisClient, cryptoDataManager) {
-          @Override
-          protected long getCurrentTimeMillis() {
-            return SYSTEM_TIME_FAKE_VALUE;
-          }
-        };
+            new ImageStorage(configuration, redisClient, cryptoDataManager) {
+              @Override
+              protected long getCurrentTimeMillis() {
+                return SYSTEM_TIME_FAKE_VALUE;
+              }
+            };
   }
 
   @Test
   public void imageCanBePersistedAndRetrieved()
-      throws ImagePayloadException, IOException, CryptoException {
+          throws ImagePayloadException, IOException, CryptoException {
     String sessionId = UUID.randomUUID().toString();
 
     ImagePayload testObject = new ImagePayload();
@@ -89,12 +90,12 @@ public class ImageStorageTest {
     testObject.setSessionId(sessionId);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(testObject));
+            .thenReturn(mapper.writeValueAsString(testObject));
     instance.getPayload(sessionId);
 
     assertThat(
-        instance.getPayload(sessionId).getExpiryTime(),
-        is(equalTo(configuration.getSessionExpiryTimeInSeconds())));
+            instance.getPayload(sessionId).getExpiryTime(),
+            is(equalTo(configuration.getSessionExpiryTimeInSeconds())));
     assertThat(instance.getPayload(sessionId).getSessionId(), is(equalTo((sessionId))));
   }
 
@@ -122,37 +123,37 @@ public class ImageStorageTest {
 
   @Test
   public void updateUnknownPayloadENCRYPTED()
-      throws ImagePayloadException, IOException, CryptoException {
+          throws ImagePayloadException, IOException, CryptoException {
     when(configuration.isRedisEncryptMessages()).thenReturn(true);
     ImagePayload payload = new ImagePayload();
     payload.setSessionId(UUID.randomUUID().toString());
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(payload));
+            .thenReturn(mapper.writeValueAsString(payload));
 
     instance.updateNinoDetails(payload);
 
     assertThat(
-        instance.getPayload(payload.getSessionId()).getSessionId(),
-        is(equalTo(payload.getSessionId())));
+            instance.getPayload(payload.getSessionId()).getSessionId(),
+            is(equalTo(payload.getSessionId())));
   }
 
   @Test
   public void updateUnknownPayloadPLAIN()
-      throws ImagePayloadException, IOException, CryptoException {
+          throws ImagePayloadException, IOException, CryptoException {
     when(configuration.isRedisEncryptMessages()).thenReturn(false);
     ImagePayload payload = new ImagePayload();
     payload.setSessionId(UUID.randomUUID().toString());
     instance.updateNinoDetails(payload);
 
     assertThat(
-        instance.getPayload(payload.getSessionId()).getSessionId(),
-        is(equalTo(payload.getSessionId())));
+            instance.getPayload(payload.getSessionId()).getSessionId(),
+            is(equalTo(payload.getSessionId())));
   }
 
   @Test
   public void updateNinoToStoredImageENCRYPTED()
-      throws ImagePayloadException, IOException, CryptoException {
+          throws ImagePayloadException, IOException, CryptoException {
     String sessionId = UUID.randomUUID().toString();
     String nino = "AA370773A";
 
@@ -161,7 +162,7 @@ public class ImageStorageTest {
     newPayloadWithSameSessionId.setNino(nino);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
+            .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
 
     instance.getPayload(sessionId);
     instance.updateNinoDetails(newPayloadWithSameSessionId);
@@ -172,7 +173,7 @@ public class ImageStorageTest {
 
   @Test
   public void updateNinoToStoredImagePLAIN()
-      throws ImagePayloadException, IOException, CryptoException {
+          throws ImagePayloadException, IOException, CryptoException {
     when(configuration.isRedisEncryptMessages()).thenReturn(false);
     String sessionId = UUID.randomUUID().toString();
     String nino = "AA370773A";
@@ -190,7 +191,7 @@ public class ImageStorageTest {
 
   @Test
   public void updateMobileNumberToStoredImage()
-      throws ImagePayloadException, IOException, CryptoException {
+          throws ImagePayloadException, IOException, CryptoException {
     String sessionId = UUID.randomUUID().toString();
     String mobileNumber = "0777767676766";
 
@@ -199,7 +200,7 @@ public class ImageStorageTest {
     newPayloadWithSameSessionId.setMobileNumber(mobileNumber);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
+            .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
 
     instance.getPayload(sessionId);
     instance.updateMobileDetails(newPayloadWithSameSessionId);
@@ -210,39 +211,39 @@ public class ImageStorageTest {
 
   @Test
   public void updateAddressInformation()
-      throws IOException, ImagePayloadException, CryptoException {
+          throws IOException, ImagePayloadException, CryptoException {
     String sessionId = UUID.randomUUID().toString();
     Address address =
-        new ObjectMapper()
-            .readValue(
-                String.format(
-                    "{ \"sessionId\" :\"%s\", \"houseNameOrNumber\" : \"254\", \"street\" : \"Bakers Street\", \"city\": \"London\", \"postcode\" : \"NE12 9LG\"}",
-                    sessionId),
-                Address.class);
+            new ObjectMapper()
+                    .readValue(
+                            String.format(
+                                    "{ \"sessionId\" :\"%s\", \"houseNameOrNumber\" : \"254\", \"street\" : \"Bakers Street\", \"city\": \"London\", \"postcode\" : \"NE12 9LG\"}",
+                                    sessionId),
+                            Address.class);
 
     ImagePayload newPayloadWithSameSessionId = new ImagePayload();
     newPayloadWithSameSessionId.setClaimantAddress(address);
     newPayloadWithSameSessionId.setSessionId(sessionId);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
+            .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
 
     instance.getPayload(sessionId);
     instance.updateAddressDetails(newPayloadWithSameSessionId);
 
     assertNotNull(instance.getPayload(sessionId).getClaimantAddress());
     assertThat(
-        instance.getPayload(sessionId).getClaimantAddress().getHouseNameOrNumber(),
-        is(equalTo(address.getHouseNameOrNumber())));
+            instance.getPayload(sessionId).getClaimantAddress().getHouseNameOrNumber(),
+            is(equalTo(address.getHouseNameOrNumber())));
     assertThat(
-        instance.getPayload(sessionId).getClaimantAddress().getPostcode(),
-        is(equalTo(address.getPostcode())));
+            instance.getPayload(sessionId).getClaimantAddress().getPostcode(),
+            is(equalTo(address.getPostcode())));
     assertThat(
-        instance.getPayload(sessionId).getClaimantAddress().getStreet(),
-        is(equalTo(address.getStreet())));
+            instance.getPayload(sessionId).getClaimantAddress().getStreet(),
+            is(equalTo(address.getStreet())));
     assertThat(
-        instance.getPayload(sessionId).getClaimantAddress().getCity(),
-        is(equalTo(address.getCity())));
+            instance.getPayload(sessionId).getClaimantAddress().getCity(),
+            is(equalTo(address.getCity())));
   }
 
   @Test
@@ -255,22 +256,22 @@ public class ImageStorageTest {
     newPayload.setImage("i-am-an-image");
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayload));
+            .thenReturn(mapper.writeValueAsString(newPayload));
 
     instance.getPayload(sessionId);
     instance.updateImageDetails(newPayload);
 
     assertNotNull(instance.getPayload(sessionId).getImage());
     assertThat(
-        instance.getPayload(sessionId).getFitnoteCheckStatus(),
-        is(equalTo(ImagePayload.Status.CHECKING)));
+            instance.getPayload(sessionId).getFitnoteCheckStatus(),
+            is(equalTo(ImagePayload.Status.CHECKING)));
     assertThat(instance.getPayload(sessionId).getImage(), is(equalTo("i-am-an-image")));
   }
 
 
   @Test
   public void expiredPayloadIsDeleted()
-      throws ImagePayloadException, CryptoException, InterruptedException, IOException {
+          throws ImagePayloadException, CryptoException, InterruptedException, IOException {
     String sessionId = UUID.randomUUID().toString();
 
     ImageStorage localInstance = new ImageStorage(configuration, redisClient, cryptoDataManager);
@@ -281,7 +282,7 @@ public class ImageStorageTest {
     newPayloadWithSameSessionId.setNino(nino);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
+            .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
 
     localInstance.updateNinoDetails(newPayloadWithSameSessionId);
     newPayloadWithSameSessionId = localInstance.getPayload(sessionId);
@@ -289,14 +290,14 @@ public class ImageStorageTest {
     TimeUnit.MILLISECONDS.sleep((configuration.getSessionExpiryTimeInSeconds() * 1000) + 3000);
 
     assertThat(
-        "should not be the original object",
-        localInstance.getPayload(sessionId).getNino(),
-        is(not(equalTo(newPayloadWithSameSessionId.getNino()))));
+            "should not be the original object",
+            localInstance.getPayload(sessionId).getNino(),
+            is(not(equalTo(newPayloadWithSameSessionId.getNino()))));
   }
 
   @Test
   public void unexpiredPayloadPersists()
-      throws ImagePayloadException, CryptoException, IOException {
+          throws ImagePayloadException, CryptoException, IOException {
     String sessionId = UUID.randomUUID().toString();
     String nino = "AA370773A";
 
@@ -305,19 +306,19 @@ public class ImageStorageTest {
     newPayloadWithSameSessionId.setNino(nino);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
+            .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
 
     instance.updateNinoDetails(newPayloadWithSameSessionId);
 
     assertThat(
-        "should not be the original object",
-        instance.getPayload(sessionId).getNino(),
-        is(equalTo(newPayloadWithSameSessionId.getNino())));
+            "should not be the original object",
+            instance.getPayload(sessionId).getNino(),
+            is(equalTo(newPayloadWithSameSessionId.getNino())));
   }
 
   @Test
   public void updateDetailsAddsNinoWithSuffixToStoredObject()
-      throws ImagePayloadException, CryptoException, IOException {
+          throws ImagePayloadException, CryptoException, IOException {
     String sessionId = UUID.randomUUID().toString();
     String nino = "AA370773A";
 
@@ -326,7 +327,7 @@ public class ImageStorageTest {
     newPayloadWithSameSessionId.setNino(nino);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
+            .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
 
     instance.updateNinoDetails(newPayloadWithSameSessionId);
 
@@ -338,7 +339,7 @@ public class ImageStorageTest {
 
   @Test
   public void updateDetailsAddsNinoWithoutSuffixToStoredImage()
-      throws ImagePayloadException, CryptoException, IOException {
+          throws ImagePayloadException, CryptoException, IOException {
     String sessionId = UUID.randomUUID().toString();
     String nino = "AA370773";
 
@@ -347,7 +348,7 @@ public class ImageStorageTest {
     newPayloadWithSameSessionId.setNino(nino);
 
     when(cryptoDataManager.decrypt(any(CryptoMessage.class)))
-        .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
+            .thenReturn(mapper.writeValueAsString(newPayloadWithSameSessionId));
 
     instance.updateNinoDetails(newPayloadWithSameSessionId);
 
@@ -359,7 +360,7 @@ public class ImageStorageTest {
 
   @Test
   public void updateTimeoutForSessionIsExtendedPLAIN()
-      throws CryptoException, IOException, ImagePayloadException, InterruptedException {
+          throws CryptoException, IOException, ImagePayloadException, InterruptedException {
     when(configuration.getSessionExpiryTimeInSeconds()).thenReturn(10L);
     when(configuration.isRedisEncryptMessages()).thenReturn(false);
 
@@ -388,7 +389,7 @@ public class ImageStorageTest {
   @Test
   @SuppressWarnings({"squid:S2699"}) // allow string literals and non-standard variable names for clarity
   public void testHashGetsExpiredInsteadOfReplayLimit()
-    throws ImageHashException, ImagePayloadException, CryptoException, InterruptedException {
+          throws ImageHashException, ImagePayloadException, CryptoException, InterruptedException {
     ImageStorage localInstance = new ImageStorage(configuration, redisClient, cryptoDataManager);
     String input = "i-am-an-image";
 

@@ -4,6 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +19,6 @@ import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.domain.Views;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 @Path("/")
@@ -123,14 +124,16 @@ public class FitnoteQueryResource extends AbstractResource {
 
     JsonNode jsonNode = new ObjectMapper().readTree(json);
     return jsonNode.get("sessionId") != null
-        ? jsonNode.get("sessionId").textValue().replaceAll(LOG_STANDARD_REGEX, "")
-        : null;
+            ? jsonNode.get("sessionId").textValue().replaceAll(LOG_STANDARD_REGEX, "")
+            : null;
   }
 
   private String serialiseSpecificPayloadItems(Class<?> mapperView, ImagePayload payload)
-      throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
+          throws JsonProcessingException {
+    ObjectMapper mapper = JsonMapper
+            .builder()
+            .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
+            .build();
     return mapper.writerWithView(mapperView).writeValueAsString(payload);
   }
 }

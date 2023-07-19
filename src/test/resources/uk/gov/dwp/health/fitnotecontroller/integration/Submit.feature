@@ -59,10 +59,20 @@ Feature: Fitnote submit
       | fitnoteStatus | SUCCEEDED |
 
   @FitnoteSubmitTest
+  Scenario: Submit readable fitnote heic format
+    Given the http client is up
+    When I hit the service url "http://localhost:9101/photo" with the following json body
+      | image     | /OcrTest.heic |
+      | sessionId | "3"          |
+    Then I receive a HTTP response of 202
+    And I hit the service url "http://localhost:9101/imagestatus" with session id "3" getting return status 200 and finally containing the following json body
+      | fitnoteStatus | SUCCEEDED |
+
+  @FitnoteSubmitTest
   Scenario: Submit invalid json as Fitnote Image
       Given the http client is up
       When I hit the service url "http://localhost:9101/photo" with the following json body
-        |||
+        | [blank] | [blank] |
       Then I receive a HTTP response of 400
 
   @FitnoteSubmitTest

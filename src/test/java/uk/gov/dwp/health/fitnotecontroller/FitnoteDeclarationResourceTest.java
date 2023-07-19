@@ -1,6 +1,12 @@
 package uk.gov.dwp.health.fitnotecontroller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.crypto.exceptions.EventsMessageException;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
@@ -10,15 +16,9 @@ import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.exception.DeclarationException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.dwp.health.messageq.amazon.sns.MessagePublisher;
 import uk.gov.dwp.health.messageq.items.event.EventMessage;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -117,7 +117,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -161,7 +161,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(INVALID_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(EMPTY_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -183,7 +183,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(DECLINED_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -195,7 +195,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq("{\"test\":\"string\"}"));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -230,7 +230,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test
@@ -250,7 +250,7 @@ public class FitnoteDeclarationResourceTest {
         assertThat(response.getStatus(), is(400));
 
         verify(jsonValidator, times(1)).validateAndTranslateDeclaration(eq(ACCEPTED_DECLARATION));
-        verifyZeroInteractions(snsPublisher);
+        verifyNoInteractions(snsPublisher);
     }
 
     @Test

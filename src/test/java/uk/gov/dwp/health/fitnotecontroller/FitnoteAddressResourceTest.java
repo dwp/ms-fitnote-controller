@@ -2,6 +2,12 @@ package uk.gov.dwp.health.fitnotecontroller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
 import uk.gov.dwp.health.fitnotecontroller.domain.Address;
@@ -9,13 +15,7 @@ import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import uk.gov.dwp.health.fitnotecontroller.exception.NewAddressException;
 import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,11 +26,11 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class FitnoteAddressResourceTest {
     private static final String VALID_ADDRESS =
-        "{ \"sessionId\" :\"123456\"," +
-        " \"houseNameOrNumber\" : \"254\", " +
-            "\"street\" : \"Street\", " +
-            "\"city\": \"City\", " +
-            "\"postcode\" : \"SW1A 1AA\"}";
+            "{ \"sessionId\" :\"123456\"," +
+                    " \"houseNameOrNumber\" : \"254\", " +
+                    "\"street\" : \"Street\", " +
+                    "\"city\": \"City\", " +
+                    "\"postcode\" : \"SW1A 1AA\"}";
     private static final String INVALID_ADDRESS = "{}";
     private static final String SESSION_ID = "123456";
 

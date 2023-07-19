@@ -1,7 +1,8 @@
 package uk.gov.dwp.health.fitnotecontroller.application;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Configuration;
+import jakarta.validation.constraints.NotNull;
 import uk.gov.dwp.crypto.SecureStrings;
 import uk.gov.dwp.health.crypto.CryptoConfig;
 import uk.gov.dwp.health.messageq.amazon.items.AmazonConfigBase;
@@ -9,7 +10,6 @@ import uk.gov.dwp.health.messageq.amazon.items.AmazonConfigBase;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SealedObject;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -102,6 +102,12 @@ public class FitnoteControllerConfiguration extends Configuration {
   @JsonProperty("estimatedRequestMemoryMb")
   private int estimatedRequestMemoryMb = 25;
 
+  @JsonProperty("maxSizeBeforeCompressionBytes")
+  private int maxSizeBeforeCompressionBytes = 10000000;
+
+  @JsonProperty("objectMaxStringLength")
+  private int objectMaxStringLength = 40000000;
+
   @NotNull
   @JsonProperty("snsTopicName")
   private String snsTopicName;
@@ -139,7 +145,7 @@ public class FitnoteControllerConfiguration extends Configuration {
   private boolean applicationInfoEnabled;
 
   public FitnoteControllerConfiguration() throws NoSuchPaddingException,
-      NoSuchAlgorithmException, InvalidKeyException {
+          NoSuchAlgorithmException, InvalidKeyException {
     // Empty constructor
   }
 
@@ -219,6 +225,11 @@ public class FitnoteControllerConfiguration extends Configuration {
     return estimatedRequestMemoryMb;
   }
 
+  public int getMaxSizeBeforeCompressionBytes() {
+    return maxSizeBeforeCompressionBytes;
+  }
+
+
   public int getPdfScanDPI() {
     return pdfScanDPI;
   }
@@ -286,4 +297,9 @@ public class FitnoteControllerConfiguration extends Configuration {
   public int getOcrVerticalSlice() {
     return ocrVerticalSlice;
   }
+
+  public int getObjectMaxStringLength() {
+    return objectMaxStringLength;
+  }
+
 }
