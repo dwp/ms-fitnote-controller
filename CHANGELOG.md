@@ -1,3 +1,11 @@
+<a name="2-1-0"></a>
+# 2-1-0 (2023-09-14)
+
+* feat: reduce file size limit ([efeac69](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/efeac69))
+* fix: image overlay issue and java crashing ([7480d4b](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/7480d4b))
+* chore: update pipeline-solutions/gitlab to v2.6.0 ([4752e94](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/4752e94))
+* chore: add project metadata ([4034989](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/4034989))
+
 <a name="2-0-0"></a>
 # 2-0-0 (2023-07-18)
 

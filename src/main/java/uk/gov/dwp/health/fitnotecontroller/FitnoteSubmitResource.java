@@ -11,6 +11,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
+import org.im4java.core.IM4JavaException;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
@@ -35,6 +37,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +47,7 @@ import java.util.Optional;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.FAILED;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.SUCCESS;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.PASS_IMG_OCR;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.valueOf;
 
 @Path("/")
 public class FitnoteSubmitResource extends AbstractResource {
@@ -147,6 +152,8 @@ public class FitnoteSubmitResource extends AbstractResource {
 
       } else {
         response = createResponseOf(HttpStatus.SC_SERVICE_UNAVAILABLE, ERROR_RESPONSE);
+        LOG.error("Java out memory, current free memory {}",
+                MemoryChecker.returnCurrentAvailableMemoryInMb(Runtime.getRuntime()));
       }
 
     }  catch (ImageHashException e) {
@@ -198,35 +205,29 @@ public class FitnoteSubmitResource extends AbstractResource {
 
   private void checkAsynchronously(ImagePayload payload) {
     payload.setFitnoteCheckStatus(ImagePayload.Status.CHECKING);
+    final long startTime = System.currentTimeMillis();
     new Thread(
             () -> {
               try {
-                String fileMimeType = ImageUtils.getImageMimeType(payload);
-                int imageSize = ImageUtils.getImageLength(payload);
-                LOG.info("file type is " + fileMimeType);
-                LOG.info("initial file size (bytes) = {}", imageSize);
+                String fileMimeType = getFileTypeAndLogFileInfo(payload);
                 if (fileMimeType == null || !acceptedTypes.contains(fileMimeType)) {
-                  setErrorPayload(ImagePayload.Status.FAILED_IMG_FILE_TYPE, payload, null);
+                  setErrorPayload(ImagePayload.Status.FAILED_IMG_FILE_TYPE, payload, null,
+                          startTime);
                   return;
                 }
-                if (fileMimeType.equals("pdf")) {
-                  convertPdf(payload);
-                  displayLogs(fileMimeType, payload);
-                } else if (!fileMimeType.equals("jpg")
-                        || imageSize
-                        > controllerConfiguration.getMaxSizeBeforeCompressionBytes()) {
-                  // convert all non jpg or larger than 10mb, it's converted to jpg
-                  ImageUtils.convertImage(payload, 100d, fileMimeType);
-                  displayLogs(fileMimeType, payload);
-                }
-                final byte[] origImage = Base64.decodeBase64(payload.getImage());
+                byte[] origImage = Base64.decodeBase64(payload.getImage());
+                byte[] convertedImg = convertAndCompressImage(payload, fileMimeType);
                 fileMimeType = "jpg";
+                if (convertedImg.length != origImage.length) {
+                  displayLogs(fileMimeType, payload);
+                  origImage = convertedImg;
+                }
 
                 ExpectedFitnoteFormat expectedFitnoteFormat =
                         validateAndOcrImageFromInputTypes(payload, fileMimeType);
                 if (!expectedFitnoteFormat.getStatus().equals(SUCCESS)) {
-
                   imageStore.updateImageDetails(payload);
+                  logTimeTaken(startTime, payload.getFitnoteCheckStatus());
                   return;
                 }
 
@@ -244,23 +245,82 @@ public class FitnoteSubmitResource extends AbstractResource {
                         expectedFitnoteFormat.getMatchAngle());
                 setPayloadImageFinal(finalImage, payload);
                 imageStore.updateImageDetails(payload);
-
+                logTimeTaken(startTime, payload.getFitnoteCheckStatus());
               } catch (ImageCompressException e) {
-                setErrorPayload(ImagePayload.Status.FAILED_IMG_COMPRESS, payload, e);
+                setErrorPayload(ImagePayload.Status.FAILED_IMG_COMPRESS, payload, e, startTime);
               } catch (ImageTransformException e) {
-                setErrorPayload(ImagePayload.Status.FAILED_IMG_FILE_TYPE, payload, e);
+                setErrorPayload(ImagePayload.Status.FAILED_IMG_FILE_TYPE, payload, e, startTime);
               } catch (Exception e) {
-                setErrorPayload(ImagePayload.Status.FAILED_ERROR, payload, e);
+                setErrorPayload(ImagePayload.Status.FAILED_ERROR, payload, e, startTime);
               }
             })
             .start();
   }
 
+  private byte[] convertAndCompressImage(ImagePayload payload, String fileMimeType) throws
+          ImageTransformException, IOException, ImagePayloadException, InterruptedException,
+          IM4JavaException, ImageCompressException {
+    byte[] origImage = Base64.decodeBase64(payload.getImage());
+    int megapixel = ImageUtils.calculateMegapixel(origImage);
+    LOG.info("Megapixel count {}", megapixel);
+    if (megapixel > 250) {
+      LOG.error("Megapixel error {}", megapixel);
+      throw new ImageCompressException(
+              "The megapixel count is too high" + megapixel);
+    }
+    if (fileMimeType.equals("pdf")) {
+      convertPdf(payload);
+      origImage = Base64.decodeBase64(payload.getImage());
+    } else if (!fileMimeType.equals("jpg")) {
+      // convert all non jpg to jpg
+      byte[] convertedImg = ImageUtils.convertImage(origImage, 100d);
+      if (convertedImg == null) {
+        LOG.error("Large scale error");
+        LOG.error("Megapixel error {}", megapixel);
+        throw new ImageCompressException(
+                "The encoded string could not be converted from " + fileMimeType + " to a jpg");
+      }
+      setPayloadImage(convertedImg, payload);
+      origImage = convertedImg;
+    }
+
+    return origImage;
+  }
+
+  private void logTimeTaken(long startTime, ImagePayload.Status imagePayloadStatus) {
+    LOG.info("Time taken to process image {} = (seconds) {}", imagePayloadStatus,
+            (System.currentTimeMillis() - startTime) / 1000);
+  }
+
+  private String getFileTypeAndLogFileInfo(ImagePayload payload) {
+    String fileMimeType = ImageUtils.getImageMimeType(payload);
+    int imageSize = ImageUtils.getImageLength(payload);
+    LOG.info("file type is " + fileMimeType
+            + ", sessionId is " + payload.getSessionId());
+    LOG.info("initial file size is = {}", getFileSize(imageSize)
+            + ", sessionId is " + payload.getSessionId());
+    return fileMimeType;
+  }
+
+  private String getFileSize(int imageSize) {
+    long kb = 1024;
+    long mb = kb * 1024;
+    BigDecimal mbSize = BigDecimal.valueOf(imageSize).divide(BigDecimal.valueOf(mb));
+    if (mbSize.intValue() > 0) {
+      return mbSize.setScale(1, RoundingMode.HALF_EVEN).doubleValue() + " MB";
+    } else {
+      return FileUtils.byteCountToDisplaySize(imageSize);
+    }
+  }
+
   private byte[] improveDMRegion(byte[] compressedImage, byte[] origImage,
                                  int angle) {
+    final long startTime = System.currentTimeMillis();
     LOG.info("Before layer dm region file size (bytes) = {}", compressedImage.length);
     byte[] finalImg = ImageUtils.layerDMRegionOnImage(compressedImage, origImage, angle);
     LOG.info("After layer dm region file size (bytes) = {}", finalImg.length);
+    LOG.info("Time taken to overlay DM region = seconds {}",
+            (System.currentTimeMillis() - startTime) / 1000);
     return  finalImg;
   }
 
@@ -424,7 +484,8 @@ public class FitnoteSubmitResource extends AbstractResource {
   }
 
   private void setErrorPayload(ImagePayload.Status imagePayloadStatus, ImagePayload payload,
-                               Exception e) {
+                               Exception e, long startTime) {
+    logTimeTaken(startTime, imagePayloadStatus);
     payload.setFitnoteCheckStatus(imagePayloadStatus);
     payload.setImage(null);
 

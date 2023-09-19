@@ -75,6 +75,7 @@ public class FitnoteSubmitResourceTest {
   private static String PDF_FITNOTE_IMAGE;
   private static String LARGE_JPG_IMAGE;
   private static String HEIC_IMAGE;
+  private static String LARGE_HEIC;
   private static String EXR_IMAGE;
 
   private static String PORTRAIT_JSON;
@@ -82,6 +83,7 @@ public class FitnoteSubmitResourceTest {
   private static String LARGE_VALID_JSON;
   private static String PDF_JSON;
   private static String HEIC_JSON;
+  private static String LARGE_HEIC_JSON;
   private static String EXR_JSON;
 
   private int OVER_MAX_MEMORY;
@@ -118,6 +120,7 @@ public class FitnoteSubmitResourceTest {
     PORTRAIT_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.jpg");
     PDF_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.pdf");
     HEIC_IMAGE = getEncodedImage("src/test/resources/DarkPage.heic");
+    LARGE_HEIC = getEncodedImage("src/test/resources/5MB.heic");
     EXR_IMAGE = getEncodedImage("src/test/resources/test-fail-type.txt");
     LARGE_JPG_IMAGE = getEncodedImage("src/test/resources/DarkPageLargeSize.jpg");
 
@@ -127,6 +130,7 @@ public class FitnoteSubmitResourceTest {
     PDF_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + HEIC_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     EXR_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXR_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    LARGE_HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + LARGE_HEIC + "\",\"sessionId\":\"" + SESSION + "\"}";
   }
 
   @Before
@@ -137,7 +141,6 @@ public class FitnoteSubmitResourceTest {
     when(controllerConfiguration.getScanTargetImageSizeKb()).thenReturn(3);
     when(controllerConfiguration.getTargetImageSizeKB()).thenReturn(2);
     when(controllerConfiguration.isGreyScale()).thenReturn(true);
-    when(controllerConfiguration.getMaxSizeBeforeCompressionBytes()).thenReturn(10000000);
 
     resourceUnderTest = new FitnoteSubmitResource(controllerConfiguration, validator, ocrChecker, imageStorage, imageCompressor);
 
@@ -381,6 +384,18 @@ public class FitnoteSubmitResourceTest {
     imagePayload.setSessionId(SESSION);
     createAndValidateImage(VALID_JSON, true, imagePayload);
     Response response = resourceUnderTest.submitFitnote(VALID_JSON);
+    assertThat(response.getStatus(), is(SC_ACCEPTED));
+
+    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_COMPRESS");
+  }
+
+  @Test
+  public void failImageCompressionAsScaleTooLarge() throws ImagePayloadException, IOException, InterruptedException {
+    ImagePayload imagePayload = new ImagePayload();
+    imagePayload.setImage(LARGE_HEIC);
+    imagePayload.setSessionId(SESSION);
+    createAndValidateImage(LARGE_HEIC_JSON, true, imagePayload);
+    Response response = resourceUnderTest.submitFitnote(LARGE_HEIC_JSON);
     assertThat(response.getStatus(), is(SC_ACCEPTED));
 
     examineImageStatusResponseForValueOrTimeout("FAILED_IMG_COMPRESS");

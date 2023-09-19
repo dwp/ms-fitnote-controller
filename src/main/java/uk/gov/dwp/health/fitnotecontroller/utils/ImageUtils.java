@@ -2,14 +2,16 @@ package uk.gov.dwp.health.fitnotecontroller.utils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.tika.Tika;
+import org.im4java.core.CommandException;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
+import org.im4java.core.Info;
+import org.im4java.core.InfoException;
 import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
-import uk.gov.dwp.health.fitnotecontroller.exception.ImageTransformException;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
@@ -22,6 +24,8 @@ import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 
@@ -163,49 +167,48 @@ public class ImageUtils {
     return fileMimeType;
   }
 
-  public static void convertImage(ImagePayload payload, double quality, String fileMimeType)
-          throws ImageTransformException {
-    try {
-      byte[] imgData = convertImage(Base64.decodeBase64(payload.getImage()), quality);
-      payload.setImage(Base64.encodeBase64String(imgData));
-    } catch (IM4JavaException | IOException | InterruptedException e) {
-      throw new ImageTransformException("Failed to convert image to jpg from " + fileMimeType);
-    }
-
-  }
-
   public static byte[] convertImage(byte[] jpegData, double quality)
           throws IOException, InterruptedException, IM4JavaException {
-    IMOperation op = new IMOperation();
-    op.addImage("-");                   // read from stdin
-    op.quality(quality);
-    op.addImage("jpg:-");               // write to stdout in tif-format
+    final long startTime = System.currentTimeMillis();
+    try {
+      IMOperation op = new IMOperation();
+      op.addImage("-");
+      op.quality(quality);
+      op.strip();
+      op.addImage("jpg:-");               // write to stdout in tif-format
 
-    // set up pipe(s): you can use one or two pipe objects
-    ByteArrayInputStream fis =
-            new ByteArrayInputStream(jpegData);
-    ByteArrayOutputStream fos = new ByteArrayOutputStream();
+      // set up pipe(s): you can use one or two pipe objects
+      ByteArrayInputStream fis = new ByteArrayInputStream(jpegData);
+      ByteArrayOutputStream fos = new ByteArrayOutputStream();
 
-    Pipe pipeIn  = new Pipe(fis, null);
-    Pipe pipeOut = new Pipe(null, fos);
+      Pipe pipeIn  = new Pipe(fis, null);
+      Pipe pipeOut = new Pipe(null, fos);
 
-    // set up command
-    ConvertCmd convert = new ConvertCmd();
-    convert.setInputProvider(pipeIn);
-    convert.setOutputConsumer(pipeOut);
-    convert.run(op);
-    fis.close();
-    fos.close();
+      // set up command
+      ConvertCmd convert = new ConvertCmd();
+      convert.setInputProvider(pipeIn);
+      convert.setOutputConsumer(pipeOut);
+      LOGGER.info("ImageMagick command: {}", op);
+      convert.run(op);
+      fis.close();
+      fos.close();
 
-    return fos.toByteArray();
-
+      LOGGER.info("Time taken to convert image = seconds {}",
+              (System.currentTimeMillis() - startTime) / 1000);
+      return fos.toByteArray();
+    } catch (CommandException e) {
+      LOGGER.error("Image too large to convert");
+      return null;
+    }
   }
 
   public static byte[] convertImage(BufferedImage image, double quality)
           throws IOException, InterruptedException, IM4JavaException {
+    final long startTime = System.currentTimeMillis();
     IMOperation op = new IMOperation();
     op.addImage();                   // read from stdin
     op.quality(quality);
+    op.strip();
     op.addImage("jpg:-");               // write to stdout in tif-format
 
     // set up pipe(s): you can use one or two pipe objects
@@ -216,9 +219,12 @@ public class ImageUtils {
     // set up command
     ConvertCmd convert = new ConvertCmd();
     convert.setOutputConsumer(pipeOut);
+    LOGGER.info("ImageMagick command: {}", op);
     convert.run(op, image);
     fos.close();
 
+    LOGGER.info("Time taken to convert image = seconds {}",
+            (System.currentTimeMillis() - startTime) / 1000);
     return fos.toByteArray();
   }
 
@@ -280,6 +286,19 @@ public class ImageUtils {
     LOGGER.info("Draw image on top of original image with x: {} and y: {}", 0, height * 3 / 4);
 
 
+  }
+
+  public static int calculateMegapixel(byte[] jpegData) throws InfoException {
+    Info info = new Info("-", new ByteArrayInputStream(jpegData), true);
+    int height = info.getImageHeight();
+    int width = info.getImageWidth();
+
+    BigDecimal result = new BigDecimal(height)
+            .multiply(new BigDecimal(width))
+            .divide(new BigDecimal(1000000));
+    int megapixel = result.setScale(0, RoundingMode.UP).intValue();
+    LOGGER.debug("Image megapixel {}", megapixel);
+    return megapixel;
   }
 
 }

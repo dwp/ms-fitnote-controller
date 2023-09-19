@@ -102,9 +102,6 @@ public class FitnoteControllerConfiguration extends Configuration {
   @JsonProperty("estimatedRequestMemoryMb")
   private int estimatedRequestMemoryMb = 25;
 
-  @JsonProperty("maxSizeBeforeCompressionBytes")
-  private int maxSizeBeforeCompressionBytes = 10000000;
-
   @JsonProperty("objectMaxStringLength")
   private int objectMaxStringLength = 40000000;
 
@@ -224,11 +221,6 @@ public class FitnoteControllerConfiguration extends Configuration {
   public int getEstimatedRequestMemoryMb() {
     return estimatedRequestMemoryMb;
   }
-
-  public int getMaxSizeBeforeCompressionBytes() {
-    return maxSizeBeforeCompressionBytes;
-  }
-
 
   public int getPdfScanDPI() {
     return pdfScanDPI;

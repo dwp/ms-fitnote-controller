@@ -6,6 +6,7 @@ target/
 .project
 .settings/
 CompressorTest*.jpg
+CompressorTest*.png
 Base.jpg
 Top.jpg
 outputs/

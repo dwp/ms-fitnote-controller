@@ -12,4 +12,4 @@ fileExistenceTests:
     path: '/tessdata'
 
 metadataTest:
-  entrypoint: [ "java", "-jar", "/ms-fitnote-controller.jar", "server",  "/config.yml"]
+  entrypoint: [ "java", "-jar", "/ms-fitnote-controller.jar", "server", "/config.yml" ]

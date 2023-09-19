@@ -47,6 +47,10 @@ public class ImageUtilsTest extends ImageUtils {
         return payload;
     }
 
+    public byte[] getObjectAsByte(String file) throws IOException {
+        String imageString = getEncodedImage(this.getClass().getResource(file).getPath());
+        return org.apache.commons.codec.binary.Base64.decodeBase64(imageString);
+    }
 
     @Before
     public void setUp() throws IOException {
@@ -131,18 +135,16 @@ public class ImageUtilsTest extends ImageUtils {
     }
 
     @Test
-    public void convertImagePayloadJPG() throws ImageTransformException, IOException {
-        ImagePayload payload = getImagePayload(IMAGE_FILE);
-        convertImage(payload, 100d, "jpg");
-        String mimeType = getImageMimeType(payload);
+    public void convertImageByteJPG() throws IOException, InterruptedException, IM4JavaException {
+        byte[] response  = convertImage(getObjectAsByte(IMAGE_FILE), 100d);
+        String mimeType = getImageMimeType(response);
         assertEquals("jpg", mimeType);
     }
 
     @Test
-    public void convertImagePayloadHEIC() throws ImageTransformException, IOException {
-        ImagePayload payload = getImagePayload(IMAGE_FILE_HEIC);
-        convertImage(payload, 100d, "heic");
-        String mimeType = getImageMimeType(payload);
+    public void convertImageHEIC() throws IOException, InterruptedException, IM4JavaException {
+        byte[] response  = convertImage(getObjectAsByte(IMAGE_FILE_HEIC), 100d);
+        String mimeType = getImageMimeType(response);
         assertEquals("jpg", mimeType);
     }
 
@@ -154,15 +156,9 @@ public class ImageUtilsTest extends ImageUtils {
     }
 
     @Test
-    public void convertTxtFail() throws IOException {
-        ImagePayload payload = getImagePayload(TEXT_FILE);
-        try {
-            convertImage(payload, 100d, "txt");
-            fail("should have thrown an error");
-
-        } catch (ImageTransformException e) {
-            assertThat("expecting a custom exception", e.getMessage(), containsString("Failed to convert image to jpg from"));
-        }
+    public void convertTxtFail() throws IOException, InterruptedException, IM4JavaException {
+        byte[] response = convertImage(getObjectAsByte(TEXT_FILE), 100d);
+        assertEquals(null, response);
     }
 
     private String getEncodedImage(String imageFileName) throws IOException {

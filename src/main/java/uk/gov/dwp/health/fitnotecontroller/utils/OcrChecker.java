@@ -27,8 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.bytedeco.leptonica.global.leptonica.pixDestroy;
-import static org.bytedeco.leptonica.global.leptonica.pixReadMem;
+import static org.bytedeco.leptonica.global.lept.pixDestroy;
+import static org.bytedeco.leptonica.global.lept.pixReadMem;
 import static org.bytedeco.tesseract.global.tesseract.PSM_SPARSE_TEXT;
 
 public class OcrChecker {
@@ -103,6 +103,7 @@ public class OcrChecker {
         ExpectedFitnoteFormat fitnoteFormat = new ExpectedFitnoteFormat(configuration);
 
         if (rotation > 0) {
+          fitnoteFormat.setMatchAngle(rotation);
           fitnoteFormat.setFinalImage(ImageUtils.createRotatedCopy(originalImage, rotation));
         } else {
           fitnoteFormat.setFinalImage(originalImage);

@@ -29,6 +29,7 @@ public class ImageCompressor {
                                       BufferedImage inputImage, int targetImageSizeKB,
                                       boolean useGrayScale)
           throws ImageCompressException {
+    final long startTime = System.currentTimeMillis();
     LOGGER.info(
             "Starting image compression :: "
                     + "RejectingOversizedImage = {}, TargetSizeKB = {}, GreyScale = {}",
@@ -48,6 +49,7 @@ public class ImageCompressor {
 
         if (compressImage(workingImage, Double.valueOf(0.01).floatValue(), fileMimeType,
                 jpegData).length > (targetImageSizeKB * 1000)) {
+          LOGGER.info("failed to compress, will attempt to use ImageMagick");
           break;
         }
 
@@ -76,30 +78,39 @@ public class ImageCompressor {
       }
 
       if (jpegData.length > (targetImageSizeKB * 1000) && isRejectingOversizeImages()) {
+        LOGGER.info("Time taken to fail image compression = seconds {}",
+                (System.currentTimeMillis() - startTime) / 1000);
         throw new ImageCompressException(
                 "Image is too large for processing, "
                         + "try with less quality or turn 'rejectingOversizeImages' off");
       }
 
       LOGGER.info("Successfully completed image compression, result = {} bytes", jpegData.length);
+      LOGGER.info("Time taken to complete image compression = seconds {}",
+              (System.currentTimeMillis() - startTime) / 1000);
       return jpegData;
 
     } catch (IOException | InterruptedException | IM4JavaException e) {
+      LOGGER.info("Time taken to fail image compression = seconds {}",
+              (System.currentTimeMillis() - startTime) / 1000);
       throw new ImageCompressException(e.getMessage());
     }
   }
 
   private byte[] compressUsingImageMagick(byte[] bimg, int targetImageSizeKB) throws IOException,
-          InterruptedException, IM4JavaException {
-    double max = 100;
-    double lower = 0;
+          InterruptedException, IM4JavaException, ImageCompressException {
     double numberToTest = 1d;
     byte[] jpegData;
     jpegData = ImageUtils.convertImage(bimg, numberToTest);
+    if (jpegData == null) {
+      throw new ImageCompressException("Image magick failed to convert image");
+    }
     if (jpegData.length > (targetImageSizeKB * 1000)) {
       LOGGER.info("final jpg {}, quality {}", jpegData.length, numberToTest);
       return jpegData;
     }
+    double max = 100;
+    double lower = 0;
     while (max - lower >= 1) {
       double newNumberToTest = Math.round((max + lower) / 2d);
       numberToTest = newNumberToTest == numberToTest ? max = lower : newNumberToTest;

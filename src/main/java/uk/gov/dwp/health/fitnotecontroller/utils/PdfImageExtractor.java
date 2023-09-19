@@ -1,5 +1,6 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
+import org.apache.pdfbox.Loader;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -34,7 +35,7 @@ public class PdfImageExtractor {
     try {
 
       LOG.debug("loading and rendering pdf in order to copy page to image");
-      document = PDDocument.load(incomingObject);
+      document = Loader.loadPDF(incomingObject);
       PDFRenderer renderer = new PDFRenderer(document);
 
       BufferedImage imageBuffer = renderer.renderImageWithDPI(0, scanDPI, ImageType.RGB);

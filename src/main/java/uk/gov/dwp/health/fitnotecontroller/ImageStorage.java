@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
 import uk.gov.dwp.health.crypto.CryptoMessage;
@@ -21,7 +22,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 
 public class ImageStorage {
@@ -120,8 +120,8 @@ public class ImageStorage {
       hash.update(configuration.getImageHashSalt().getBytes(StandardCharsets.UTF_8));
       ImageHashStore hashStoreItem;
 
-      String hashImage = Base64.getEncoder()
-          .encodeToString(hash.digest(sourceImage.getBytes(StandardCharsets.UTF_8)));
+      String hashImage = Base64
+          .encodeBase64String(hash.digest(sourceImage.getBytes(StandardCharsets.UTF_8)));
 
       if (getSynchronousCommands().exists(IMAGE_HASHSTORE_NAME + hashImage) > 0) {
         hashStoreItem =

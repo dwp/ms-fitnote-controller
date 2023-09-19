@@ -18,9 +18,11 @@ public class MemoryChecker {
 
     LOG.info(
         "Current available free memory is {}mb, total memory {}mb, "
+        + "max memory {}mb, "
         + "abs required memory is {}mb, request allowed = {}",
         freeMemoryMb,
         javaRunTime.totalMemory() / MEGABYTE,
+        javaRunTime.maxMemory() / MEGABYTE,
         absoluteMemory,
         isEnoughMemory);
     return freeMemoryMb >= absoluteMemory;

@@ -1,8 +1,8 @@
-FROM eclipse-temurin:19-jdk-jammy as builder
+FROM maven:3.9.3-eclipse-temurin-17 as builder
 RUN wget --progress=dot:giga https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.1-10.tar.gz \
   && tar xzf 7.1.1-10.tar.gz
 
-FROM eclipse-temurin:19-jdk-jammy
+FROM maven:3.9.3-eclipse-temurin-17
 
 WORKDIR /
 COPY ./target/ms-fitnote-controller*.jar /ms-fitnote-controller.jar
@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
 	libde265-dev=1.0.8-1 \
 	libheif-dev=1.12.0-2build1 \
 	libjpeg-dev=8c-2ubuntu10 \
-	libtiff-dev=4.3.0-6ubuntu0.4 \
+	libtiff-dev=4.3.0-6ubuntu0.5 \
 	libmagickcore-dev=8:6.9.11.60+dfsg-1.3ubuntu0.22.04.3 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean

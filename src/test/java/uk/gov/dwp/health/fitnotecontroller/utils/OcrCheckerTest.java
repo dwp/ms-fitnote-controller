@@ -124,7 +124,7 @@ public class OcrCheckerTest {
 
   @Test
   public void testTesseractFailure() throws IOException {
-    when(mockConfig.getTesseractFolderPath()).thenReturn("");
+    when(mockConfig.getTesseractFolderPath()).thenReturn("/Missing-Tesseract-File");
     String tessdataLabel = "TESSDATA_PREFIX";
     String tessdataPrefix = System.getProperty(tessdataLabel);
     System.setProperty(tessdataLabel, "");

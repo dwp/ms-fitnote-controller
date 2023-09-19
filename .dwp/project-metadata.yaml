@@ -1,0 +1,19 @@
+$schema: https://gitlab.com/dwp/secure-development/schema/project-metadata/-/raw/v1.0.0/schema/project-metadata.json
+
+schema_version: 1.0.0
+
+project:
+  - project_id: 27164695
+    component_name: ms-fitnote-controller
+
+    version: 1.13.0
+
+    last_verified:
+      date: "2023-07-19"
+      name: "@dillon-vaghela"
+
+    tags:
+      payments: false
+      personally_identifying_information: true
+
+    cmdb_id: 886de9ec6f20cb80a16b7e952e3ee45e
