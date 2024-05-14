@@ -71,6 +71,12 @@ baseRightText:
   - "Performance Platform"
   - "beginning to end"
 
+dataMatrixCreatorServiceUrl: http://localhost:3009/generate-data-matrix
+dataMatrixCreatorTruststoreFile: null
+dataMatrixCreatorTruststorePass: null
+dataMatrixCreatorKeystoreFile: null
+dataMatrixCreatorKeystorePass: null
+
 logging:
   level: INFO
   loggers:

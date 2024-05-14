@@ -19,10 +19,12 @@ import uk.gov.dwp.health.fitnotecontroller.FitnoteDeclarationResource;
 import uk.gov.dwp.health.fitnotecontroller.FitnoteQueryResource;
 import uk.gov.dwp.health.fitnotecontroller.FitnoteSubmitResource;
 import uk.gov.dwp.health.fitnotecontroller.ImageStorage;
+import uk.gov.dwp.health.fitnotecontroller.handlers.MsDataMatrixCreatorHandler;
 import uk.gov.dwp.health.messageq.amazon.sns.MessagePublisher;
 import uk.gov.dwp.health.version.HealthCheckResource;
 import uk.gov.dwp.health.version.ServiceInfoResource;
 import uk.gov.dwp.health.version.info.PropertyFileInfoProvider;
+import uk.gov.dwp.tls.TLSConnectionBuilder;
 
 public class FitnoteControllerApplication extends Application<FitnoteControllerConfiguration> {
 
@@ -80,8 +82,19 @@ public class FitnoteControllerApplication extends Application<FitnoteControllerC
             new MessagePublisher(messageEncoder,
                     fitnoteControllerConfiguration.getSnsConfiguration());
 
+    TLSConnectionBuilder connectionBuilder =
+            new TLSConnectionBuilder(
+                    fitnoteControllerConfiguration.getDataMatrixCreatorTruststoreFile(),
+                    fitnoteControllerConfiguration.getDataMatrixCreatorTruststorePass(),
+                    fitnoteControllerConfiguration.getDataMatrixCreatorKeystoreFile(),
+                    fitnoteControllerConfiguration.getMsDataMatrixCreatorKeystorePass());
+
+    final MsDataMatrixCreatorHandler msDataMatrixCreatorHandler =
+            new MsDataMatrixCreatorHandler(connectionBuilder, fitnoteControllerConfiguration);
+
     final FitnoteSubmitResource resource =
-            new FitnoteSubmitResource(fitnoteControllerConfiguration, imageStorage);
+            new FitnoteSubmitResource(fitnoteControllerConfiguration, imageStorage,
+                    msDataMatrixCreatorHandler);
     final FitnoteConfirmationResource confirmationResource =
             new FitnoteConfirmationResource(imageStorage);
     final FitnoteAddressResource addressResource = new FitnoteAddressResource(imageStorage);

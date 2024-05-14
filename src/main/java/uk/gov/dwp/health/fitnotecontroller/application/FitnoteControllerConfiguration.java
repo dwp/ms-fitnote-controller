@@ -41,7 +41,7 @@ public class FitnoteControllerConfiguration extends Configuration {
   private boolean ocrChecksEnabled = true;
 
   @JsonProperty("forceLandscapeImageSubmission")
-  private boolean landscapeImageEnforced = true;
+  private boolean landscapeImageEnforced = false;
 
   @NotNull
   @JsonProperty("tesseractFolderPath")
@@ -140,6 +140,21 @@ public class FitnoteControllerConfiguration extends Configuration {
 
   @JsonProperty("applicationInfoEnabled")
   private boolean applicationInfoEnabled;
+
+  @JsonProperty("dataMatrixCreatorServiceUrl")
+  private String dataMatrixCreatorServiceUrl;
+
+  @JsonProperty("dataMatrixCreatorTruststoreFile")
+  private String dataMatrixCreatorTruststoreFile;
+
+  @JsonProperty("dataMatrixCreatorTruststorePass")
+  private SealedObject dataMatrixCreatorTruststorePass;
+
+  @JsonProperty("dataMatrixCreatorKeystoreFile")
+  private String dataMatrixCreatorKeystoreFile;
+
+  @JsonProperty("dataMatrixCreatorKeystorePass")
+  private SealedObject msDataMatrixCreatorKeystorePass;
 
   public FitnoteControllerConfiguration() throws NoSuchPaddingException,
           NoSuchAlgorithmException, InvalidKeyException {
@@ -292,6 +307,48 @@ public class FitnoteControllerConfiguration extends Configuration {
 
   public int getObjectMaxStringLength() {
     return objectMaxStringLength;
+  }
+
+  public String getDataMatrixCreatorServiceUrl() {
+    return dataMatrixCreatorServiceUrl;
+  }
+
+  public void setDataMatrixCreatorServiceUrl(String dataMatrixCreatorServiceUrl) {
+    this.dataMatrixCreatorServiceUrl = dataMatrixCreatorServiceUrl;
+  }
+
+  public String getDataMatrixCreatorTruststoreFile() {
+    return dataMatrixCreatorTruststoreFile;
+  }
+
+  public void setDataMatrixCreatorTruststoreFile(String dataMatrixCreatorTruststoreFile) {
+    this.dataMatrixCreatorTruststoreFile = dataMatrixCreatorTruststoreFile;
+  }
+
+  public String getDataMatrixCreatorTruststorePass() {
+    return cipher.revealString(dataMatrixCreatorTruststorePass);
+  }
+
+  public void setDataMatrixCreatorTruststorePass(String dataMatrixCreatorTruststorePass)
+          throws IllegalBlockSizeException, IOException {
+    this.dataMatrixCreatorTruststorePass = cipher.sealString(dataMatrixCreatorTruststorePass);
+  }
+
+  public String getDataMatrixCreatorKeystoreFile() {
+    return dataMatrixCreatorKeystoreFile;
+  }
+
+  public void setDataMatrixCreatorKeystoreFile(String dataMatrixCreatorKeystoreFile) {
+    this.dataMatrixCreatorKeystoreFile = dataMatrixCreatorKeystoreFile;
+  }
+
+  public String getMsDataMatrixCreatorKeystorePass() {
+    return cipher.revealString(msDataMatrixCreatorKeystorePass);
+  }
+
+  public void setMsDataMatrixCreatorKeystorePass(String msDataMatrixCreatorKeystorePass)
+          throws IllegalBlockSizeException, IOException {
+    this.msDataMatrixCreatorKeystorePass = cipher.sealString(msDataMatrixCreatorKeystorePass);
   }
 
 }

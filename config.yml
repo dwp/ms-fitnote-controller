@@ -72,6 +72,12 @@ baseRightText:
   - "signed this"
   - "make a claim"
 
+dataMatrixCreatorServiceUrl: ${DATA_MATRIX_CREATOR_SERVICE_URL:-http://localhost:3009/generate-data-matrix}
+dataMatrixCreatorTruststoreFile: ${DATA_MATRIX_CREATOR_TRUSTSTORE_FILE:-null}
+dataMatrixCreatorTruststorePass: ${DATA_MATRIX_CREATOR_TRUSTSTORE_PASS:-null}
+dataMatrixCreatorKeystoreFile: ${DATA_MATRIX_CREATOR_KEYSTORE_FILE:-null}
+dataMatrixCreatorKeystorePass: ${DATA_MATRIX_CREATOR_KEYSTORE_PASS:-null}
+
 logging:
   type: ${LOGGING_TYPE:-external}
 

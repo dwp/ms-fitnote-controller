@@ -1,6 +1,6 @@
 server:
   applicationConnectors:
-  - type: http 
+  - type: http
     port: 9101
   adminConnectors:
   - type: http
@@ -70,6 +70,13 @@ baseLeftText:
 baseRightText:
   - "Performance Platform"
   - "beginning to end"
+
+htmlToPdfServiceUrl: http://localhost:3009/generate-data-matrix
+htmlToPdfConformanceLevel: PDF_UA
+htmlToPdfTruststoreFile: null
+htmlToPdfTruststorePass: null
+htmlToPdfKeystoreFile: null
+htmlToPdfKeystorePass: null
 
 logging:
   level: INFO

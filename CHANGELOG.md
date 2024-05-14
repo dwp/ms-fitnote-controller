@@ -1,3 +1,27 @@
+<a name="3-0-0"></a>
+# 3-0-0 (2024-04-29)
+
+* feat: implement new dynamsoft microservice and apply data matrix ([099505e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/099505e))
+* feat: update error message ([d8f4102](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/d8f4102))
+* chore: update dependencies and fragments ([aa30e49](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/aa30e49))
+
+
+<a name="2.2.0"></a>
+# 2.2.0 (2023-11-07)
+
+* Update account id ([4dd7c4e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/4dd7c4e))
+* Update dockerfile ([d198cf4](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/d198cf4))
+* Suppress vuln, update pom ([0d60484](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/0d60484))
+* Add needs to jobs ([02b8be5](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/02b8be5))
+* Feature flag pi test job ([afec065](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/afec065))
+* Update versions and add supression ([c39347c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/c39347c))
+* update version [skip ci] ([a30cdbd](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a30cdbd))
+* update ci to v3.1 ([2b78d3c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/2b78d3c))
+* update ci to v3.1 ([faf7f8d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/faf7f8d))
+* update ci to v3.1 ([dc91140](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/dc91140))
+* update ci to v3.1 ([9c00f35](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/9c00f35))
+
+
 <a name="2-1-0"></a>
 # 2-1-0 (2023-09-14)
 

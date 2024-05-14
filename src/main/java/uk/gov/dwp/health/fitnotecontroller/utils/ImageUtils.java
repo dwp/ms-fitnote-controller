@@ -8,15 +8,18 @@ import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
 import org.im4java.core.Info;
 import org.im4java.core.InfoException;
+import org.im4java.core.Stream2BufferedImage;
 import org.im4java.process.Pipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.RescaleOp;
@@ -24,6 +27,7 @@ import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -110,6 +114,14 @@ public class ImageUtils {
     return contrastImage;
   }
 
+  public static byte[] createRotatedCopy(byte[] img, double angleDegrees) throws IOException {
+    BufferedImage bimg = ImageIO.read(new ByteArrayInputStream(img));
+    BufferedImage rotatedImage = createRotatedCopy(bimg, angleDegrees);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ImageIO.write(rotatedImage, "jpg", baos);
+    return baos.toByteArray();
+  }
+
   public static BufferedImage createRotatedCopy(BufferedImage img, double angleDegrees) {
     double sin = Math.abs(Math.sin(Math.toRadians(angleDegrees)));
     double cos = Math.abs(Math.cos(Math.toRadians(angleDegrees)));
@@ -144,13 +156,6 @@ public class ImageUtils {
 
   public static String getImageMimeType(ImagePayload payload) {
     byte[] decodedPayload = Base64.decodeBase64(payload.getImage());
-    return getImageMimeType(decodedPayload);
-  }
-
-  public static String getImageMimeType(BufferedImage image) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ImageIO.write(image, "jpg", baos);
-    byte[] decodedPayload = baos.toByteArray();
     return getImageMimeType(decodedPayload);
   }
 
@@ -233,6 +238,62 @@ public class ImageUtils {
     return jpegData.length;
   }
 
+  public static byte[] placeDMOnImage(byte[] compressedImage, DataMatrixResult dataMatrixResult,
+                                      boolean isPdf) {
+    try {
+      BufferedImage bimg = ImageIO.read(new ByteArrayInputStream(compressedImage));
+      int wid = bimg.getWidth();
+      int height = bimg.getHeight();
+      //create a new buffer and draw two image into the new image
+      BufferedImage newImage = new BufferedImage(wid, height,
+              BufferedImage.TYPE_BYTE_GRAY);
+      Graphics2D g2 = drawOriginalImage(compressedImage, newImage);
+
+      byte[] dataMatrixBytes = Base64.decodeBase64(dataMatrixResult.getFinalImage());
+      InputStream is = new ByteArrayInputStream(dataMatrixBytes);
+      BufferedImage dataMatrix =  ImageIO.read(is);
+      dataMatrix = clearUpImage(dataMatrix, isPdf, dataMatrixResult.getMatchAngle());
+
+      Point point = dataMatrixResult.getPosition();
+      g2.drawImage(dataMatrix, null, point.x, point.y);
+      LOGGER.info("Draw data matrix on top of original image with x: {} and y: {}", point.x,
+              point.y);
+
+      return convertToJpg(newImage, g2);
+    } catch (Exception e) {
+      LOGGER.error("Failed to create dm and place on top of image: {}", e);
+    }
+    return compressedImage;
+
+  }
+
+  private static Graphics2D drawOriginalImage(byte[] compressedImage, BufferedImage newImage)
+          throws IOException {
+    BufferedImage bimg = ImageIO.read(new ByteArrayInputStream(compressedImage));
+    int wid = bimg.getWidth();
+    int height = bimg.getHeight();
+    Graphics2D g2 = newImage.createGraphics();
+    Color oldColor = g2.getColor();
+    //fill background
+    g2.setPaint(Color.WHITE);
+    g2.fillRect(0, 0, wid, height);
+    //draw image
+    g2.setColor(oldColor);
+    g2.drawImage(bimg, null, 0, 0);
+    LOGGER.info("draw original image using width: {} and height: {}", wid, height);
+    return g2;
+  }
+
+  private static byte[] convertToJpg(BufferedImage newImage, Graphics2D g2) throws IOException {
+    g2.dispose();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    BufferedImage imageJPG = new BufferedImage(newImage.getWidth(), newImage.getHeight(),
+            BufferedImage.TYPE_BYTE_GRAY);
+    imageJPG.createGraphics().drawImage(newImage, 0, 0, Color.BLACK, null);
+    ImageIO.write(imageJPG, "jpg", baos);
+    return baos.toByteArray();
+  }
+
   public static byte[] layerDMRegionOnImage(byte[] compressedImage, byte[] origImage,
                                             int angle) {
     try {
@@ -242,15 +303,7 @@ public class ImageUtils {
       //create a new buffer and draw two image into the new image
       BufferedImage newImage = new BufferedImage(wid, height,
               BufferedImage.TYPE_BYTE_GRAY);
-      Graphics2D g2 = newImage.createGraphics();
-      Color oldColor = g2.getColor();
-      //fill background
-      g2.setPaint(Color.WHITE);
-      g2.fillRect(0, 0, wid, height);
-      //draw image
-      g2.setColor(oldColor);
-      g2.drawImage(bimg, null, 0, 0);
-      LOGGER.info("draw original image using width: {} and height: {}", wid, height);
+      Graphics2D g2 = drawOriginalImage(compressedImage, newImage);
       BufferedImage origBImg = ImageIO.read(new ByteArrayInputStream(origImage));
       if (angle > 0) {
         origBImg = createRotatedCopy(origBImg, angle);
@@ -258,15 +311,9 @@ public class ImageUtils {
 
       cropOrigImage(g2, origBImg);
 
-      g2.dispose();
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      BufferedImage imageJPG = new BufferedImage(newImage.getWidth(), newImage.getHeight(),
-              BufferedImage.TYPE_BYTE_GRAY);
-      imageJPG.createGraphics().drawImage(newImage, 0, 0, Color.BLACK, null);
-      ImageIO.write(imageJPG, "jpg", baos);
-      LOGGER.info("Convert image to jpg for size reasons: {}", baos.toByteArray().length);
-      return baos.toByteArray();
+      return convertToJpg(newImage, g2);
     } catch (IOException e) {
+      LOGGER.error("IOException :: {}", e.getMessage());
       LOGGER.info("failed to layer image on top, will continue with compressed image");
     }
 
@@ -299,6 +346,42 @@ public class ImageUtils {
     int megapixel = result.setScale(0, RoundingMode.UP).intValue();
     LOGGER.debug("Image megapixel {}", megapixel);
     return megapixel;
+  }
+
+  private static BufferedImage clearUpImage(BufferedImage image, boolean isPdf, Integer angle)
+          throws IOException, InterruptedException, IM4JavaException {
+    final long startTime = System.currentTimeMillis();
+    IMOperation op = new IMOperation();
+    op.addImage();                   // read from stdin
+    op.quality(90d);
+    op.background("transparent");
+
+    if (!isPdf && angle > 0d) {
+      op.rotate(angle.doubleValue());
+    }
+    op.strip();
+    int imageWidth = image.getWidth();
+    if (imageWidth >= 300 & !isPdf && angle > 0d) {
+      op.alpha("set");
+      op.virtualPixel("transparent");
+      op.channel("A");
+      double blurPerc = 0.01;
+      int blurRadus = (int) Math.floor(imageWidth * blurPerc);
+      op.morphology("Distance", "Euclidean:1," + blurRadus + "!");
+      op.p_channel();
+    }
+    op.addImage("png:-");               // write to stdout in tif-format
+
+    // set up command
+    ConvertCmd convert = new ConvertCmd();
+    Stream2BufferedImage s2b = new Stream2BufferedImage();
+    convert.setOutputConsumer(s2b);
+    LOGGER.info("ImageMagick command: {}", op);
+    convert.run(op, image);
+
+    LOGGER.info("Time taken to convert image = seconds {}",
+            (System.currentTimeMillis() - startTime) / 1000);
+    return s2b.getImage();
   }
 
 }

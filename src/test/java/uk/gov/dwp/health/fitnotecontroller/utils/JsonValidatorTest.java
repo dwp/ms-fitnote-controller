@@ -1,6 +1,9 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import uk.gov.dwp.health.fitnotecontroller.domain.Address;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.exception.DeclarationException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
@@ -10,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 
@@ -392,6 +396,57 @@ public class JsonValidatorTest extends JsonValidator {
         assertThat(addressReturned.getStreet(), is("Bakers Street"));
         assertThat(addressReturned.getCity(), is("London"));
         assertThat(addressReturned.getPostcode(), is("NE12 9LG"));
+    }
+
+    @Test
+    public void nullImageOnDataMatrixSubThrowsException() {
+        try {
+            validatorUnderTest.validateAndDataMatrixResult(("{}"));
+            fail("Should have thrown an ImagePayloadException");
+        } catch (ImagePayloadException e) {
+            assertTrue("Expecting an ImagePayloadException", e.getMessage().contains(IMAGE_IS_MANDATORY));
+        }
+    }
+
+    @Test
+    public void nullPositionOnDataMatrixSubThrowsException() {
+        try {
+            validatorUnderTest.validateAndDataMatrixResult(("{ \"finalImage\" :\"123\"}"));
+            fail("Should have thrown an ImagePayloadException");
+        } catch (ImagePayloadException e) {
+            assertTrue("Expecting an ImagePayloadException", e.getMessage().contains(POSITION_IS_MANDATORY));
+        }
+    }
+
+    @Test
+    public void nullJsonOnDataMatrixSubThrowsException() {
+        try {
+            validatorUnderTest.validateAndDataMatrixResult(null);
+            fail("Should have thrown an ImagePayloadException");
+        } catch (ImagePayloadException e) {
+            assertTrue("Expecting an ImagePayloadException", e.getMessage().contains(NO_JSON));
+        }
+    }
+
+    @Test
+    public void invalidJsonOnDataMatrixSubThrowsException() {
+        try {
+            validatorUnderTest.validateAndDataMatrixResult("invalid json");
+            fail("Should have thrown an ImagePayloadException");
+        } catch (ImagePayloadException e) {
+            assertTrue("Expecting an ImagePayloadException", e.getMessage().contains("JsonParseException"));
+        }
+    }
+
+    @Test
+    public void dataMatrixObjectIsReturnedForValidJsonOnDataMatrixSub() throws ImagePayloadException {
+        Point position = new Point(1317, 2085);
+        String json = "{\"finalImage\":\"" + ENCODED_LANDSCAPE_STRING + "\",\"position\":{\"x\":1317.0,\"y\":2085.0}}";
+        DataMatrixResult dataMatrixResult = validatorUnderTest.validateAndDataMatrixResult(json);
+        assertThat(dataMatrixResult, is(notNullValue()));
+        assertThat(dataMatrixResult.getFinalImage(), is(ENCODED_LANDSCAPE_STRING));
+        assertThat(dataMatrixResult.getMatchAngle(), is(0));
+        assertThat(dataMatrixResult.getPosition(), is(position));
     }
 
 }

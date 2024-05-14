@@ -16,6 +16,7 @@ import org.im4java.core.IM4JavaException;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
 import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.domain.Views;
@@ -23,6 +24,7 @@ import uk.gov.dwp.health.fitnotecontroller.exception.ImageCompressException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageTransformException;
+import uk.gov.dwp.health.fitnotecontroller.handlers.MsDataMatrixCreatorHandler;
 import uk.gov.dwp.health.fitnotecontroller.utils.ImageUtils;
 import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.ImageCompressor;
@@ -56,16 +58,19 @@ public class FitnoteSubmitResource extends AbstractResource {
   private FitnoteControllerConfiguration controllerConfiguration;
   private ImageCompressor imageCompressor;
   private OcrChecker ocrChecker;
+  private MsDataMatrixCreatorHandler msDataMatrixCreatorHandler;
   private List acceptedTypes;
 
   public FitnoteSubmitResource(
-          FitnoteControllerConfiguration controllerConfiguration, ImageStorage imageStorage) {
+          FitnoteControllerConfiguration controllerConfiguration, ImageStorage imageStorage,
+          MsDataMatrixCreatorHandler msDataMatrixCreatorHandler) {
     this(
             controllerConfiguration,
             new JsonValidator(controllerConfiguration),
             new OcrChecker(controllerConfiguration),
             imageStorage,
-            new ImageCompressor(controllerConfiguration));
+            new ImageCompressor(controllerConfiguration),
+            msDataMatrixCreatorHandler);
   }
 
   public FitnoteSubmitResource(
@@ -73,12 +78,14 @@ public class FitnoteSubmitResource extends AbstractResource {
           JsonValidator validator,
           OcrChecker ocrChecker,
           ImageStorage imageStorage,
-          ImageCompressor imageCompressor) {
+          ImageCompressor imageCompressor,
+          MsDataMatrixCreatorHandler msDataMatrixCreatorHandler) {
     super(imageStorage, validator);
     this.controllerConfiguration = controllerConfiguration;
     this.ocrChecker = ocrChecker;
     this.imageCompressor = imageCompressor;
     this.acceptedTypes = getAcceptedTypes();
+    this.msDataMatrixCreatorHandler = msDataMatrixCreatorHandler;
   }
 
   @GET
@@ -152,7 +159,7 @@ public class FitnoteSubmitResource extends AbstractResource {
 
       } else {
         response = createResponseOf(HttpStatus.SC_SERVICE_UNAVAILABLE, ERROR_RESPONSE);
-        LOG.error("Java out memory, current free memory {}",
+        LOG.error("Java out of memory, current free memory {}",
                 MemoryChecker.returnCurrentAvailableMemoryInMb(Runtime.getRuntime()));
       }
 
@@ -216,6 +223,7 @@ public class FitnoteSubmitResource extends AbstractResource {
                   return;
                 }
                 byte[] origImage = Base64.decodeBase64(payload.getImage());
+                final boolean isPdf = fileMimeType.equals("pdf");
                 byte[] convertedImg = convertAndCompressImage(payload, fileMimeType);
                 fileMimeType = "jpg";
                 if (convertedImg.length != origImage.length) {
@@ -242,7 +250,7 @@ public class FitnoteSubmitResource extends AbstractResource {
                 }
                 errorIfNull(compressedImage);
                 byte[] finalImage = improveDMRegion(compressedImage, origImage,
-                        expectedFitnoteFormat.getMatchAngle());
+                        expectedFitnoteFormat.getMatchAngle(), payload.getSessionId(), isPdf);
                 setPayloadImageFinal(finalImage, payload);
                 imageStore.updateImageDetails(payload);
                 logTimeTaken(startTime, payload.getFitnoteCheckStatus());
@@ -314,14 +322,43 @@ public class FitnoteSubmitResource extends AbstractResource {
   }
 
   private byte[] improveDMRegion(byte[] compressedImage, byte[] origImage,
-                                 int angle) {
+                                 int angle, String sessionId, boolean isPdf) {
+    byte[] image = compressedImage;
     final long startTime = System.currentTimeMillis();
     LOG.info("Before layer dm region file size (bytes) = {}", compressedImage.length);
-    byte[] finalImg = ImageUtils.layerDMRegionOnImage(compressedImage, origImage, angle);
-    LOG.info("After layer dm region file size (bytes) = {}", finalImg.length);
-    LOG.info("Time taken to overlay DM region = seconds {}",
+    image = overlayDataMatrix(origImage, sessionId, compressedImage, angle, isPdf);
+    if (image == null) {
+      LOG.info("Failed overlayDataMatrix, will attempt layerDMRegionOnImage");
+      image = ImageUtils.layerDMRegionOnImage(compressedImage, origImage, angle);
+    }
+    LOG.info("After improve dm region file size (bytes) = {}", image.length);
+    LOG.info("Time taken to improve DM region = seconds {}",
             (System.currentTimeMillis() - startTime) / 1000);
-    return  finalImg;
+    return image;
+  }
+
+  private byte[] overlayDataMatrix(byte[] origImage, String sessionId, byte[] compressedImage,
+                                   int angle, boolean isPdf) {
+    DataMatrixResult dataMatrixResult = null;
+    try {
+      byte[] rotatedImage = origImage;
+      if (angle > 0) {
+        rotatedImage = ImageUtils.createRotatedCopy(origImage, angle);
+      }
+      String base64Img = Base64.encodeBase64String(rotatedImage);
+      dataMatrixResult = msDataMatrixCreatorHandler.generateBase64DataMatrixFromImage(sessionId,
+              base64Img, isPdf);
+    } catch (IOException e) {
+      LOG.info("Failed to retrieve data matrix");
+      LOG.error("IOException :: {}", e.getMessage());
+      return null;
+    }
+    if (dataMatrixResult == null) {
+      LOG.info("Failed to retrieve data matrix");
+      return null;
+    }
+    LOG.info("Retrieved data matrix");
+    return ImageUtils.placeDMOnImage(compressedImage, dataMatrixResult, isPdf);
   }
 
   private void displayLogs(String fileMimeType, ImagePayload payload) {
@@ -385,22 +422,9 @@ public class FitnoteSubmitResource extends AbstractResource {
               "The encoded string could not be transformed to a BufferedImage");
     }
 
-    return validateLandscapeImage(payload, imageBuf);
-  }
-
-  private boolean validateLandscapeImage(ImagePayload payload, BufferedImage imageBuf) {
-    boolean returnValue = false;
-    if (controllerConfiguration.isLandscapeImageEnforced()) {
-      if (imageBuf.getHeight() > imageBuf.getWidth()) {
-        LOG.error("Image is not landscape (H:{}, W:{})", imageBuf.getHeight(), imageBuf.getWidth());
-        payload.setFitnoteCheckStatus(ImagePayload.Status.FAILED_IMG_SIZE);
-      }
-    } else {
-      payload.setFitnoteCheckStatus(ImagePayload.Status.PASS_IMG_SIZE);
-      LOG.info("NO LANDSCAPE ENFORCEMENT FOR IMAGE DIMENSIONS");
-      returnValue = true;
-    }
-    return returnValue;
+    payload.setFitnoteCheckStatus(ImagePayload.Status.PASS_IMG_SIZE);
+    LOG.info("NO LANDSCAPE ENFORCEMENT FOR IMAGE DIMENSIONS");
+    return true;
   }
 
   private ExpectedFitnoteFormat ocrImage(ImagePayload payload, String fileMimeType)
@@ -511,9 +535,7 @@ public class FitnoteSubmitResource extends AbstractResource {
                     controllerConfiguration.getPdfScanDPI());
     if (pdfImage != null) {
       try (ByteArrayInputStream pdfStream = new ByteArrayInputStream(pdfImage)) {
-        if (validateLandscapeImage(payload, ImageIO.read(pdfStream))) {
-          payload.setImage(Base64.encodeBase64String(pdfImage));
-        }
+        payload.setImage(Base64.encodeBase64String(pdfImage));
       }
 
     } else {

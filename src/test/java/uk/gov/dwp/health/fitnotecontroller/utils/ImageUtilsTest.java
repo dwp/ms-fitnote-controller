@@ -3,25 +3,24 @@ package uk.gov.dwp.health.fitnotecontroller.utils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.im4java.core.IM4JavaException;
+import org.im4java.process.ProcessStarter;
 import org.junit.Before;
 import org.junit.Test;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
-import uk.gov.dwp.health.fitnotecontroller.exception.ImageTransformException;
 
 import javax.imageio.ImageIO;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 
 public class ImageUtilsTest extends ImageUtils {
@@ -29,6 +28,7 @@ public class ImageUtilsTest extends ImageUtils {
     private static final String IMAGE_FILE_HEIC = "/DarkPage.heic";
     private static final String PDF_FILE = "/FullPage_Portrait.pdf";
     private static final String TEXT_FILE = "/test-fail-type.txt";
+    private static final String DATA_MATRIX_FILE = "/datamatrix.png";
 
     private BufferedImage localImage;
 
@@ -57,8 +57,8 @@ public class ImageUtilsTest extends ImageUtils {
         localImage = getTestImage(IMAGE_FILE);
         // needed for testing locally, please comment out when committing code
         // you need ImageMagick installed (https://imagemagick.org)
-        // String myPath="imagemagickinstalledbinlocation";
-        //ProcessStarter.setGlobalSearchPath(myPath);
+        // String myPath="/Users/dillon.vaghela/.homebrew/Cellar/imagemagick/7.1.1-4_1/bin";
+        // ProcessStarter.setGlobalSearchPath(myPath);
         // -------------
     }
 
@@ -127,6 +127,78 @@ public class ImageUtilsTest extends ImageUtils {
     }
 
     @Test
+    public void validateImageDMRegion90() throws IOException {
+        ImagePayload payload = getImagePayload(IMAGE_FILE);
+        byte[] origImage = org.apache.commons.codec.binary.Base64.decodeBase64(payload.getImage());
+        BufferedImage updatedImage = changeBrightness(localImage, -10);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(updatedImage, "jpg", baos);
+        byte[] compressedImage = layerDMRegionOnImage(origImage, baos.toByteArray(), 90);
+        assertNotEquals(compressedImage, origImage);
+    }
+
+    @Test
+    public void validateImageDMOverlay() throws IOException {
+        ImagePayload payload = getImagePayload(IMAGE_FILE);
+        byte[] origImage = org.apache.commons.codec.binary.Base64.decodeBase64(payload.getImage());
+        DataMatrixResult dataMatrixResult = new DataMatrixResult();
+        String base64Img = getEncodedImage(this.getClass().getResource(DATA_MATRIX_FILE).getPath());
+        dataMatrixResult.setFinalImage(base64Img);
+        dataMatrixResult.setPosition(new Point(400,400));
+
+        byte[] newImage = placeDMOnImage(origImage, dataMatrixResult, false);
+        assertNotEquals(newImage, origImage);
+    }
+
+    @Test
+    public void validateImageDMOverlaySmall() throws IOException {
+        ImagePayload payload = getImagePayload(IMAGE_FILE);
+        byte[] origImage = org.apache.commons.codec.binary.Base64.decodeBase64(payload.getImage());
+        DataMatrixResult dataMatrixResult = new DataMatrixResult();
+        BufferedImage image = new BufferedImage(50,50, 1);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+        dataMatrixResult.setFinalImage(Base64.encodeBase64String(baos.toByteArray()));
+        dataMatrixResult.setMatchAngle(90);
+        dataMatrixResult.setPosition(new Point(400,400));
+
+        byte[] newImage = placeDMOnImage(origImage, dataMatrixResult, false);
+        assertNotEquals(newImage, origImage);
+    }
+
+    @Test
+    public void validateImageDMOverlayLarge() throws IOException {
+        ImagePayload payload = getImagePayload(IMAGE_FILE);
+        byte[] origImage = org.apache.commons.codec.binary.Base64.decodeBase64(payload.getImage());
+        DataMatrixResult dataMatrixResult = new DataMatrixResult();
+        BufferedImage image = new BufferedImage(300,300, 1);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+        dataMatrixResult.setFinalImage(Base64.encodeBase64String(baos.toByteArray()));
+        dataMatrixResult.setMatchAngle(90);
+        dataMatrixResult.setPosition(new Point(400,400));
+
+        byte[] newImage = placeDMOnImage(origImage, dataMatrixResult, false);
+        assertNotEquals(newImage, origImage);
+    }
+
+    @Test
+    public void validateImageDMOverlayMediumPdf() throws IOException {
+        ImagePayload payload = getImagePayload(IMAGE_FILE);
+        byte[] origImage = org.apache.commons.codec.binary.Base64.decodeBase64(payload.getImage());
+        DataMatrixResult dataMatrixResult = new DataMatrixResult();
+        BufferedImage image = new BufferedImage(150,150, 1);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+        dataMatrixResult.setFinalImage(Base64.encodeBase64String(baos.toByteArray()));
+        dataMatrixResult.setMatchAngle(90);
+        dataMatrixResult.setPosition(new Point(400,400));
+
+        byte[] newImage = placeDMOnImage(origImage, dataMatrixResult, true);
+        assertNotEquals(newImage, origImage);
+    }
+
+    @Test
     public void testImageLength() throws IOException {
         ImagePayload payload = getImagePayload(IMAGE_FILE);
         int length = getImageLength(payload);
@@ -159,6 +231,25 @@ public class ImageUtilsTest extends ImageUtils {
     public void convertTxtFail() throws IOException, InterruptedException, IM4JavaException {
         byte[] response = convertImage(getObjectAsByte(TEXT_FILE), 100d);
         assertEquals(null, response);
+    }
+
+    @Test
+    public void calculatedPixel() throws IOException, IM4JavaException {
+        int pixel = calculateMegapixel(getObjectAsByte(IMAGE_FILE));
+        assertEquals(13, pixel);
+    }
+
+    @Test
+    public void rotateImage() {
+        BufferedImage rotatedImage = createRotatedCopy(localImage, 90);
+        assertEquals(36578304, rotatedImage.getData().getDataBuffer().getSize());
+    }
+
+    @Test
+    public void rotateImageBytes() throws IOException {
+        byte[] image = getObjectAsByte(IMAGE_FILE);
+        byte[] rotatedImage = createRotatedCopy(image, 90);
+        assertEquals(1760716, rotatedImage.length);
     }
 
     private String getEncodedImage(String imageFileName) throws IOException {

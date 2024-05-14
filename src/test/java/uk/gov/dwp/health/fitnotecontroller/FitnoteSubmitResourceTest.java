@@ -14,17 +14,20 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
 import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.domain.StatusItem;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageCompressException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
+import uk.gov.dwp.health.fitnotecontroller.handlers.MsDataMatrixCreatorHandler;
 import uk.gov.dwp.health.fitnotecontroller.utils.ImageCompressor;
 import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import uk.gov.dwp.health.fitnotecontroller.utils.MemoryChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +80,7 @@ public class FitnoteSubmitResourceTest {
   private static String HEIC_IMAGE;
   private static String LARGE_HEIC;
   private static String EXR_IMAGE;
+  private static String DATA_MATRIX_IMAGE;
 
   private static String PORTRAIT_JSON;
   private static String VALID_JSON;
@@ -105,6 +109,9 @@ public class FitnoteSubmitResourceTest {
   @Mock
   private ImageCompressor imageCompressor;
 
+  @Mock
+  private MsDataMatrixCreatorHandler msDataMatrixCreatorHandler;
+
   @BeforeClass
   public static void init() throws IOException {
     // needed for testing locally, please comment out when committing code
@@ -123,6 +130,7 @@ public class FitnoteSubmitResourceTest {
     LARGE_HEIC = getEncodedImage("src/test/resources/5MB.heic");
     EXR_IMAGE = getEncodedImage("src/test/resources/test-fail-type.txt");
     LARGE_JPG_IMAGE = getEncodedImage("src/test/resources/DarkPageLargeSize.jpg");
+    DATA_MATRIX_IMAGE = getEncodedImage("src/test/resources/datamatrix.png");
 
     PORTRAIT_JSON = "{" + OCR_LOGGING_DATA +  "\"image\":\"" + PORTRAIT_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     VALID_JSON = "{" + OCR_LOGGING_DATA  + "\"image\":\"" + LANDSCAPE_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
@@ -142,7 +150,7 @@ public class FitnoteSubmitResourceTest {
     when(controllerConfiguration.getTargetImageSizeKB()).thenReturn(2);
     when(controllerConfiguration.isGreyScale()).thenReturn(true);
 
-    resourceUnderTest = new FitnoteSubmitResource(controllerConfiguration, validator, ocrChecker, imageStorage, imageCompressor);
+    resourceUnderTest = new FitnoteSubmitResource(controllerConfiguration, validator, ocrChecker, imageStorage, imageCompressor, msDataMatrixCreatorHandler);
 
     ImagePayload returnValue = new ImagePayload();
     returnValue.setSessionId(SESSION);
@@ -196,7 +204,6 @@ public class FitnoteSubmitResourceTest {
 
   @Test
   public void portraitImageFailsChecksWhenOn() throws IOException, CryptoException, ImagePayloadException, InterruptedException {
-    when(controllerConfiguration.isLandscapeImageEnforced()).thenReturn(true);
     ImagePayload imagePayload = imageStorage.getPayload(SESSION);
     imagePayload.setImage(PORTRAIT_FITNOTE_IMAGE);
     imagePayload.setSessionId(SESSION);
@@ -205,7 +212,7 @@ public class FitnoteSubmitResourceTest {
     verify(validator).validateAndTranslateSubmission(PORTRAIT_JSON);
     assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
 
-    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_SIZE");
+    examineImageStatusResponseForValueOrTimeout("PASS_IMG_SIZE");
   }
 
   @Test
@@ -224,6 +231,30 @@ public class FitnoteSubmitResourceTest {
     createAndValidateImage(LARGE_VALID_JSON, true, imagePayload);
     when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
             .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+
+    Response response = resourceUnderTest.submitFitnote(LARGE_VALID_JSON);
+    verify(validator).validateAndTranslateSubmission(LARGE_VALID_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
+
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+  @Test
+  public void jsonIsPassedIntoServiceWithOcrEnabledUsingOverlay200() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException {
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(LARGE_JPG_IMAGE);
+    createAndValidateImage(LARGE_VALID_JSON, true, imagePayload);
+
+    when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
+            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+    DataMatrixResult dataMatrixResult = new DataMatrixResult();
+    dataMatrixResult.setFinalImage(DATA_MATRIX_IMAGE);
+    dataMatrixResult.setPosition(new Point(100,100));
+    when(msDataMatrixCreatorHandler.generateBase64DataMatrixFromImage(anyString(), anyString(),
+          anyBoolean())).thenReturn(dataMatrixResult);
 
     Response response = resourceUnderTest.submitFitnote(LARGE_VALID_JSON);
     verify(validator).validateAndTranslateSubmission(LARGE_VALID_JSON);

@@ -3,11 +3,12 @@
     <suppress>
         <notes>
             <![CDATA[
-                file name: bc-fips-1.0.2.3.jar until a fix is available this is the latest version
+                file name: bc-fips-1.0.2.4.jar until a fix is available this is the latest version
             ]]>
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.bouncycastle/bc\-fips@.*$</packageUrl>
-        <cve>CVE-2022-45146</cve>
+        <cve>CVE-2023-33202</cve>
+        <cve>CVE-2024-29857</cve>
     </suppress>
     <suppress>
         <notes>
@@ -18,15 +19,6 @@
         <packageUrl regex="true">^pkg:maven/io\.dropwizard\.metrics/metrics\-httpclient5@.*$</packageUrl>
         <cve>CVE-2020-13956</cve>
         <cve>CVE-2014-3577</cve>
-    </suppress>
-    <suppress>
-        <notes>
-            <![CDATA[
-                file name: jackson-databind-2.15.2.jar
-            ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
-        <cve>CVE-2023-35116</cve>
     </suppress>
     <suppress>
         <notes>
@@ -47,13 +39,25 @@
         <cve>CVE-2023-34112</cve>
     </suppress>
     <suppress>
-        <notes>
-            <![CDATA[
-                file name:  netty-handler-4.1.97.Final.jar
+        <notes><![CDATA[
+   file name: amqp-client-5.15.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.rabbitmq/amqp\-client@.*$</packageUrl>
+        <cve>CVE-2023-46120</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: ion-java-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/software\.amazon\.ion/ion\-java@.*$</packageUrl>
+        <cve>CVE-2024-21634</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: joda-time-2.8.1.jar
             ]]>
         </notes>
-        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-handler@.*$</packageUrl>
-        <cve>CVE-2023-4586</cve>
+        <packageUrl regex="true">^pkg:maven/joda\-time/joda\-time@.*$</packageUrl>
+        <cve>CVE-2024-23080</cve>
     </suppress>
-
 </suppressions>

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
 import uk.gov.dwp.health.fitnotecontroller.domain.Address;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
 import uk.gov.dwp.health.fitnotecontroller.domain.Declaration;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.exception.DeclarationException;
@@ -22,9 +23,13 @@ import static com.fasterxml.jackson.core.StreamReadConstraints.DEFAULT_MAX_STRIN
 public class JsonValidator {
   private static final Logger LOG = LoggerFactory.getLogger(JsonValidator.class.getName());
   private static final String SESSION_ID_MISSING = "Session ID missing";
+  private static final String IMAGE_MISSING = "Image missing";
+  private static final String POSITION_MISSING = "Position missing";
   private static final String MISSING_ACCEPTED_VALUED = "Missing accepted valued";
   private static final String INVALID_VALUE = "Invalid value";
   static final String SESSION_ID_IS_MANDATORY = "Session ID is mandatory";
+  static final String IMAGE_IS_MANDATORY = "Image is mandatory";
+  static final String POSITION_IS_MANDATORY = "Position is mandatory";
   static final String INVALID_NINO = "Invalid Nino";
   static final String INVALID_MOBILE_NUMBER = "Invalid Mobile Number";
   static final String MISSING_NUMBER_FROM_ADDRESS = "Missing number from address";
@@ -54,6 +59,25 @@ public class JsonValidator {
       }
       payload.setFitnoteCheckStatus(ImagePayload.Status.UPLOADED);
     } catch (ObjectBuildException | IOException e) {
+      throw new ImagePayloadException(e);
+    }
+
+    return payload;
+  }
+
+  public DataMatrixResult validateAndDataMatrixResult(String json) throws ImagePayloadException {
+    DataMatrixResult payload;
+    try {
+      payload = buildObjectFromJson(json, DataMatrixResult.class);
+      if (invalidString(payload.getFinalImage())) {
+        LOG.error(IMAGE_MISSING);
+        throw new ImagePayloadException(IMAGE_IS_MANDATORY);
+      } else if (payload.getPosition() == null) {
+        LOG.error(POSITION_MISSING);
+        throw new ImagePayloadException(POSITION_IS_MANDATORY);
+      }
+    } catch (ObjectBuildException | IOException e) {
+      LOG.error("error parsing DataMatrixResult json");
       throw new ImagePayloadException(e);
     }
 
