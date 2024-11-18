@@ -1,3 +1,19 @@
+<a name="3.1.0"></a>
+# 3.1.0 (2024-11-12)
+
+* release: set version to candidate version in dwp metadata file 3.1.0 ([0328422](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/0328422))
+* release: set version to candidate version in pom 3.1.0 ([86a11c2](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/86a11c2))
+* chore: update non-major maven dependency updates ([11a6f9b](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/11a6f9b))
+* ci: pipeline fix ([63e341a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/63e341a))
+* ci: pipeline fix ([60899be](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/60899be))
+* chore: add/update file via GitLabForm [skip ci] ([477a993](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/477a993))
+* chore: housekeeping pipeline maintenance ([57c1c71](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/57c1c71))
+* ci: fix running app ([1911657](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/1911657))
+* chore: update non-major maven dependency updates ([ab9dcb3](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ab9dcb3))
+* update version [skip ci] ([102001d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/102001d))
+* build: update version ([e418972](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/e418972))
+
+
 <a name="3-0-0"></a>
 # 3-0-0 (2024-04-29)
 

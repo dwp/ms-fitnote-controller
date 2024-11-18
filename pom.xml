@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
 
     <properties>
         <dwp.message-utility.version>4.0.0-5bc46d5a</dwp.message-utility.version>
@@ -22,63 +22,49 @@
         <java.source.version>17</java.source.version>
         <java.target.version>17</java.target.version>
 
-        <plugin.spring-boot.version>3.1.4</plugin.spring-boot.version>
-        <plugin.compiler.version>3.11.0</plugin.compiler.version>
-        <plugin.maven.spotbugs.version>4.7.3.5</plugin.maven.spotbugs.version>
-        <plugin.spotbugs.version>4.7.3</plugin.spotbugs.version>
-        <plugin.surefire.version>3.2.5</plugin.surefire.version>
-        <plugin.jacoco.version>0.8.10</plugin.jacoco.version>
-        <plugin.site.version>4.0.0-M9</plugin.site.version>
+        <plugin.spring-boot.version>3.3.4</plugin.spring-boot.version>
+        <plugin.compiler.version>3.13.0</plugin.compiler.version>
+        <plugin.maven.spotbugs.version>4.8.6.4</plugin.maven.spotbugs.version>
+        <plugin.spotbugs.version>4.8.6</plugin.spotbugs.version>
+        <plugin.surefire.version>3.5.1</plugin.surefire.version>
+        <plugin.jacoco.version>0.8.12</plugin.jacoco.version>
+        <plugin.site.version>4.0.0-M16</plugin.site.version>
 
-        <doxia.version>2.0.0-M7</doxia.version>
+        <doxia.version>2.0.0</doxia.version>
 
-        <log4j.version>2.20.0</log4j.version>
+        <log4j.version>2.24.1</log4j.version>
         <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
-        <snakeyaml.version>2.2</snakeyaml.version>
+        <snakeyaml.version>2.3</snakeyaml.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lettuce-redis.version>6.2.6.RELEASE</lettuce-redis.version>
-        <cucumber-core.version>7.13.0</cucumber-core.version>
-        <tesseract.version>4.1.1-1.5.5</tesseract.version>
+        <lettuce-redis.version>6.4.0.RELEASE</lettuce-redis.version>
+        <cucumber-core.version>7.20.0</cucumber-core.version>
+        <tesseract.version>4.1.1-1.5.6</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>4.0.5</dropwizard.version>
-        <commons-io.version>2.13.0</commons-io.version>
-        <wiremock.version>2.27.2</wiremock.version>
+        <dropwizard.version>4.0.10</dropwizard.version>
+        <commons-io.version>2.17.0</commons-io.version>
+        <wiremock.version>3.0.1</wiremock.version>
         <mockito.version>4.11.0</mockito.version>
-        <jackson.version>2.16.1</jackson.version>
-        <pdfbox.version>3.0.0</pdfbox.version>
+        <jackson.version>2.18.0</jackson.version>
+        <pdfbox.version>3.0.3</pdfbox.version>
         <pdfbox.jbig2.version>3.0.4</pdfbox.jbig2.version>
-        <owasp.version>8.4.0</owasp.version>
+        <owasp.version>10.0.4</owasp.version>
         <junit.version>4.13.2</junit.version>
-        <zxing.version>3.5.2</zxing.version>
-        <netty.version>4.1.104.Final</netty.version>
-        <slf4j.version>2.0.7</slf4j.version>
-        <guava.version>32.1.2-jre</guava.version>
-        <tika.version>2.9.0</tika.version>
+        <zxing.version>3.5.3</zxing.version>
+        <netty.version>4.1.114.Final</netty.version>
+        <slf4j.version>2.0.16</slf4j.version>
+        <guava.version>33.3.1-jre</guava.version>
+        <tika.version>2.9.2</tika.version>
         <im4java.version>1.4.0</im4java.version>
-        <jetty.version>11.0.19</jetty.version>
+        <jetty.version>12.0.14</jetty.version>
+        <bc-fips.version>1.0.2.5</bc-fips.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-io</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
-            <version>${jetty.version}</version>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bc-fips</artifactId>
+            <version>${bc-fips.version}</version>
         </dependency>
         <dependency>
             <groupId>org.im4java</groupId>
