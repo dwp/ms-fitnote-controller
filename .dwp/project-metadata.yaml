@@ -6,11 +6,11 @@ project:
   - project_id: 27164695
     component_name: ms-fitnote-controller
 
-    version: 3.1.0
+    version: 3.2.0
 
     last_verified:
-      date: "2024-11-12"
-      name: "@stephen.nimako"
+      date: "2025-01-31"
+      name: "@shamsi.shumi"
 
     tags:
       payments: false

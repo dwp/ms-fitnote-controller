@@ -1,3 +1,27 @@
+<a name="3.2.0"></a>
+# 3.2.0 (2025-01-31)
+
+* release: set version to candidate version in dwp metadata file 3.2.0 ([41c0cde](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/41c0cde))
+* release: set version to candidate version in pom 3.2.0 ([e184d1e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/e184d1e))
+* Add Dynatrace update ([353ed9a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/353ed9a))
+* bug: fix applications ([657b1e8](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/657b1e8))
+* chore: vulnerabilities ([0b36e28](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/0b36e28))
+* ci: fix pipelines ([2d73aaf](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/2d73aaf))
+* ci: fix pipelines ([37d21ab](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/37d21ab))
+* build: add USER instruction in Dockerfile ([d52406c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/d52406c))
+* bug: fix pipeline ([b3b3016](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/b3b3016))
+* chore: update pipeline-solutions/gitlab to v2.21.0 ([13c3c4e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/13c3c4e))
+* chore: update dependency io.lettuce:lettuce-core to v6.5.1.release ([ac69b7d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ac69b7d))
+* chore: add/update file via GitLabForm [skip ci] ([523d933](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/523d933))
+* chore: add/update file via GitLabForm [skip ci] ([3453070](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3453070))
+* chore: add/update file via GitLabForm [skip ci] ([bad5ee5](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/bad5ee5))
+* chore: add/update file via GitLabForm [skip ci] ([75b2827](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/75b2827))
+* chore: add/update file via GitLabForm [skip ci] ([0fc9e34](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/0fc9e34))
+* chore: update dependency io.netty:netty-common to v4.1.115.final ([271aced](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/271aced))
+* Update project-metadata.yaml [skip ci] ([983c62c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/983c62c))
+* release: set version from 3.1.0 to snapshot 3.2.0-SNAPSHOT [skip ci] ([bee2a74](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/bee2a74))
+
+
 <a name="3.1.0"></a>
 # 3.1.0 (2024-11-12)
 

@@ -6,10 +6,10 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
 
     <properties>
-        <dwp.message-utility.version>4.0.0-5bc46d5a</dwp.message-utility.version>
+        <dwp.message-utility.version>5.0.0-1efb38ca</dwp.message-utility.version>
         <dwp.secure-sockets.version>1.10.0-c057ae20</dwp.secure-sockets.version>
         <dwp.securestrings.version>2.0.0-8c44034d</dwp.securestrings.version>
         <dwp.encoded-log.version>3.0.0-dfda47f2</dwp.encoded-log.version>
@@ -33,30 +33,28 @@
         <doxia.version>2.0.0</doxia.version>
 
         <log4j.version>2.24.1</log4j.version>
-        <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
-        <snakeyaml.version>2.3</snakeyaml.version>
+        <hibernate-validator.version>8.0.2.Final</hibernate-validator.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lettuce-redis.version>6.4.0.RELEASE</lettuce-redis.version>
-        <cucumber-core.version>7.20.0</cucumber-core.version>
+        <lettuce-redis.version>6.5.2.RELEASE</lettuce-redis.version>
+        <cucumber-core.version>7.20.1</cucumber-core.version>
         <tesseract.version>4.1.1-1.5.6</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>4.0.10</dropwizard.version>
-        <commons-io.version>2.17.0</commons-io.version>
+        <dropwizard.version>4.0.12</dropwizard.version>
+        <commons-io.version>2.18.0</commons-io.version>
         <wiremock.version>3.0.1</wiremock.version>
         <mockito.version>4.11.0</mockito.version>
-        <jackson.version>2.18.0</jackson.version>
+        <jackson.version>2.18.2</jackson.version>
         <pdfbox.version>3.0.3</pdfbox.version>
         <pdfbox.jbig2.version>3.0.4</pdfbox.jbig2.version>
-        <owasp.version>10.0.4</owasp.version>
+        <owasp.version>12.0.1</owasp.version>
         <junit.version>4.13.2</junit.version>
         <zxing.version>3.5.3</zxing.version>
-        <netty.version>4.1.114.Final</netty.version>
+        <netty.version>4.1.117.Final</netty.version>
         <slf4j.version>2.0.16</slf4j.version>
-        <guava.version>33.3.1-jre</guava.version>
-        <tika.version>2.9.2</tika.version>
+        <guava.version>33.4.0-jre</guava.version>
+        <tika.version>3.0.0</tika.version>
         <im4java.version>1.4.0</im4java.version>
-        <jetty.version>12.0.14</jetty.version>
         <bc-fips.version>1.0.2.5</bc-fips.version>
     </properties>
 
@@ -80,11 +78,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

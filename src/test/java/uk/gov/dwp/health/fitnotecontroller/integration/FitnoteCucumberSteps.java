@@ -1,7 +1,6 @@
 package uk.gov.dwp.health.fitnotecontroller.integration;
 
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.Before;
@@ -23,6 +22,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.sqs.model.Message;
 import uk.gov.dwp.health.crypto.CryptoConfig;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
 import uk.gov.dwp.health.crypto.CryptoMessage;
@@ -209,7 +209,7 @@ public class FitnoteCucumberSteps {
         assertThat("mismatched messages", queueMessages.size(), is(equalTo(totalMessages)));
 
         assertNotNull("queue contents are null", queueMessages);
-        queueUtilities.deleteMessageFromQueue(queueName, queueMessages.get(0).getReceiptHandle());
+        queueUtilities.deleteMessageFromQueue(queueName, queueMessages.get(0).receiptHandle());
     }
 
     @And("^there are no pending messages on queue \"([^\"]*)\"$")
@@ -224,12 +224,12 @@ public class FitnoteCucumberSteps {
         assertNotNull(queueMessages);
         assertFalse(queueMessages.isEmpty());
 
-        SnsMessageClassItem snsMessageClass = new SnsMessageClassItem().buildMessageClassItem(queueMessages.get(0).getBody());
+        SnsMessageClassItem snsMessageClass = new SnsMessageClassItem().buildMessageClassItem(queueMessages.get(0).body());
         String msgContents = snsMessageClass.getMessage();
 
         if (snsMessageClass.getMessageAttributes().get(EventConstants.KMS_DATA_KEY_MARKER) != null) {
             CryptoMessage cryptoMessage = new CryptoMessage();
-            cryptoMessage.setKey(snsMessageClass.getMessageAttributes().get(EventConstants.KMS_DATA_KEY_MARKER).getStringValue());
+            cryptoMessage.setKey(snsMessageClass.getMessageAttributes().get(EventConstants.KMS_DATA_KEY_MARKER).stringValue());
             cryptoMessage.setMessage(msgContents);
 
             msgContents = awsKmsCryptoClass.decrypt(cryptoMessage);

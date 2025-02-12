@@ -1,7 +1,5 @@
 package uk.gov.dwp.health.fitnotecontroller.application;
 
-import com.amazonaws.services.sns.model.MessageAttributeValue;
-
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.core.Application;
@@ -10,6 +8,7 @@ import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.cluster.RedisClusterClient;
+import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
 import uk.gov.dwp.health.crypto.MessageEncoder;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
