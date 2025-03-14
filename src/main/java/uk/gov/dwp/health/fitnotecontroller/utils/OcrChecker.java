@@ -16,7 +16,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -27,8 +29,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.bytedeco.leptonica.global.lept.pixDestroy;
-import static org.bytedeco.leptonica.global.lept.pixReadMem;
+import static org.bytedeco.leptonica.global.leptonica.pixDestroy;
+import static org.bytedeco.leptonica.global.leptonica.pixReadMem;
 import static org.bytedeco.tesseract.global.tesseract.PSM_SPARSE_TEXT;
 
 public class OcrChecker {
@@ -130,7 +132,7 @@ public class OcrChecker {
   private synchronized ExpectedFitnoteFormat tryImageWithRotations(
       BufferedImage originalImage, String sessionID) throws IOException {
     ExecutorService executorService = Executors.newFixedThreadPool(4);
-    int[] rotationAngles = {0, 180, 90, 270};
+    int[] rotationAngles = {0, 90, 180, 270};
     Map<String, String> errors = new HashMap<>();
 
     CompletionService<ExpectedFitnoteFormat> threadStack =
@@ -233,6 +235,7 @@ public class OcrChecker {
         configuration.getContrastCutOff());
     int height = fitnoteFormat.getFinalImage().getHeight();
     int width = fitnoteFormat.getFinalImage().getWidth();
+    boolean checkNHS = rotation == 0 && !ImageUtils.isLandscape(fitnoteFormat.getFinalImage());
 
     ocrScanTopLeft(
         ocr,
@@ -250,17 +253,26 @@ public class OcrChecker {
           configuration.getDiagonalTarget());
 
     } else {
+      if (checkNHS) {
+        BufferedImage halfImage =
+                fitnoteFormat
+                        .getFinalImage()
+                        .getSubimage(
+                                0, 0, width, height / 2);
+        fitnoteFormat.setFinalImage(halfImage);
+        height = halfImage.getHeight();
+      }
 
       ocrScanBaseRight(
-          ocr,
-          fitnoteFormat,
-          width,
-          height,
-          fitnoteFormat.getTopLeftPercentage() >= configuration.getHighTarget()
-              ? configuration.getDiagonalTarget()
-              : configuration.getHighTarget(),
-          rotation,
-          configuration.getOcrVerticalSlice());
+                ocr,
+                fitnoteFormat,
+                width,
+                height,
+                fitnoteFormat.getTopLeftPercentage() >= configuration.getHighTarget()
+                        ? configuration.getDiagonalTarget()
+                        : configuration.getHighTarget(),
+                rotation,
+                configuration.getOcrVerticalSlice());
 
       if (fitnoteFormat.validateFitnotePassed().equals(ExpectedFitnoteFormat.Status.SUCCESS)) {
         LOG.info("no need to continue scanning, matched on TL/BR");

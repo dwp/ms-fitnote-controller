@@ -29,6 +29,10 @@
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
     <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat"/>
+        <Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" />
+    </Match>
+    <Match>
         <Class name="uk.gov.dwp.health.fitnotecontroller.domain.FitnoteMetadata"/>
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
@@ -39,6 +43,10 @@
     <Match>
         <Class name="uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker"/>
         <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker"/>
+        <Bug pattern="DLS_DEAD_LOCAL_STORE" />
     </Match>
     <Match>
         <Class name="uk.gov.dwp.health.fitnotecontroller.utils.ImageCompressor"/>
@@ -55,5 +63,9 @@
     <Match>
         <Class name="uk.gov.dwp.health.fitnotecontroller.handlers.MsDataMatrixCreatorHandler"/>
         <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat"/>
+        <Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" />
     </Match>
 </FindBugsFilter>

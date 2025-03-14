@@ -1,11 +1,12 @@
 package uk.gov.dwp.health.fitnotecontroller.handlers;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
@@ -55,10 +56,10 @@ public class MsDataMatrixCreatorHandler {
 
     try {
       CloseableHttpResponse response = getTlsBuilder().configureSSLConnection().execute(postMethod);
-      LOG.debug("received {} from {}", response.getStatusLine().getStatusCode(),
+      LOG.debug("received {} from {}", response.getCode(),
           configuration.getDataMatrixCreatorServiceUrl());
 
-      if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+      if (response.getCode() == HttpStatus.SC_OK) {
         LOG.info("successfully received base64 encoded data matrix image for session {}",
             sessionId);
         String json = EntityUtils.toString(response.getEntity());
@@ -68,18 +69,19 @@ public class MsDataMatrixCreatorHandler {
 
 
       } else {
-        throw new IOException(String.format(ERROR_MSG, response.getStatusLine().getStatusCode(),
+        throw new IOException(String.format(ERROR_MSG, response.getCode(),
             EntityUtils.toString(response.getEntity())));
       }
 
     } catch (TLSGeneralException
-                     | NoSuchAlgorithmException
-                     | KeyManagementException
-                     | CertificateException
-                     | KeyStoreException
-                     | UnrecoverableKeyException
-                     | ImagePayloadException
-                     | ClientProtocolException e) {
+             | NoSuchAlgorithmException
+             | KeyManagementException
+             | CertificateException
+             | KeyStoreException
+             | UnrecoverableKeyException
+             | ImagePayloadException
+             | ParseException
+             | ClientProtocolException e) {
       LOG.error(e.getMessage(), e);
     }
 

@@ -12,6 +12,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.im4java.core.IM4JavaException;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
@@ -32,12 +34,12 @@ import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import uk.gov.dwp.health.fitnotecontroller.utils.MemoryChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.PdfImageExtractor;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -49,7 +51,6 @@ import java.util.Optional;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.FAILED;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.SUCCESS;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.PASS_IMG_OCR;
-import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.valueOf;
 
 @Path("/")
 public class FitnoteSubmitResource extends AbstractResource {
@@ -254,6 +255,8 @@ public class FitnoteSubmitResource extends AbstractResource {
                 setPayloadImageFinal(finalImage, payload);
                 imageStore.updateImageDetails(payload);
                 logTimeTaken(startTime, payload.getFitnoteCheckStatus());
+              } catch (InvalidPasswordException e) {
+                setErrorPayload(ImagePayload.Status.FAILED_IMG_PASSWORD, payload, e, startTime);
               } catch (ImageCompressException e) {
                 setErrorPayload(ImagePayload.Status.FAILED_IMG_COMPRESS, payload, e, startTime);
               } catch (ImageTransformException e) {
@@ -269,17 +272,17 @@ public class FitnoteSubmitResource extends AbstractResource {
           ImageTransformException, IOException, ImagePayloadException, InterruptedException,
           IM4JavaException, ImageCompressException {
     byte[] origImage = Base64.decodeBase64(payload.getImage());
-    int megapixel = ImageUtils.calculateMegapixel(origImage);
-    LOG.info("Megapixel count {}", megapixel);
-    if (megapixel > 250) {
-      LOG.error("Megapixel error {}", megapixel);
-      throw new ImageCompressException(
-              "The megapixel count is too high" + megapixel);
-    }
     if (fileMimeType.equals("pdf")) {
       convertPdf(payload);
       origImage = Base64.decodeBase64(payload.getImage());
     } else if (!fileMimeType.equals("jpg")) {
+      int megapixel = ImageUtils.calculateMegapixel(origImage);
+      LOG.info("Megapixel count {}", megapixel);
+      if (megapixel > 250) {
+        LOG.error("Megapixel error {}", megapixel);
+        throw new ImageCompressException(
+                "The megapixel count is too high" + megapixel);
+      }
       // convert all non jpg to jpg
       byte[] convertedImg = ImageUtils.convertImage(origImage, 100d);
       if (convertedImg == null) {
@@ -322,17 +325,29 @@ public class FitnoteSubmitResource extends AbstractResource {
   }
 
   private byte[] improveDMRegion(byte[] compressedImage, byte[] origImage,
-                                 int angle, String sessionId, boolean isPdf) {
+                                 int angle, String sessionId, boolean isPdf) throws IOException {
     byte[] image = compressedImage;
     final long startTime = System.currentTimeMillis();
-    LOG.info("Before layer dm region file size (bytes) = {}", compressedImage.length);
+    if (angle == 0) {
+      BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(origImage));
+      if (!ImageUtils.isLandscape(bufferedImage)) {
+        LOG.info("NHS style fitnote found");
+        BufferedImage halfImage =
+                bufferedImage.getSubimage(
+                        0, 0, bufferedImage.getWidth(), bufferedImage.getHeight() / 2);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(halfImage, "jpg", baos);
+        origImage = baos.toByteArray();
+      }
+    }
+    LOG.debug("Before layer dm region file size (bytes) = {}", compressedImage.length);
     image = overlayDataMatrix(origImage, sessionId, compressedImage, angle, isPdf);
     if (image == null) {
       LOG.info("Failed overlayDataMatrix, will attempt layerDMRegionOnImage");
       image = ImageUtils.layerDMRegionOnImage(compressedImage, origImage, angle);
     }
-    LOG.info("After improve dm region file size (bytes) = {}", image.length);
-    LOG.info("Time taken to improve DM region = seconds {}",
+    LOG.debug("After improve dm region file size (bytes) = {}", image.length);
+    LOG.debug("Time taken to improve DM region = seconds {}",
             (System.currentTimeMillis() - startTime) / 1000);
     return image;
   }
@@ -528,18 +543,15 @@ public class FitnoteSubmitResource extends AbstractResource {
   }
 
   private void convertPdf(ImagePayload payload)
-          throws IOException, ImageTransformException, ImagePayloadException {
+          throws IOException, ImagePayloadException {
     byte[] pdfImage =
             PdfImageExtractor.extractImage(
                     Base64.decodeBase64(payload.getImage()),
                     controllerConfiguration.getPdfScanDPI());
     if (pdfImage != null) {
-      try (ByteArrayInputStream pdfStream = new ByteArrayInputStream(pdfImage)) {
-        payload.setImage(Base64.encodeBase64String(pdfImage));
-      }
-
+      payload.setImage(Base64.encodeBase64String(pdfImage));
     } else {
-      throw new ImageTransformException(
+      throw new ImagePayloadException(
               "The encoded string could not be transformed to a BufferedImage");
     }
   }

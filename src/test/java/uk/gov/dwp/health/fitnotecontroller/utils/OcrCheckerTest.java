@@ -117,6 +117,12 @@ public class OcrCheckerTest {
   }
 
   @Test
+  public void confirmNhsFitnoteFormatWorked() throws IOException {
+    ImagePayload payload = getTestImage("/NHS_fitnote.jpg");
+    assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
+  }
+
+  @Test
   public void confirmPixi3ImageFails() throws IOException {
     ImagePayload payload = getTestImage("/Pixi3.jpg");
     assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.FAILED)));

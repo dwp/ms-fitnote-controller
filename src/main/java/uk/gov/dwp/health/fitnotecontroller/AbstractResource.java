@@ -1,7 +1,7 @@
 package uk.gov.dwp.health.fitnotecontroller;
 
 import jakarta.ws.rs.core.Response;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;

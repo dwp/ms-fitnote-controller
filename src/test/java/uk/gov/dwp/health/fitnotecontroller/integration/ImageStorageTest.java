@@ -1,9 +1,9 @@
 package uk.gov.dwp.health.fitnotecontroller.integration;
 
-import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.lettuce.core.cluster.RedisClusterClient;
 
+import io.lettuce.core.cluster.RedisClusterClient;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
@@ -46,7 +46,7 @@ public class ImageStorageTest {
 
   @Mock private CryptoDataManager cryptoDataManager;
 
-  private  RedisClusterClient redisClient;
+  private RedisClusterClient redisClient;
 
   private ImageStorage instance;
 
@@ -59,14 +59,15 @@ public class ImageStorageTest {
     when(configuration.getImageHashSalt()).thenReturn("salt");
 
     CryptoMessage testCryptoResponse = new CryptoMessage();
-    testCryptoResponse.setKey(Base64.encodeAsString("i-am-a-key".getBytes()));
+    testCryptoResponse.setKey(Base64.encodeBase64String("i-am-a-key".getBytes()));
     testCryptoResponse.setMessage("xxxx-secret-xxxx");
     testCryptoResponse.setHash("hash-hash");
     testCryptoResponse.setSalt("salty");
 
 
-    redisClient = RedisClusterClient.create("redis://" + REDIS_HOST + ":7000");
+    redisClient = RedisClusterClient.create("redis://" + REDIS_HOST + ":6379");
     redisClient.connect().sync().flushall();
+
 
     when(cryptoDataManager.encrypt(anyString())).thenReturn(testCryptoResponse);
     when(configuration.isRedisEncryptMessages()).thenReturn(true);

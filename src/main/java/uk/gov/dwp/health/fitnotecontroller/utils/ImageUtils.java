@@ -180,7 +180,7 @@ public class ImageUtils {
       op.addImage("-");
       op.quality(quality);
       op.strip();
-      op.addImage("jpg:-");               // write to stdout in tif-format
+      op.addImage("jpg:-");
 
       // set up pipe(s): you can use one or two pipe objects
       ByteArrayInputStream fis = new ByteArrayInputStream(jpegData);
@@ -211,10 +211,10 @@ public class ImageUtils {
           throws IOException, InterruptedException, IM4JavaException {
     final long startTime = System.currentTimeMillis();
     IMOperation op = new IMOperation();
-    op.addImage();                   // read from stdin
+    op.addImage();
     op.quality(quality);
     op.strip();
-    op.addImage("jpg:-");               // write to stdout in tif-format
+    op.addImage("jpg:-");
 
     // set up pipe(s): you can use one or two pipe objects
     ByteArrayOutputStream fos = new ByteArrayOutputStream();
@@ -352,7 +352,7 @@ public class ImageUtils {
           throws IOException, InterruptedException, IM4JavaException {
     final long startTime = System.currentTimeMillis();
     IMOperation op = new IMOperation();
-    op.addImage();                   // read from stdin
+    op.addImage();
     op.quality(90d);
     op.background("transparent");
 
@@ -382,6 +382,10 @@ public class ImageUtils {
     LOGGER.info("Time taken to convert image = seconds {}",
             (System.currentTimeMillis() - startTime) / 1000);
     return s2b.getImage();
+  }
+
+  public static boolean isLandscape(BufferedImage image) {
+    return image.getWidth() > image.getHeight();
   }
 
 }

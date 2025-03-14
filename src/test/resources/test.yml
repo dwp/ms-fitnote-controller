@@ -14,7 +14,7 @@ imageReplayExpirySeconds: 30
 maxAllowedImageReplay: 10
 imageHashSalt: salty
 
-redisStoreURI: redis-cluster:7000
+redisStoreURI: redis-cluster:6379
 
 snsTopicName: fitnote-topic-exchange
 snsRoutingKey: sns.fitnote.new
@@ -35,7 +35,7 @@ snsConfiguration:
   largePayloadSupportEnabled: true
   pathStyleAccessEnabled: true
   s3BucketName: "sns-bucket"
-  region: US_EAST_1
+  region: us-east-1
 
 ocrChecksEnabled: true
 forceLandscapeImageSubmission: false

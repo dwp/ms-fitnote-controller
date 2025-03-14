@@ -17,7 +17,7 @@ Managed by DWP by Health PDU.
 
 ## Development
 
-Dev using Java 11, Dropwizard
+Dev using Java 17, Dropwizard
 
 Clone repository and run `mvn clean package`
 
@@ -97,6 +97,7 @@ currently the list of statuses are
 * `FAILED_IMG_SIZE`
 * `PASS_IMG_SIZE`
 * `FAILED_IMG_OCR`
+* `FAILED_IMG_PASSWORD`
 * `FAILED_IMG_OCR_PARTIAL`
 * `PASS_IMG_OCR`
 * `SUCCEEDED`
@@ -318,3 +319,24 @@ To create production artefacts the following process must be followed https://co
 
 **Run Docker Tests**
 docker-compose up --exit-code-from  cucumber-tests
+
+## Update dependencies 
+
+Config sits in maven-version-rules.xml
+
+**To display updates**
+`mvn versions:display-dependency-updates`
+
+**To apply updates**
+`mvn versions:update-properties -DgenerateBackupPoms=false`
+
+## Scripts
+
+Scripts to speed up general maintenance
+Strongly recommended to run before pushing
+
+**Update metadata**
+`./updateMetadata.sh`
+
+**Run mvn jobs that run in gitlab**
+`./mvnCheck.sh`

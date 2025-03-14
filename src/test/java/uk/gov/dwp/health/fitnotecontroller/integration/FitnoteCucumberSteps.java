@@ -1,6 +1,5 @@
 package uk.gov.dwp.health.fitnotecontroller.integration;
 
-import com.amazonaws.regions.Regions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.Before;
@@ -22,6 +21,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.model.Message;
 import uk.gov.dwp.health.crypto.CryptoConfig;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
@@ -76,9 +76,9 @@ public class FitnoteCucumberSteps {
 
         // create local properties to negate KMS from needing to access Metadata Service for IAM role privs
         System.setProperty("aws.accessKeyId", "this_is_my_system_property_key");
-        System.setProperty("aws.secretKey", "abcd123456789");
+        System.setProperty("aws.secretAccessKey", "abcd123456789");
 
-        LOG.info("Flushing redis contents : {}", RedisClusterClient.create("redis://" + redisHost + ":7000")
+        LOG.info("Flushing redis contents : {}", RedisClusterClient.create("redis://" + redisHost + ":6379")
                 .connect()
                 .sync()
                 .flushall());
@@ -89,7 +89,7 @@ public class FitnoteCucumberSteps {
         snsConfig.setLargePayloadSupportEnabled(false);
         snsConfig.setPathStyleAccessEnabled(true);
         snsConfig.setS3BucketName("sns-bucket");
-        snsConfig.setRegion(Regions.US_EAST_1);
+        snsConfig.setRegion(Region.US_EAST_1);
 
         AmazonConfigBase sqsConfig = new AmazonConfigBase();
         sqsConfig.setEndpointOverride(LOCALSTACK_HOST);
@@ -97,7 +97,7 @@ public class FitnoteCucumberSteps {
         sqsConfig.setLargePayloadSupportEnabled(false);
         sqsConfig.setPathStyleAccessEnabled(true);
         sqsConfig.setS3BucketName("sqs-bucket");
-        sqsConfig.setRegion(Regions.US_EAST_1);
+        sqsConfig.setRegion(Region.US_EAST_1);
 
         queueUtilities = new AmazonQueueUtilities(sqsConfig, snsConfig);
 
@@ -132,9 +132,10 @@ public class FitnoteCucumberSteps {
     public void iHitTheServiceUrlWithSessionIdGettingReturnStatusAndFinallyContainingTheFollowingJsonBody(String url, String sessionId, int status, Map<String, String> expectedValues) throws IOException, InterruptedException {
         String fullUrl = String.format("%s?sessionId=%s", url, sessionId);
         long startTime = System.currentTimeMillis();
+        int timeout = expectedValues.get("fitnoteStatus").equals("NEVER_GONNA_HAPPEN") ? 60000 : IMAGE_STATUS_QUERY_TIMEOUT_MILLIS;
 
         do {
-            if ((System.currentTimeMillis() - startTime) > IMAGE_STATUS_QUERY_TIMEOUT_MILLIS) {
+            if ((System.currentTimeMillis() - startTime) > timeout) {
                 throw new IOException(String.format("TIMING OUT :: '%s' request after %d milliseconds with no match on response body", url, IMAGE_STATUS_QUERY_TIMEOUT_MILLIS));
             }
 

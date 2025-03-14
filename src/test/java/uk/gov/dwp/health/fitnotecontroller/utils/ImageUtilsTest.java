@@ -252,6 +252,17 @@ public class ImageUtilsTest extends ImageUtils {
         assertEquals(1760716, rotatedImage.length);
     }
 
+    @Test
+    public void testImageLandscape() {
+        assertTrue(isLandscape(localImage));
+    }
+
+    @Test
+    public void testImagePortrait() {
+        BufferedImage rotatedImage = createRotatedCopy(localImage, 90);
+        assertFalse(isLandscape(rotatedImage));
+    }
+
     private String getEncodedImage(String imageFileName) throws IOException {
         File file = new File(imageFileName);
         return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));

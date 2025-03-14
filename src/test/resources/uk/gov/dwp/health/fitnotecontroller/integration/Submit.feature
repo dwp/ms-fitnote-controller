@@ -63,10 +63,30 @@ Feature: Fitnote submit
     Given the http client is up
     When I hit the service url "http://localhost:9101/photo" with the following json body
       | image     | /OcrTest.heic |
-      | sessionId | "3"          |
+      | sessionId | "47"          |
     Then I receive a HTTP response of 202
-    And I hit the service url "http://localhost:9101/imagestatus" with session id "3" getting return status 200 and finally containing the following json body
+    And I hit the service url "http://localhost:9101/imagestatus" with session id "47" getting return status 200 and finally containing the following json body
       | fitnoteStatus | SUCCEEDED |
+
+  @FitnoteSubmitTest
+  Scenario: Submit readable fitnote NHS format
+    Given the http client is up
+    When I hit the service url "http://localhost:9101/photo" with the following json body
+      | image     | /NHS_fitnote.pdf |
+      | sessionId | "25"             |
+    Then I receive a HTTP response of 202
+    And I hit the service url "http://localhost:9101/imagestatus" with session id "25" getting return status 200 and finally containing the following json body
+      | fitnoteStatus | SUCCEEDED |
+
+  @FitnoteSubmitTest
+  Scenario: Submit a pdf password fitnote is a FAILED_IMG_PASSWORD
+    Given the http client is up
+    When I hit the service url "http://localhost:9101/photo" with the following json body
+      | image     | /password.pdf |
+      | sessionId | "24"          |
+    Then I receive a HTTP response of 202
+    And I hit the service url "http://localhost:9101/imagestatus" with session id "24" getting return status 200 and finally containing the following json body
+      | fitnoteStatus | FAILED_IMG_PASSWORD |
 
   @FitnoteSubmitTest
   Scenario: Submit invalid json as Fitnote Image

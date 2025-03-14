@@ -14,7 +14,7 @@ imageReplayExpirySeconds: 100
 maxAllowedImageReplay: 10
 imageHashSalt: salty
 
-redisStoreURI: redis-cluster:7000
+redisStoreURI: redis-cluster:6379
 redisEncryptMessages: true
 
 redisKmsCryptoConfiguration:

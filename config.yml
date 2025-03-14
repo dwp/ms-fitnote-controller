@@ -37,11 +37,12 @@ snsConfiguration:
   largePayloadSupportEnabled: ${LARGE_PAYLOAD_SUPPORT_ENABLED:-true}
   pathStyleAccessEnabled: ${PATH_STYLE_ACCESS_ENABLED:-true}
   s3BucketName: ${S3_BUCKET_NAME}
-  region: ${REGION:-EU_WEST_2}
+  region: ${REGION:-eu-west-2}
 
 ocrChecksEnabled: ${OCR_CHECKS_ENABLED:-true}
 forceLandscapeImageSubmission: ${FORCE_LANDSCAPE_IMAGE_SUBMISSION:-false}
 tesseractFolderPath: /tessdata
+ocrVerticalSlice: ${OCR_VERTICAL_SLICE:-6}
 
 rejectingOversizeImages: ${REJECTING_OVERSIZE_IMAGES:-true}
 targetImageSizeKB: ${TARGET_IMAGE_SIZE_KB:-500}

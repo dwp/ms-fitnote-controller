@@ -1,5 +1,6 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -22,6 +23,15 @@ public class PdfImageExtractorTest {
         } catch (ImagePayloadException e ) {
             assertThat("cannot accept null", e.getMessage(), is(equalTo("incoming byte array cannot be null")));
         } catch (Exception ignored){}
+    }
+
+    @Test
+    public void passwordDocUnsuccessful() throws IOException, ImagePayloadException {
+        try {
+            PdfImageExtractor.extractImage(FileUtils.readFileToByteArray(new File("src/test/resources/password.pdf")), 300);
+        } catch (InvalidPasswordException e ) {
+            assertThat(e.getMessage(), is(equalTo("Cannot decrypt PDF, the password is incorrect")));
+        }
     }
 
     @Test

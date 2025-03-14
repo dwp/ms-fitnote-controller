@@ -57,7 +57,6 @@ public class ImageStorage {
     if (redisConnection == null || !redisConnection.isOpen()) {
       redisConnection = redisClient.connect();
     }
-
     return redisConnection.sync();
   }
 

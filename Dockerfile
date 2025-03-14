@@ -1,15 +1,15 @@
-FROM maven:3.9.8-eclipse-temurin-17@sha256:d13b3f2d98f2522904fa60ffb02e7611c8d60072bcad21eee5c4177b848737d9 as builder
+FROM maven:3.9.9-eclipse-temurin-17@sha256:b9fc7a802745f5f4dec3007d7668c8c9da845ac41d37737ec6442a35b853c258 as builder
 RUN wget --progress=dot:giga https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.1-10.tar.gz \
   && tar xzf 7.1.1-10.tar.gz
 
-RUN groupadd --gid 1000 nonroot \
-    && useradd --uid 1000 --gid 1000 -m nonroot
+RUN groupadd --gid 1001 nonroot \
+    && useradd --uid 1001 --gid 1001 -m nonroot
 USER nonroot
 
-FROM maven:3.9.8-eclipse-temurin-17@sha256:d13b3f2d98f2522904fa60ffb02e7611c8d60072bcad21eee5c4177b848737d9
+FROM maven:3.9.9-eclipse-temurin-17@sha256:b9fc7a802745f5f4dec3007d7668c8c9da845ac41d37737ec6442a35b853c258
 
-RUN groupadd --gid 1000 nonroot \
-    && useradd --uid 1000 --gid 1000 -m nonroot
+RUN groupadd --gid 1001 nonroot \
+    && useradd --uid 1001 --gid 1001 -m nonroot
 
 WORKDIR /
 COPY ./target/ms-fitnote-controller*.jar /ms-fitnote-controller.jar
@@ -20,19 +20,19 @@ COPY --from=pik94420.live.dynatrace.com/linux/oneagent-codemodules:java / /
 ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
 
 RUN apt-get update && apt-get install -y \
-	autoconf=2.71-2 \
-	pkg-config=0.29.2-1ubuntu3 \
-	build-essential=12.9ubuntu3 \
-	curl=7.81.0-1ubuntu1.16 \
-	libcurl3-gnutls=7.81.0-1ubuntu1.16 \
-	locales=2.35-0ubuntu3.8 \
-	libc-bin=2.35-0ubuntu3.8 \
-	libpng-dev=1.6.37-3build5 \
-	libde265-dev=1.0.8-1ubuntu0.3 \
-	libheif-dev=1.12.0-2build1 \
-	libjpeg-dev=8c-2ubuntu10 \
-	libtiff-dev=4.3.0-6ubuntu0.10 \
-	libmagickcore-dev=8:6.9.11.60+dfsg-1.3ubuntu0.22.04.5 \
+	autoconf=2.71-3 \
+	pkgconf=1.8.1-2build1 \
+	build-essential=12.10ubuntu1 \
+	curl=8.5.0-2ubuntu10.6 \
+	libcurl3-gnutls=8.5.0-2ubuntu10.6 \
+	locales=2.39-0ubuntu8.4 \
+	libc-bin=2.39-0ubuntu8.4 \
+	libpng-dev=1.6.43-5build1 \
+	libde265-0=1.0.15-1build3 \
+	libheif-dev=1.17.6-1ubuntu4.1 \
+	libjpeg-dev=8c-2ubuntu11 \
+	libtiff-dev=4.5.1+git230720-4ubuntu2.2 \
+	libmagickcore-dev=8:6.9.12.98+dfsg1-5.2build2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -52,7 +52,7 @@ RUN sh ./ImageMagick-7.1.1-10/configure \
   --with-tiff=yes \
   --with-xml=yes \
   --with-gs-font-dir=yes \
-  && make -j \
+  && make -j4 \
   && make install \
   && ldconfig /usr/local/lib/w
 

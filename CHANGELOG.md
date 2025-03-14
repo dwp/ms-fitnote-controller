@@ -1,3 +1,20 @@
+<a name="4.0.0"></a>
+# 4.0.0 (2025-03-10)
+
+* release: set version to candidate version in dwp metadata file 4.0.0 ([9ad56f5](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/9ad56f5))
+* release: set version to candidate version in pom 4.0.0 ([3527afb](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3527afb))
+* ci: pipeline maintenance ([583485b](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/583485b))
+* update dependencies and update readme/pom to ignore mockito due to tests push tesseract changes ([37c7c51](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/37c7c51))
+* chore: update bitnami/redis-cluster docker digest to 168ce9b ([987d844](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/987d844))
+* feature: return new error ([f69dd4c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/f69dd4c))
+* chore: update pipeline-solutions/gitlab to v2.14.0 ([7706949](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/7706949))
+* release: set version from 3.2.0 to snapshot 3.3.0-SNAPSHOT [skip ci] ([8bc67c1](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/8bc67c1))
+* chore: update bitnami/redis-cluster docker digest to 8b2c87c ([bde8671](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/bde8671))
+* chore: update maven docker tag to v3.9.9 ([0c5a444](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/0c5a444))
+* fix region for new aws v2 format ([39d5638](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/39d5638))
+* feature: update to http-client5 ([80a5223](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/80a5223))
+
+
 <a name="3.2.0"></a>
 # 3.2.0 (2025-01-31)
 

@@ -1,6 +1,7 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -45,6 +46,10 @@ public class PdfImageExtractor {
         ImageIO.write(imageBuffer, "jpg", outputStream);
         extractedImage = outputStream.toByteArray();
       }
+
+    } catch (InvalidPasswordException e) {
+      LOG.error(e.getMessage());
+      throw e;
 
     } catch (IOException e) {
       LOG.error("Incoming byte array is not a pdf file :: {}", e.getMessage());

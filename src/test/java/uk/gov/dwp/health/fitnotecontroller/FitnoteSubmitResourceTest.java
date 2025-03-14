@@ -6,6 +6,7 @@ import com.googlecode.junittoolbox.RunnableAssert;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.hc.core5.http.ParseException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -76,6 +77,8 @@ public class FitnoteSubmitResourceTest {
   private static String LANDSCAPE_FITNOTE_IMAGE;
   private static String PORTRAIT_FITNOTE_IMAGE;
   private static String PDF_FITNOTE_IMAGE;
+  private static String PDF_PASSWORD_FITNOTE_IMAGE;
+  private static String PDF_NHS_FITNOTE_IMAGE;
   private static String LARGE_JPG_IMAGE;
   private static String HEIC_IMAGE;
   private static String LARGE_HEIC;
@@ -86,6 +89,8 @@ public class FitnoteSubmitResourceTest {
   private static String VALID_JSON;
   private static String LARGE_VALID_JSON;
   private static String PDF_JSON;
+  private static String PDF_PASSWORD_JSON;
+  private static String PDF_NHS_JSON;
   private static String HEIC_JSON;
   private static String LARGE_HEIC_JSON;
   private static String EXR_JSON;
@@ -126,6 +131,8 @@ public class FitnoteSubmitResourceTest {
     LANDSCAPE_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Landscape.jpg");
     PORTRAIT_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.jpg");
     PDF_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.pdf");
+    PDF_PASSWORD_FITNOTE_IMAGE = getEncodedImage("src/test/resources/password.pdf");
+    PDF_NHS_FITNOTE_IMAGE = getEncodedImage("src/test/resources/NHS_fitnote.pdf");
     HEIC_IMAGE = getEncodedImage("src/test/resources/DarkPage.heic");
     LARGE_HEIC = getEncodedImage("src/test/resources/5MB.heic");
     EXR_IMAGE = getEncodedImage("src/test/resources/test-fail-type.txt");
@@ -136,6 +143,8 @@ public class FitnoteSubmitResourceTest {
     VALID_JSON = "{" + OCR_LOGGING_DATA  + "\"image\":\"" + LANDSCAPE_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     LARGE_VALID_JSON = "{" + OCR_LOGGING_DATA  + "\"image\":\"" + LARGE_JPG_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     PDF_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    PDF_PASSWORD_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_PASSWORD_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    PDF_NHS_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_NHS_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + HEIC_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     EXR_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXR_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     LARGE_HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + LARGE_HEIC + "\",\"sessionId\":\"" + SESSION + "\"}";
@@ -242,7 +251,7 @@ public class FitnoteSubmitResourceTest {
   }
 
   @Test
-  public void jsonIsPassedIntoServiceWithOcrEnabledUsingOverlay200() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException {
+  public void jsonIsPassedIntoServiceWithOcrEnabledUsingOverlay200() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException, ParseException {
     when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
     ImagePayload imagePayload = imageStorage.getPayload(SESSION);
     imagePayload.setImage(LARGE_JPG_IMAGE);
@@ -315,6 +324,26 @@ public class FitnoteSubmitResourceTest {
             .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
     Response response = resourceUnderTest.submitFitnote(PDF_JSON);
     verify(validator).validateAndTranslateSubmission(PDF_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
+
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+  @Test
+  public void jsonIsPassedIntoServiceWithOcrEnabledAnd202IsReturnedNhsPdfStyle() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException {
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+    when(controllerConfiguration.getPdfScanDPI()).thenReturn(300);
+
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(PDF_NHS_FITNOTE_IMAGE);
+    createAndValidateImage(PDF_NHS_JSON, true, imagePayload);
+
+    when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
+            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+    Response response = resourceUnderTest.submitFitnote(PDF_NHS_JSON);
+    verify(validator).validateAndTranslateSubmission(PDF_NHS_JSON);
     assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
 
     examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
@@ -487,6 +516,22 @@ public class FitnoteSubmitResourceTest {
     examineImageStatusResponseForValueOrTimeout("FAILED_IMG_FILE_TYPE");
   }
 
+  @Test
+  public void testPasswordPdfError() throws CryptoException, ImagePayloadException, IOException, InterruptedException {
+    when(controllerConfiguration.getPdfScanDPI()).thenReturn(300);
+
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(PDF_PASSWORD_FITNOTE_IMAGE);
+    createAndValidateImage(PDF_PASSWORD_JSON, true, imagePayload);
+
+    Response response = resourceUnderTest.submitFitnote(PDF_PASSWORD_JSON);
+    verify(validator).validateAndTranslateSubmission(PDF_PASSWORD_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+    verifyNoMoreInteractions(ocrChecker);
+
+    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_PASSWORD");
+  }
+
   private void examineImageStatusResponseForValueOrTimeout(String expectedStatus) throws InterruptedException {
     TimeUnit.SECONDS.sleep(1); // pause before first execution to allow for async processes to begin/end
     PollingWait wait = new PollingWait().timeoutAfter(59, SECONDS).pollEvery(1, SECONDS);
@@ -495,7 +540,7 @@ public class FitnoteSubmitResourceTest {
       @Override
       public void run() throws Exception {
         Response response = resourceUnderTest.checkFitnote(SESSION_ID);
-        assertEquals(decodeResponse(response.getEntity().toString()).getFitnoteStatus(), expectedStatus);
+        assertEquals(expectedStatus, decodeResponse(response.getEntity().toString()).getFitnoteStatus());
       }
     });
   }
