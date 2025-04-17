@@ -1,4 +1,4 @@
-FROM maven:3.9.9-eclipse-temurin-17@sha256:b9fc7a802745f5f4dec3007d7668c8c9da845ac41d37737ec6442a35b853c258 as builder
+FROM maven:3.9.9-eclipse-temurin-17@sha256:254280209db3b7a9c4256c5e71fa03ef3d8157379e141b52eba0a15b76d908f5 as builder
 RUN wget --progress=dot:giga https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.1-10.tar.gz \
   && tar xzf 7.1.1-10.tar.gz
 
@@ -6,7 +6,7 @@ RUN groupadd --gid 1001 nonroot \
     && useradd --uid 1001 --gid 1001 -m nonroot
 USER nonroot
 
-FROM maven:3.9.9-eclipse-temurin-17@sha256:b9fc7a802745f5f4dec3007d7668c8c9da845ac41d37737ec6442a35b853c258
+FROM maven:3.9.9-eclipse-temurin-17@sha256:254280209db3b7a9c4256c5e71fa03ef3d8157379e141b52eba0a15b76d908f5
 
 RUN groupadd --gid 1001 nonroot \
     && useradd --uid 1001 --gid 1001 -m nonroot

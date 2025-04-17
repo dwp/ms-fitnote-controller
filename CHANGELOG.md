@@ -1,3 +1,16 @@
+<a name="4.0.1"></a>
+# 4.0.1 (2025-04-11)
+
+* release: set version to candidate version in dwp metadata file 4.0.1 ([9d456c1](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/9d456c1))
+* release: set version to candidate version in pom 4.0.1 ([c532af9](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/c532af9))
+* chore: update non-major maven dependency updates ([6a1c905](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/6a1c905))
+* chore: update maven:3.9.9-eclipse-temurin-17 docker digest to 2542802 ([fb3c030](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/fb3c030))
+* chore: update bitnami/redis-cluster docker digest to 8b96e0e ([c28e84a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/c28e84a))
+* ci: pipeline execution policy ([bfbf1cb](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/bfbf1cb))
+* release: set version from 4.0.0 to snapshot 4.1.0-SNAPSHOT [skip ci] ([cb3a9c1](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/cb3a9c1))
+* chore: update bitnami/redis-cluster docker digest to f7f6d62 ([2c8acaf](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/2c8acaf))
+
+
 <a name="4.0.0"></a>
 # 4.0.0 (2025-03-10)
 
