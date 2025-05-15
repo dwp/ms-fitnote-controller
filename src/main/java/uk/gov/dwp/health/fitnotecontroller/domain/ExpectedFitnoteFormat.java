@@ -173,7 +173,7 @@ public class ExpectedFitnoteFormat {
   public String getLoggingString() {
     return String.format(
         "%s TL:%d BR:%d BL:%d TR:%d REASON:%s",
-        validateFitnotePassed().toString(),
+        getStatus().toString(),
         getTopLeftPercentage(),
         getBaseRightPercentage(),
         getBaseLeftPercentage(),
@@ -201,8 +201,14 @@ public class ExpectedFitnoteFormat {
     return baseRightStringFound == null ? "" : baseRightStringFound;
   }
 
-  public Status validateFitnotePassed() {
+  public Status validateFitnotePassed(boolean portrait) {
     if (checkHighMarks() > 0) {
+      if (portrait && ((getBaseRightPercentage() < 80 && getBaseLeftPercentage() == -1)
+          || getBaseLeftPercentage() < 80)) {
+        setStatus(Status.FAILED);
+        setFailureReason("FAILED - Not NHS/Portrait");
+        return getStatus();
+      }
       if (validateDiagonals()) {
         setStatus(Status.SUCCESS);
         return getStatus();
@@ -218,6 +224,9 @@ public class ExpectedFitnoteFormat {
         setStatus(Status.PARTIAL);
         setFailureReason("PARTIAL - leftHandSide");
       }
+    } else if (portrait) {
+      setStatus(Status.FAILED);
+      setFailureReason("FAILED - Portrait image");
     } else {
       setStatus(Status.FAILED);
       setFailureReason("FAILED - checkHighMarks");

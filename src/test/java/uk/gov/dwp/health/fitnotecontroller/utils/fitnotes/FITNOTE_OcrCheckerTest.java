@@ -145,7 +145,7 @@ public class FITNOTE_OcrCheckerTest {
     ExpectedFitnoteFormat format = checker.imageContainsReadableText(getTestImage("/fitnotes/right_hand_side_only.jpg"));
 
     assertThat(format.getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.FAILED)));
-    assertThat(format.getFailureReason(), is(equalTo("{0=FAILED - checkHighMarks, 90=FAILED - checkHighMarks, 180=FAILED - checkHighMarks, 270=FAILED - checkHighMarks}")));
+    assertThat(format.getFailureReason(), is(equalTo("{0=FAILED - checkHighMarks, 90=FAILED - checkHighMarks, 180=FAILED - Portrait image, 270=FAILED - checkHighMarks}")));
 
   }
 

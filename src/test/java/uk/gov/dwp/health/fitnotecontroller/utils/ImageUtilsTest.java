@@ -1,26 +1,24 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
-import org.im4java.core.IM4JavaException;
-import org.im4java.process.ProcessStarter;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
-import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
-import javax.imageio.ImageIO;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import javax.imageio.ImageIO;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.im4java.core.IM4JavaException;
+import org.junit.Before;
+import org.junit.Test;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
+import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 
 
 public class ImageUtilsTest extends ImageUtils {
@@ -225,6 +223,15 @@ public class ImageUtilsTest extends ImageUtils {
         byte[] convertedImage = convertImage(localImage, 100d);
         String mimeType = getImageMimeType(convertedImage);
         assertEquals("jpg", mimeType);
+    }
+
+    @Test
+    public void testImageCompression() throws IOException, InterruptedException, IM4JavaException {
+        byte[] image  = getObjectAsByte(IMAGE_FILE);
+        int targetSize = 1000;
+        byte[] response  = compressImage(image, targetSize);
+        assertTrue(image.length > response.length);
+        assertTrue(response.length < 1000 * 1000);
     }
 
     @Test

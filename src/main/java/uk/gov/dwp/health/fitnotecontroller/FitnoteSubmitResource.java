@@ -1,20 +1,37 @@
 package uk.gov.dwp.health.fitnotecontroller;
 
+import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.FAILED;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.SUCCESS;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.PASS_IMG_OCR;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import javax.imageio.ImageIO;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.im4java.core.IM4JavaException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.exception.CryptoException;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
@@ -27,30 +44,12 @@ import uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageTransformException;
 import uk.gov.dwp.health.fitnotecontroller.handlers.MsDataMatrixCreatorHandler;
-import uk.gov.dwp.health.fitnotecontroller.utils.ImageUtils;
-import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.ImageCompressor;
+import uk.gov.dwp.health.fitnotecontroller.utils.ImageUtils;
 import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import uk.gov.dwp.health.fitnotecontroller.utils.MemoryChecker;
+import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.PdfImageExtractor;
-import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.FAILED;
-import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.SUCCESS;
-import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.PASS_IMG_OCR;
 
 @Path("/")
 public class FitnoteSubmitResource extends AbstractResource {
@@ -240,14 +239,16 @@ public class FitnoteSubmitResource extends AbstractResource {
                   return;
                 }
 
-                byte[] compressedImage;
+                byte[] compressedImage = Base64.decodeBase64(payload.getImage());
+                int targetImageSizeKb = controllerConfiguration.getTargetImageSizeKB();
                 try (ByteArrayInputStream imageStream =
-                             new ByteArrayInputStream(Base64.decodeBase64(payload.getImage()))) {
-                  compressedImage =
-                          imageCompressor.compressBufferedImage(fileMimeType,
-                                  ImageIO.read(imageStream),
-                                  controllerConfiguration.getTargetImageSizeKB(),
-                                  controllerConfiguration.isGreyScale());
+                         new ByteArrayInputStream(compressedImage)) {
+                  compressedImage = compressedImage.length < (targetImageSizeKb * 1000)
+                      ? compressedImage :
+                      imageCompressor.compressBufferedImage(fileMimeType,
+                          ImageIO.read(imageStream),
+                          controllerConfiguration.getTargetImageSizeKB(),
+                          controllerConfiguration.isGreyScale());
                 }
                 errorIfNull(compressedImage);
                 byte[] finalImage = improveDMRegion(compressedImage, origImage,
@@ -451,14 +452,15 @@ public class FitnoteSubmitResource extends AbstractResource {
       return expectedFitnoteFormat;
 
     } else {
-      byte[] compressedImage;
+      byte[] compressedImage = Base64.decodeBase64(payload.getImage());
+      int scanTargetImageSizeKb = controllerConfiguration.getScanTargetImageSizeKb();
       try (ByteArrayInputStream imageStream =
-                   new ByteArrayInputStream(Base64.decodeBase64(payload.getImage()))) {
-        compressedImage =
-                imageCompressor.compressBufferedImage(fileMimeType,
-                        ImageIO.read(imageStream),
-                        controllerConfiguration.getScanTargetImageSizeKb(),
-                        false);
+               new ByteArrayInputStream(compressedImage)) {
+        compressedImage = compressedImage.length < (scanTargetImageSizeKb * 1000)
+            ? compressedImage : imageCompressor.compressBufferedImage(fileMimeType,
+            ImageIO.read(imageStream),
+            scanTargetImageSizeKb,
+            controllerConfiguration.isGreyScale());
       }
 
       errorIfNull(compressedImage);

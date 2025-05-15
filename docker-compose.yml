@@ -22,7 +22,7 @@ services:
       - ./localstack/docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d
 
   redis-cluster:
-    image: bitnami/redis-cluster@sha256:8b96e0eeaf706bd00198f9f45e4a325a0c796cb19c1bc31369ec2039bf9fdca6
+    image: bitnami/redis-cluster@sha256:e4e34073db6c66e253fb60c06e760888a0cc1a378b2094fe6d938ace03f75cf4
     ports:
       - '6379:6379'
     healthcheck:

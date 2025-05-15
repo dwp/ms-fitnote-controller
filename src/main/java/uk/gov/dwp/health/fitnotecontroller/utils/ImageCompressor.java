@@ -1,21 +1,22 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
+import static uk.gov.dwp.health.fitnotecontroller.utils.ImageUtils.formatGrayScale;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.im4java.core.IM4JavaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageCompressException;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.math.BigDecimal;
 
 public class ImageCompressor {
   private static final Logger LOGGER = LoggerFactory.getLogger(ImageCompressor.class.getName());
@@ -25,153 +26,123 @@ public class ImageCompressor {
     this.rejectingOversizeImages = config.isRejectingOversizeImages();
   }
 
-  public byte[] compressBufferedImage(String fileMimeType,
-                                      BufferedImage inputImage, int targetImageSizeKB,
-                                      boolean useGrayScale)
-          throws ImageCompressException {
+  public byte[] compressBufferedImage(String fileMimeType, BufferedImage inputImage,
+                                      int targetImageSizeKB, boolean useGrayScale)
+      throws ImageCompressException {
     final long startTime = System.currentTimeMillis();
-    LOGGER.info(
-            "Starting image compression :: "
-                    + "RejectingOversizedImage = {}, TargetSizeKB = {}, GreyScale = {}",
-            isRejectingOversizeImages(),
-            targetImageSizeKB,
-            useGrayScale);
-    BufferedImage workingImage = useGrayScale ? turnGreyscale(inputImage) : inputImage;
-    BigDecimal compressionQuality = BigDecimal.valueOf(1);
+    LOGGER.info("Starting image compression :: "
+            + "RejectingOversizedImage = {}, TargetSizeKB = {}, GreyScale = {}",
+        isRejectingOversizeImages(), targetImageSizeKB, useGrayScale);
+    BufferedImage workingImage = useGrayScale ? formatGrayScale(inputImage) : inputImage;
+    boolean origCompress = true;
     try {
+      byte[] jpegData = compressImage(workingImage, 0, fileMimeType);
 
-      byte[] jpegData = compressImage(workingImage, compressionQuality.floatValue(), fileMimeType,
-              null);
-      LOGGER.info("initial file size (bytes) = {}", jpegData.length);
+      if (jpegData.length > (targetImageSizeKB * 1000)) {
+        LOGGER.info("ImageWriter compression failed to reduce to target size");
+        origCompress = false;
+      }
 
-      while (jpegData.length > (targetImageSizeKB * 1000)
-              && compressionQuality.doubleValue() > 0) {
-
-        if (compressImage(workingImage, Double.valueOf(0.01).floatValue(), fileMimeType,
-                jpegData).length > (targetImageSizeKB * 1000)) {
-          LOGGER.info("failed to compress, will attempt to use ImageMagick");
-          break;
-        }
-
-        if (compressionQuality.doubleValue() > 0.1) {
-          compressionQuality = compressionQuality.subtract(BigDecimal.valueOf(0.1));
-        } else {
-          compressionQuality = compressionQuality.subtract(BigDecimal.valueOf(0.01));
-        }
+      if (origCompress) {
         try {
-          jpegData = compressImage(workingImage, compressionQuality.floatValue(), fileMimeType,
-                  jpegData);
-          LOGGER.debug("jpg {}, compression {}", jpegData.length, compressionQuality.floatValue());
+          jpegData =
+              compressUsingImageWriter(workingImage, fileMimeType, (targetImageSizeKB * 1000));
         } catch (IOException | ImageCompressException e) {
           LOGGER.debug(e.getClass().getName(), e);
           LOGGER.info("failed to compress, will attempt to use ImageMagick");
-          break;
         }
-
-        LOGGER.debug("jpg {}, compression {}", jpegData.length, compressionQuality.floatValue());
-        LOGGER.debug("Failed to compress: {}", jpegData.length > targetImageSizeKB * 1000);
       }
 
-      if (jpegData.length > (targetImageSizeKB * 1000)
-              && isRejectingOversizeImages()) {
+      if (jpegData == null
+          || jpegData.length > (targetImageSizeKB * 1000) && isRejectingOversizeImages()) {
         jpegData = compressUsingImageMagick(jpegData, targetImageSizeKB);
       }
 
-      if (jpegData.length > (targetImageSizeKB * 1000) && isRejectingOversizeImages()) {
+      if (jpegData == null || (jpegData.length > (targetImageSizeKB * 1000)
+          && isRejectingOversizeImages())) {
         LOGGER.info("Time taken to fail image compression = seconds {}",
-                (System.currentTimeMillis() - startTime) / 1000);
-        throw new ImageCompressException(
-                "Image is too large for processing, "
-                        + "try with less quality or turn 'rejectingOversizeImages' off");
+            (System.currentTimeMillis() - startTime) / 1000);
+        throw new ImageCompressException("Image is too large for processing, "
+            + "try with less quality or turn 'rejectingOversizeImages' off");
       }
 
       LOGGER.info("Successfully completed image compression, result = {} bytes", jpegData.length);
       LOGGER.info("Time taken to complete image compression = seconds {}",
-              (System.currentTimeMillis() - startTime) / 1000);
+          (System.currentTimeMillis() - startTime) / 1000);
       return jpegData;
 
     } catch (IOException | InterruptedException | IM4JavaException e) {
       LOGGER.info("Time taken to fail image compression = seconds {}",
-              (System.currentTimeMillis() - startTime) / 1000);
+          (System.currentTimeMillis() - startTime) / 1000);
       throw new ImageCompressException(e.getMessage());
     }
   }
 
-  private byte[] compressUsingImageMagick(byte[] bimg, int targetImageSizeKB) throws IOException,
-          InterruptedException, IM4JavaException, ImageCompressException {
-    double numberToTest = 1d;
-    byte[] jpegData;
-    jpegData = ImageUtils.convertImage(bimg, numberToTest);
-    if (jpegData == null) {
-      throw new ImageCompressException("Image magick failed to convert image");
-    }
-    if (jpegData.length > (targetImageSizeKB * 1000)) {
-      LOGGER.info("final jpg {}, quality {}", jpegData.length, numberToTest);
+  private byte[] compressUsingImageWriter(BufferedImage workingImage, String fileMimeType,
+                                          int targetImageSizeB)
+      throws IOException, ImageCompressException {
+    BigDecimal compressionQuality = BigDecimal.valueOf(0.75);
+    byte[] jpegData = compressImage(workingImage, compressionQuality.floatValue(), fileMimeType);
+    if (jpegData.length < targetImageSizeB) {
       return jpegData;
     }
-    double max = 100;
+    LOGGER.info("initial file size (bytes) = {}", jpegData.length);
+
+    double numberToTest = 1d;
+    double max = 75;
     double lower = 0;
     while (max - lower >= 1) {
-      double newNumberToTest = Math.round((max + lower) / 2d);
+      double newNumberToTest = Math.round((max + lower) / (numberToTest == 1d ? 3d : 2d));
+      newNumberToTest =
+          newNumberToTest < 10 ? newNumberToTest : Math.round(newNumberToTest / 10) * 10;
+      if (newNumberToTest == max) {
+        break;
+      }
       numberToTest = newNumberToTest == numberToTest ? max = lower : newNumberToTest;
-      jpegData = ImageUtils.convertImage(bimg, numberToTest);
-      if (jpegData.length > (targetImageSizeKB * 1000)) {
+      jpegData = compressImage(workingImage,
+          BigDecimal.valueOf(numberToTest).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+              .floatValue(), fileMimeType);
+      if (jpegData.length > targetImageSizeB) {
         max = numberToTest;
       } else {
         lower = numberToTest;
       }
       LOGGER.debug("jpg {}, quality {}", jpegData.length, numberToTest);
     }
+
+    LOGGER.debug("jpg {}, compression {}", jpegData.length,
+        BigDecimal.valueOf(numberToTest).divide(BigDecimal.valueOf(100)).floatValue());
+    return jpegData;
+  }
+
+  private byte[] compressUsingImageMagick(byte[] bimg, int targetImageSizeKB)
+      throws IOException, InterruptedException, IM4JavaException {
+    double numberToTest = 1d;
+    byte[] jpegData;
+    jpegData = ImageUtils.compressImage(bimg, targetImageSizeKB);
     LOGGER.info("final jpg {}, quality {}", jpegData.length, numberToTest);
     return jpegData;
 
   }
 
-  private byte[] compressImage(BufferedImage image, float compressionQuality, String fileMimeType,
-                               byte[] jpegData) throws IOException, ImageCompressException {
+  private byte[] compressImage(BufferedImage image, float compressionQuality, String fileMimeType)
+      throws IOException {
     ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName(fileMimeType).next();
     ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
     jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-    String[] compressionTypeList = jpgWriteParam.getCompressionTypes();
-    ByteArrayOutputStream compressed = new ByteArrayOutputStream();
-    int i = 0;
-    while (i < compressionTypeList.length) {
-      jpgWriteParam.setCompressionType(compressionTypeList[i]);
-      jpgWriteParam.setCompressionQuality(compressionQuality);
+    jpgWriteParam.setCompressionQuality(compressionQuality);
 
+    try (ByteArrayOutputStream compressed = new ByteArrayOutputStream()) {
       try (ImageOutputStream outputStream = ImageIO.createImageOutputStream(compressed)) {
         jpgWriter.setOutput(outputStream);
+
         jpgWriter.write(null, new IIOImage(image, null, null), jpgWriteParam);
-        if (jpegData == null || compressed.toByteArray().length
-                < jpegData.length) {
-          break;
-        } else if (i + 1 == compressionTypeList.length) {
-          throw new ImageCompressException(
-                  "Image is too large for processing, "
-                          + "attempt to compress using ImageMagick");
-        }
-      } catch (IOException ioException) {
-        LOGGER.error("failed compression method: {}", ioException);
-        //attempt another compression method
+        jpgWriter.dispose();
       }
 
-      i++;
+      return compressed.toByteArray();
     }
 
-    return  compressed.toByteArray();
-
-  }
-
-  private BufferedImage turnGreyscale(BufferedImage inputImage) {
-    BufferedImage image =
-            new BufferedImage(
-                    inputImage.getWidth(), inputImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-    Graphics g = image.getGraphics();
-
-    g.drawImage(inputImage, 0, 0, null);
-    g.dispose();
-
-    return image;
   }
 
   private boolean isRejectingOversizeImages() {

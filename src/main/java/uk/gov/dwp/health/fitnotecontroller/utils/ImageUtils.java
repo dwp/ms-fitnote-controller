@@ -1,21 +1,7 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.tika.Tika;
-import org.im4java.core.CommandException;
-import org.im4java.core.ConvertCmd;
-import org.im4java.core.IM4JavaException;
-import org.im4java.core.IMOperation;
-import org.im4java.core.Info;
-import org.im4java.core.InfoException;
-import org.im4java.core.Stream2BufferedImage;
-import org.im4java.process.Pipe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
-import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
+import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 
-import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -30,8 +16,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-
-import static java.awt.image.BufferedImage.TYPE_INT_RGB;
+import javax.imageio.ImageIO;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.tika.Tika;
+import org.im4java.core.CommandException;
+import org.im4java.core.ConvertCmd;
+import org.im4java.core.IM4JavaException;
+import org.im4java.core.IMOperation;
+import org.im4java.core.Info;
+import org.im4java.core.InfoException;
+import org.im4java.core.Stream2BufferedImage;
+import org.im4java.process.Pipe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
+import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 
 public class ImageUtils {
 
@@ -170,6 +169,41 @@ public class ImageUtils {
       fileMimeType = "jpg";
     }
     return fileMimeType;
+  }
+
+  public static byte[] compressImage(byte[] jpegData, int targetImageSizeKB)
+      throws IOException, InterruptedException, IM4JavaException {
+    final long startTime = System.currentTimeMillis();
+    try {
+      IMOperation op = new IMOperation();
+      op.addImage("-");
+      op.strip();
+      op.define("jpeg:extent=" + targetImageSizeKB + "kb");
+      op.addImage("jpg:-");
+
+      // set up pipe(s): you can use one or two pipe objects
+      ByteArrayInputStream fis = new ByteArrayInputStream(jpegData);
+      ByteArrayOutputStream fos = new ByteArrayOutputStream();
+
+      Pipe pipeIn  = new Pipe(fis, null);
+      Pipe pipeOut = new Pipe(null, fos);
+
+      // set up command
+      ConvertCmd convert = new ConvertCmd();
+      convert.setInputProvider(pipeIn);
+      convert.setOutputConsumer(pipeOut);
+      LOGGER.info("ImageMagick command: {}", op);
+      convert.run(op);
+      fis.close();
+      fos.close();
+
+      LOGGER.info("Time taken to convert image = seconds {}",
+          (System.currentTimeMillis() - startTime) / 1000);
+      return fos.toByteArray();
+    } catch (CommandException e) {
+      LOGGER.error("Image too large to convert");
+      return null;
+    }
   }
 
   public static byte[] convertImage(byte[] jpegData, double quality)

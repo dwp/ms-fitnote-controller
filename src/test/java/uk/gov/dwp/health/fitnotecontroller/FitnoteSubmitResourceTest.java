@@ -152,7 +152,7 @@ public class FitnoteSubmitResourceTest {
 
   @Before
   public void setup() throws IOException, ImagePayloadException, ImageCompressException, CryptoException {
-    when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), eq(3), eq(false))).thenReturn(COMPRESSED_PAGE_LARGE);
+    when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), eq(3), eq(true))).thenReturn(COMPRESSED_PAGE_LARGE);
     when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), eq(2), eq(true))).thenReturn(COMPRESSED_PAGE_FINAL);
     when(controllerConfiguration.getEstimatedRequestMemoryMb()).thenReturn(3);
     when(controllerConfiguration.getScanTargetImageSizeKb()).thenReturn(3);

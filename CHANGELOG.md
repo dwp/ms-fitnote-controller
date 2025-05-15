@@ -1,3 +1,18 @@
+<a name="4.1.0"></a>
+# 4.1.0 (2025-05-12)
+
+* release: set version to candidate version in dwp metadata file 4.1.0 ([850365a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/850365a))
+* release: set version to candidate version in pom 4.1.0 ([1f8aebc](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/1f8aebc))
+* fix nhs/portrait ignore logic fix tests ([ea6e0b0](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ea6e0b0))
+* bug: NHs half bug ([84e81dc](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/84e81dc))
+* Revert "fix compression algorithm" ([bb1ad1b](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/bb1ad1b))
+* fix compression algorithm dispose objects to free up memory ([2be0073](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/2be0073))
+* chore: update maven:3.9.9-eclipse-temurin-17 docker digest to c99c911 ([8168b38](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/8168b38))
+* Edit project-metadata.yaml ([9f162a3](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/9f162a3))
+* release: set version from 4.0.1 to snapshot 4.1.0-SNAPSHOT [skip ci] ([903b61a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/903b61a))
+* chore: update bitnami/redis-cluster docker digest to e4e3407 ([0720c43](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/0720c43))
+
+
 <a name="4.0.1"></a>
 # 4.0.1 (2025-04-11)
 

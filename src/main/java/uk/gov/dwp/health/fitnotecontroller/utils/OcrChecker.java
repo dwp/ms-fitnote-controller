@@ -1,24 +1,13 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
-import org.bytedeco.leptonica.PIX;
-import org.bytedeco.tesseract.TessBaseAPI;
-import org.slf4j.LoggerFactory;
-import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
-import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
-import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.slf4j.Logger;
-import org.bytedeco.javacpp.BytePointer;
+import static org.bytedeco.leptonica.global.leptonica.pixDestroy;
+import static org.bytedeco.leptonica.global.leptonica.pixReadMem;
+import static org.bytedeco.tesseract.global.tesseract.PSM_SPARSE_TEXT;
 
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -28,10 +17,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static org.bytedeco.leptonica.global.leptonica.pixDestroy;
-import static org.bytedeco.leptonica.global.leptonica.pixReadMem;
-import static org.bytedeco.tesseract.global.tesseract.PSM_SPARSE_TEXT;
+import javax.imageio.ImageIO;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.leptonica.PIX;
+import org.bytedeco.tesseract.TessBaseAPI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
+import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
+import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 
 public class OcrChecker {
   private static final String TESSERACT_FOLDER_ERROR =
@@ -235,7 +231,8 @@ public class OcrChecker {
         configuration.getContrastCutOff());
     int height = fitnoteFormat.getFinalImage().getHeight();
     int width = fitnoteFormat.getFinalImage().getWidth();
-    boolean checkNHS = rotation == 0 && !ImageUtils.isLandscape(fitnoteFormat.getFinalImage());
+    boolean checkPortrait = rotation == 0 && !ImageUtils.isLandscape(fitnoteFormat.getFinalImage());
+    boolean checkNHS = false;
 
     ocrScanTopLeft(
         ocr,
@@ -253,14 +250,26 @@ public class OcrChecker {
           configuration.getDiagonalTarget());
 
     } else {
-      if (checkNHS) {
-        BufferedImage halfImage =
-                fitnoteFormat
-                        .getFinalImage()
-                        .getSubimage(
-                                0, 0, width, height / 2);
-        fitnoteFormat.setFinalImage(halfImage);
-        height = halfImage.getHeight();
+      if (checkPortrait && fitnoteFormat.getTopLeftPercentage() >= 80) {
+        checkNHS = true;
+        ocrScanTopRight(
+            ocr,
+            fitnoteFormat,
+            width,
+            height,
+            configuration.getHighTarget(),
+            rotation,
+            configuration.getOcrVerticalSlice());
+        if (fitnoteFormat.getTopRightPercentage() >= 80) {
+          BufferedImage halfImage =
+              fitnoteFormat
+                  .getFinalImage()
+                  .getSubimage(0, 0, width, height / 2);
+          fitnoteFormat.setFinalImage(halfImage);
+          height = halfImage.getHeight();
+        } else {
+          checkNHS = false;
+        }
       }
 
       ocrScanBaseRight(
@@ -274,8 +283,13 @@ public class OcrChecker {
                 rotation,
                 configuration.getOcrVerticalSlice());
 
-      if (fitnoteFormat.validateFitnotePassed().equals(ExpectedFitnoteFormat.Status.SUCCESS)) {
+      if (fitnoteFormat.validateFitnotePassed(checkNHS || checkPortrait)
+          .equals(ExpectedFitnoteFormat.Status.SUCCESS)) {
         LOG.info("no need to continue scanning, matched on TL/BR");
+        return;
+      }
+      if (!checkNHS && checkPortrait
+          && fitnoteFormat.getStatus().equals(ExpectedFitnoteFormat.Status.FAILED)) {
         return;
       }
     }
@@ -289,8 +303,14 @@ public class OcrChecker {
         rotation,
         configuration.getOcrVerticalSlice());
 
-    if (fitnoteFormat.validateFitnotePassed().equals(ExpectedFitnoteFormat.Status.SUCCESS)) {
+    if (fitnoteFormat.validateFitnotePassed(checkNHS)
+        .equals(ExpectedFitnoteFormat.Status.SUCCESS)) {
       LOG.info("no need to continue scanning, matched on LHS");
+      return;
+    }
+    if (checkNHS
+        && fitnoteFormat.getStatus().equals(ExpectedFitnoteFormat.Status.FAILED)) {
+      LOG.info("Failed as not NHS fitnote");
       return;
     }
     if (fitnoteFormat.getBaseLeftPercentage() < configuration.getDiagonalTarget()) {
@@ -306,6 +326,8 @@ public class OcrChecker {
         configuration.getHighTarget(),
         rotation,
         configuration.getOcrVerticalSlice());
+
+    fitnoteFormat.validateFitnotePassed(false);
   }
 
   private void ocrScanTopLeft(
