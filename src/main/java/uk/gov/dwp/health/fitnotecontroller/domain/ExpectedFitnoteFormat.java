@@ -1,10 +1,10 @@
 package uk.gov.dwp.health.fitnotecontroller.domain;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
 import uk.gov.dwp.health.fitnotecontroller.exception.FuzzyStringMatchException;
 import uk.gov.dwp.health.fitnotecontroller.utils.FuzzyStringMatch;
-import org.slf4j.Logger;
 
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
@@ -18,7 +18,8 @@ public class ExpectedFitnoteFormat {
     TOP_LEFT,
     TOP_RIGHT,
     BASE_LEFT,
-    BASE_RIGHT
+    BASE_RIGHT,
+    BASE_RIGHT_ALT
   }
 
   public enum Status {
@@ -37,8 +38,11 @@ public class ExpectedFitnoteFormat {
   private Status localStatus;
   private String failureReason;
   private int diagonalTarget;
+  private int diagonalTargetStrict;
   private int highTarget;
   private int matchAngle;
+  private int topHeight;
+  private int bottomHeight;
 
   public ExpectedFitnoteFormat(FitnoteControllerConfiguration config) {
     initialise(config);
@@ -60,8 +64,10 @@ public class ExpectedFitnoteFormat {
     config.getTopRightText().forEach((v) -> addString(StringLocation.TOP_RIGHT, v));
     config.getBaseLeftText().forEach((v) -> addString(StringLocation.BASE_LEFT, v));
     config.getBaseRightText().forEach((v) -> addString(StringLocation.BASE_RIGHT, v));
+    config.getBaseRightAltText().forEach((v) -> addString(StringLocation.BASE_RIGHT_ALT, v));
     setStatus(Status.INITIALISED);
     setDiagonalTarget(config.getDiagonalTarget());
+    setDiagonalTargetStrict(config.getDiagonalTargetStrict());
     setHighTarget(config.getHighTarget());
     setFinalImage(null);
     setMatchAngle(0);
@@ -69,6 +75,10 @@ public class ExpectedFitnoteFormat {
 
   public BufferedImage getFinalImage() {
     return finalImage;
+  }
+
+  private Map<StringLocation, StringToMatch> getMatchingStrings() {
+    return matchingStrings;
   }
 
   public int getMatchAngle() {
@@ -107,6 +117,14 @@ public class ExpectedFitnoteFormat {
     this.diagonalTarget = diagonalTarget;
   }
 
+  private int getDiagonalTargetStrict() {
+    return diagonalTargetStrict;
+  }
+
+  private void setDiagonalTargetStrict(int diagonalTargetStrict) {
+    this.diagonalTargetStrict = diagonalTargetStrict;
+  }
+
   private void setStatus(Status input) {
     localStatus = input;
   }
@@ -123,29 +141,56 @@ public class ExpectedFitnoteFormat {
     return failureReason;
   }
 
+  public int getTopHeight() {
+    return topHeight;
+  }
+
+  public void setTopHeight(int topHeight) {
+    this.topHeight = topHeight;
+  }
+
+  public int getBottomHeight() {
+    return bottomHeight;
+  }
+
+  public void setBottomHeight(int bottomHeight) {
+    this.bottomHeight = bottomHeight;
+  }
+
+  public void resetHeight() {
+    this.topHeight = 0;
+    this.bottomHeight = 0;
+  }
+
   public void scanTopLeft(String topLeftString) {
     topLeftStringFound = topLeftString.toUpperCase();
-    scan(topLeftString, StringLocation.TOP_LEFT);
+    scan(topLeftString, StringLocation.TOP_LEFT, null);
   }
 
   public void scanTopRight(String topRightString) {
     topRightStringFound = topRightString.toUpperCase();
-    scan(topRightString, StringLocation.TOP_RIGHT);
+    scan(topRightString, StringLocation.TOP_RIGHT, null);
   }
 
   public void scanBaseLeft(String baseLeftString) {
     baseLeftStringFound = baseLeftString.toUpperCase();
-    scan(baseLeftString, StringLocation.BASE_LEFT);
+    scan(baseLeftString, StringLocation.BASE_LEFT, null);
   }
 
   public void scanBaseRight(String baseRightString) {
     baseRightStringFound = baseRightString.toUpperCase();
-    scan(baseRightString, StringLocation.BASE_RIGHT);
+    StringLocation stringMatchLocation = null;
+    if (this.topHeight > 0 || this.bottomHeight > 0) {
+      stringMatchLocation = StringLocation.BASE_RIGHT_ALT;
+    }
+    scan(baseRightString, StringLocation.BASE_RIGHT, stringMatchLocation);
   }
 
-  private void scan(String baseString, StringLocation stringLocation) {
+  private void scan(String baseString, StringLocation stringLocation,
+                    StringLocation stringMatchLocation) {
     try {
-      for (String temp : matchingStrings.get(stringLocation).getStringToFind()) {
+      for (String temp : matchingStrings.get(
+          stringMatchLocation == null ? stringLocation : stringMatchLocation).getStringToFind()) {
         matchingStrings.get(stringLocation)
             .setupPercentage(FuzzyStringMatch.fuzzyStringContains(baseString, temp));
       }
@@ -170,8 +215,8 @@ public class ExpectedFitnoteFormat {
     return getItemPercentage(StringLocation.BASE_RIGHT);
   }
 
-  public String getLoggingString() {
-    return String.format(
+  public String getLoggingString(boolean nhs, int ocrVerticalSlice) {
+    String loggingString = String.format(
         "%s TL:%d BR:%d BL:%d TR:%d REASON:%s",
         getStatus().toString(),
         getTopLeftPercentage(),
@@ -179,6 +224,42 @@ public class ExpectedFitnoteFormat {
         getBaseLeftPercentage(),
         getTopRightPercentage(),
         getFailureReason());
+    if (!nhs && getStatus() == Status.SUCCESS) {
+      int verticalSliceHeight = finalImage.getHeight()
+          / ocrVerticalSlice;
+      int bottomSlice = verticalSliceHeight * 5;
+      if (getTopHeight() > 0 || (getBottomHeight() > 0
+          && getBottomHeight() < bottomSlice)) {
+        loggingString = String.format(
+            "%s TL:%s BR:%s BL:%s TR:%s REASON:%s",
+            getStatus().toString(),
+            getTopLeftPercentage() + getCorner(StringLocation.TOP_LEFT, verticalSliceHeight),
+            getBaseRightPercentage() + getCorner(StringLocation.BASE_RIGHT, verticalSliceHeight),
+            getBaseLeftPercentage() + getCorner(StringLocation.BASE_LEFT, verticalSliceHeight),
+            getTopRightPercentage() + getCorner(StringLocation.TOP_RIGHT, verticalSliceHeight),
+            getFailureReason());
+      }
+    }
+    return loggingString;
+  }
+
+  private String getCorner(StringLocation corner, int verticalSliceHeight) {
+    int region = 0;
+    String regionString = "(%d)";
+    if (validateTopLeftBaseRight()) {
+      if (corner.equals(StringLocation.TOP_LEFT)) {
+        region = (getTopHeight() / verticalSliceHeight) + 1;
+      } else if (corner.equals(StringLocation.BASE_RIGHT)) {
+        region = (getBottomHeight() / verticalSliceHeight) + 1;
+      }
+    } else if (corner.equals(StringLocation.BASE_LEFT)) {
+      regionString = "(%da)";
+      region = (getBottomHeight() / verticalSliceHeight) + 4;
+    } else if (corner.equals(StringLocation.TOP_RIGHT)) {
+      regionString = "(%db)";
+      region = (getTopHeight() / verticalSliceHeight) + 7;
+    }
+    return region > 0 ? String.format(regionString, region) : "";
   }
 
   private int getItemPercentage(StringLocation itemLocation) {
@@ -201,15 +282,15 @@ public class ExpectedFitnoteFormat {
     return baseRightStringFound == null ? "" : baseRightStringFound;
   }
 
-  public Status validateFitnotePassed(boolean portrait) {
+  public Status validateFitnotePassed(boolean nhs, boolean strictMatch, int strictTarget) {
     if (checkHighMarks() > 0) {
-      if (portrait && ((getBaseRightPercentage() < 80 && getBaseLeftPercentage() == -1)
-          || getBaseLeftPercentage() < 80)) {
+      if (nhs && getBaseRightPercentage() < strictTarget && getBaseLeftPercentage()
+          < strictTarget) {
         setStatus(Status.FAILED);
-        setFailureReason("FAILED - Not NHS/Portrait");
+        setFailureReason("FAILED - Not NHS");
         return getStatus();
       }
-      if (validateDiagonals()) {
+      if (validateDiagonals(strictMatch)) {
         setStatus(Status.SUCCESS);
         return getStatus();
       } else {
@@ -217,16 +298,14 @@ public class ExpectedFitnoteFormat {
         setFailureReason("PARTIAL - validateDiagonals");
       }
 
-      if (leftHandSide()) {
-        setStatus(Status.SUCCESS);
-        return getStatus();
+      if (getTopRightPercentage() >= getTopLeftPercentage()
+          && getBaseRightPercentage() >= getBaseLeftPercentage()) {
+        setStatus(Status.PARTIAL);
+        setFailureReason("PARTIAL - rightHandSide");
       } else {
         setStatus(Status.PARTIAL);
         setFailureReason("PARTIAL - leftHandSide");
       }
-    } else if (portrait) {
-      setStatus(Status.FAILED);
-      setFailureReason("FAILED - Portrait image");
     } else {
       setStatus(Status.FAILED);
       setFailureReason("FAILED - checkHighMarks");
@@ -234,28 +313,28 @@ public class ExpectedFitnoteFormat {
     return getStatus();
   }
 
-  private boolean leftHandSide() {
-    return getTopLeftPercentage() >= getHighTarget() && getTopRightPercentage() >= getHighTarget();
-  }
-
   private int checkHighMarks() {
     AtomicInteger zeroCount = new AtomicInteger(0);
-    matchingStrings.forEach(
-        (k, v) -> {
-          if (v.getPercentageFound() >= getHighTarget()) {
-            zeroCount.incrementAndGet();
-          }
-        });
+    matchingStrings.forEach((k, v) -> {
+      if (v.getPercentageFound() >= getHighTarget()) {
+        zeroCount.incrementAndGet();
+      }
+    });
     return zeroCount.get();
   }
 
-  private boolean validateDiagonals() {
-    return validateDiagonal(getTopLeftPercentage(), getBaseRightPercentage())
-        || validateDiagonal(getTopRightPercentage(), getBaseLeftPercentage());
+  private boolean validateDiagonals(boolean strictMatch) {
+    return validateDiagonal(getTopLeftPercentage(), getBaseRightPercentage(), strictMatch)
+        || validateDiagonal(getTopRightPercentage(), getBaseLeftPercentage(), strictMatch);
   }
 
-  private boolean validateDiagonal(int input1, int input2) {
-    return ((input1 >= getHighTarget()) && (input2 >= getDiagonalTarget()))
-        || ((input2 >= getHighTarget()) && (input1 >= getDiagonalTarget()));
+  private boolean validateDiagonal(int input1, int input2, boolean strictMatch) {
+    return ((input1 >= getHighTarget()) && (input2 >= (strictMatch ? getDiagonalTargetStrict() :
+        getDiagonalTarget()))) || ((input2 >= getHighTarget()) && (input1 >= (strictMatch
+        ? getDiagonalTargetStrict() : getDiagonalTarget())));
+  }
+
+  public boolean validateTopLeftBaseRight() {
+    return validateDiagonal(getTopLeftPercentage(), getBaseRightPercentage(), true);
   }
 }

@@ -50,7 +50,8 @@ scanTargetImageSize: 1000
 
 highTarget: 100
 diagonalTarget: 20
-
+diagonalTargetStrict: 50
+strictTarget: 70
 
 maxLogChars: 50
 targetBrightness: 178
@@ -70,6 +71,9 @@ baseLeftText:
 baseRightText:
   - "Performance Platform"
   - "beginning to end"
+baseRightAltText:
+  - "minister responsible"
+  - "performance data"
 
 dataMatrixCreatorServiceUrl: http://localhost:3009/generate-data-matrix
 dataMatrixCreatorTruststoreFile: null

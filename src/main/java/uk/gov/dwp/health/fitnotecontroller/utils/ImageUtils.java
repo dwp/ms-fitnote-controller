@@ -1,7 +1,22 @@
 package uk.gov.dwp.health.fitnotecontroller.utils;
 
-import static java.awt.image.BufferedImage.TYPE_INT_RGB;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.tika.Tika;
+import org.im4java.core.CommandException;
+import org.im4java.core.ConvertCmd;
+import org.im4java.core.IM4JavaException;
+import org.im4java.core.IMOperation;
+import org.im4java.core.Info;
+import org.im4java.core.InfoException;
+import org.im4java.core.Stream2BufferedImage;
+import org.im4java.process.Pipe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
+import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
+import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 
+import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -16,21 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import javax.imageio.ImageIO;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.tika.Tika;
-import org.im4java.core.CommandException;
-import org.im4java.core.ConvertCmd;
-import org.im4java.core.IM4JavaException;
-import org.im4java.core.IMOperation;
-import org.im4java.core.Info;
-import org.im4java.core.InfoException;
-import org.im4java.core.Stream2BufferedImage;
-import org.im4java.process.Pipe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
-import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
+
+import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 
 public class ImageUtils {
 
@@ -227,12 +229,12 @@ public class ImageUtils {
       ConvertCmd convert = new ConvertCmd();
       convert.setInputProvider(pipeIn);
       convert.setOutputConsumer(pipeOut);
-      LOGGER.info("ImageMagick command: {}", op);
+      LOGGER.debug("ImageMagick command: {}", op);
       convert.run(op);
       fis.close();
       fos.close();
 
-      LOGGER.info("Time taken to convert image = seconds {}",
+      LOGGER.debug("Time taken to convert image = seconds {}",
               (System.currentTimeMillis() - startTime) / 1000);
       return fos.toByteArray();
     } catch (CommandException e) {
@@ -242,7 +244,7 @@ public class ImageUtils {
   }
 
   public static byte[] convertImage(BufferedImage image, double quality)
-          throws IOException, InterruptedException, IM4JavaException {
+      throws IOException, InterruptedException, IM4JavaException {
     final long startTime = System.currentTimeMillis();
     IMOperation op = new IMOperation();
     op.addImage();
@@ -258,12 +260,12 @@ public class ImageUtils {
     // set up command
     ConvertCmd convert = new ConvertCmd();
     convert.setOutputConsumer(pipeOut);
-    LOGGER.info("ImageMagick command: {}", op);
+    LOGGER.debug("ImageMagick command: {}", op);
     convert.run(op, image);
     fos.close();
 
-    LOGGER.info("Time taken to convert image = seconds {}",
-            (System.currentTimeMillis() - startTime) / 1000);
+    LOGGER.debug("Time taken to convert image = seconds {}",
+        (System.currentTimeMillis() - startTime) / 1000);
     return fos.toByteArray();
   }
 
@@ -281,7 +283,6 @@ public class ImageUtils {
       //create a new buffer and draw two image into the new image
       BufferedImage newImage = new BufferedImage(wid, height,
               BufferedImage.TYPE_BYTE_GRAY);
-      Graphics2D g2 = drawOriginalImage(compressedImage, newImage);
 
       byte[] dataMatrixBytes = Base64.decodeBase64(dataMatrixResult.getFinalImage());
       InputStream is = new ByteArrayInputStream(dataMatrixBytes);
@@ -289,6 +290,7 @@ public class ImageUtils {
       dataMatrix = clearUpImage(dataMatrix, isPdf, dataMatrixResult.getMatchAngle());
 
       Point point = dataMatrixResult.getPosition();
+      Graphics2D g2 = drawOriginalImage(compressedImage, newImage);
       g2.drawImage(dataMatrix, null, point.x, point.y);
       LOGGER.info("Draw data matrix on top of original image with x: {} and y: {}", point.x,
               point.y);
@@ -328,8 +330,7 @@ public class ImageUtils {
     return baos.toByteArray();
   }
 
-  public static byte[] layerDMRegionOnImage(byte[] compressedImage, byte[] origImage,
-                                            int angle) {
+  public static byte[] layerDMRegionOnImage(byte[] compressedImage, byte[] origImage) {
     try {
       BufferedImage bimg = ImageIO.read(new ByteArrayInputStream(compressedImage));
       int wid = bimg.getWidth();
@@ -337,12 +338,9 @@ public class ImageUtils {
       //create a new buffer and draw two image into the new image
       BufferedImage newImage = new BufferedImage(wid, height,
               BufferedImage.TYPE_BYTE_GRAY);
-      Graphics2D g2 = drawOriginalImage(compressedImage, newImage);
-      BufferedImage origBImg = ImageIO.read(new ByteArrayInputStream(origImage));
-      if (angle > 0) {
-        origBImg = createRotatedCopy(origBImg, angle);
-      }
 
+      BufferedImage origBImg = ImageIO.read(new ByteArrayInputStream(origImage));
+      Graphics2D g2 = drawOriginalImage(compressedImage, newImage);
       cropOrigImage(g2, origBImg);
 
       return convertToJpg(newImage, g2);
@@ -420,6 +418,43 @@ public class ImageUtils {
 
   public static boolean isLandscape(BufferedImage image) {
     return image.getWidth() > image.getHeight();
+  }
+
+  public static byte[] cropOrExtractImage(BufferedImage origImage,
+                                          ExpectedFitnoteFormat fitnoteFormat, ImagePayload payload,
+                                          int verticalSliceHeight, int strictTarget)
+      throws IOException {
+    try (ByteArrayOutputStream origOS = new ByteArrayOutputStream();
+         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+      LOGGER.info("Region cropping");
+      int width = origImage.getWidth();
+      boolean bottomRightMatch = fitnoteFormat.validateTopLeftBaseRight();
+      int y = 0;
+      if ((bottomRightMatch && fitnoteFormat.getTopLeftPercentage() >= strictTarget)
+          || (!bottomRightMatch && fitnoteFormat.getTopRightPercentage() >= strictTarget)) {
+        y = fitnoteFormat.getTopHeight();
+      }
+      boolean bottomConfident =
+          Math.max(fitnoteFormat.getBaseLeftPercentage(), fitnoteFormat.getBaseRightPercentage())
+              >= strictTarget;
+      int height = 0;
+      if (bottomConfident) {
+        height = fitnoteFormat.getBottomHeight() + verticalSliceHeight;
+        height -= y;
+      } else {
+        height = origImage.getHeight() - y;
+      }
+      int x = 0;
+      origImage = origImage.getSubimage(x, y, width, height);
+      BufferedImage cropCompressedImage =
+          fitnoteFormat.getFinalImage().getSubimage(x, y, width, height);
+      fitnoteFormat.setFinalImage(cropCompressedImage);
+      ImageIO.write(origImage, "jpg", origOS);
+      ImageIO.write(cropCompressedImage, "jpg", outputStream);
+      payload.setImage(Base64.encodeBase64String(outputStream.toByteArray()));
+      return origOS.toByteArray();
+    }
+
   }
 
 }

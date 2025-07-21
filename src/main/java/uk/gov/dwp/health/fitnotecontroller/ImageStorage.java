@@ -139,7 +139,7 @@ public class ImageStorage {
       hashStoreItem.updateLastSubmitted();
       hashStoreItem.incSubmissionCount();
 
-      LOG.info("updating image hash for to redis");
+      LOG.debug("updating image hash for to redis");
       getSynchronousCommands()
           .set(IMAGE_HASHSTORE_NAME + hashImage, mapper.writeValueAsString(hashStoreItem));
       getSynchronousCommands()

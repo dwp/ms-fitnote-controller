@@ -37,12 +37,15 @@ public class OcrCheckerTest {
     List<String> topRightList = new LinkedList<>();
     List<String> baseRightList = new LinkedList<>();
     List<String> baseLeftList = new LinkedList<>();
+    List<String> baseRighAlttList = new LinkedList<>();
     topLeftList.add("Understand user needs");
     topRightList.add("end-to-end service");
     topRightList.add("all common browsers");
     baseLeftList.add("all new source code open");
     baseRightList.add("Performance Platform");
     baseRightList.add("beginning to end");
+    baseRighAlttList.add("minister responsible");
+    baseRighAlttList.add("performance data");
 
     when(mockConfig.getTesseractFolderPath()).thenReturn("src/main/properties/tessdata");
     when(mockConfig.getBorderLossPercentage()).thenReturn(10);
@@ -56,6 +59,7 @@ public class OcrCheckerTest {
     when(mockConfig.getTopRightText()).thenReturn(topRightList);
     when(mockConfig.getBaseLeftText()).thenReturn(baseLeftList);
     when(mockConfig.getBaseRightText()).thenReturn(baseRightList);
+    when(mockConfig.getBaseRightAltText()).thenReturn(baseRighAlttList);
 
     checker = new OcrChecker(mockConfig);
   }
@@ -82,7 +86,7 @@ public class OcrCheckerTest {
   public void confirmOcrCheckerDoesNotRecogniseNonExistentText() throws IOException {
     ExpectedFitnoteFormat format = checker.imageContainsReadableText(getTestImage("/EmptyPage.jpg"));
     assertThat(format.getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.FAILED)));
-    assertThat(format.getFailureReason(), is(equalTo("{0=FAILED - Portrait image, 90=FAILED - checkHighMarks, 180=FAILED - checkHighMarks, 270=FAILED - checkHighMarks}")));
+    assertThat(format.getFailureReason(), is(equalTo("{0=FAILED - checkHighMarks, 90=FAILED - checkHighMarks, 180=FAILED - checkHighMarks, 270=FAILED - checkHighMarks}")));
   }
 
   @Test
@@ -96,8 +100,8 @@ public class OcrCheckerTest {
   @Test
   public void rightHandSidePageIsNotAccepted() throws IOException {
     ExpectedFitnoteFormat format = checker.imageContainsReadableText(getTestImage("/OcrTest_RHS.jpg"));
-    assertThat(format.getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.FAILED)));
-    assertThat(format.getFailureReason(), is(equalTo("{0=FAILED - checkHighMarks, 90=FAILED - checkHighMarks, 180=FAILED - checkHighMarks, 270=FAILED - checkHighMarks}")));
+    assertThat(format.getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.PARTIAL)));
+    assertThat(format.getFailureReason(), is(equalTo("PARTIAL - rightHandSide")));
 
   }
 
@@ -118,6 +122,24 @@ public class OcrCheckerTest {
   @Test
   public void confirmNhsFitnoteFormatWorked() throws IOException {
     ImagePayload payload = getTestImage("/NHS_fitnote.jpg");
+    assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
+  }
+
+  @Test
+  public void confirmExpandedSearchFullPageFormatWorked() throws IOException {
+    ImagePayload payload = getTestImage("/FullPage_Portrait.jpg");
+    assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
+  }
+
+  @Test
+  public void confirmExpandedSearchFullPageLandscapeFormatWorked() throws IOException {
+    ImagePayload payload = getTestImage("/FullPage_Landscape.jpg");
+    assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
+  }
+
+  @Test
+  public void confirmExpandedSearchFormatWorked() throws IOException {
+    ImagePayload payload = getTestImage("/fitnoteExpandedSearch.jpg");
     assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
   }
 

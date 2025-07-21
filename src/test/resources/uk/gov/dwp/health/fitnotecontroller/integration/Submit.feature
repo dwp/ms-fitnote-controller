@@ -9,7 +9,7 @@ Feature: Fitnote submit
       Then I receive a HTTP response of 202
       And I hit the service url "http://localhost:9101/imagestatus" with session id "3" getting return status 200 and finally containing the following json body
         | fitnoteStatus | SUCCEEDED |
-#
+
   @FitnoteSubmitTest
   Scenario: Submit partial fitnote
     Given the http client is up
@@ -28,7 +28,7 @@ Feature: Fitnote submit
         | sessionId | "5"                   |
       Then I receive a HTTP response of 202
       And I hit the service url "http://localhost:9101/imagestatus" with session id "5" getting return status 200 and finally containing the following json body
-        | fitnoteStatus | FAILED_IMG_OCR |
+        | fitnoteStatus | FAILED_IMG_OCR_PARTIAL |
 
   @FitnoteSubmitTest
   Scenario: Submit readable Fitnote with an empty session Id
@@ -42,11 +42,31 @@ Feature: Fitnote submit
   Scenario: Submit a pdf scanned fitnote is a FAILED_IMG_OCR_PARTIAL at 300dpi colour
     Given the http client is up
     When I hit the service url "http://localhost:9101/photo" with the following json body
-      | image     | /FullPage_Portrait.pdf |
+      | image     | /FullPage_bottomHalf.pdf |
       | sessionId | "46"             |
     Then I receive a HTTP response of 202
     And I hit the service url "http://localhost:9101/imagestatus" with session id "46" getting return status 200 and finally containing the following json body
       | fitnoteStatus | FAILED_IMG_OCR_PARTIAL |
+
+  @FitnoteSubmitTest
+  Scenario: Submit a pdf scanned fitnote is an expanded search using cropping at 300dpi colour
+    Given the http client is up
+    When I hit the service url "http://localhost:9101/photo" with the following json body
+      | image     | /FullPage_Portrait.pdf |
+      | sessionId | "48"             |
+    Then I receive a HTTP response of 202
+    And I hit the service url "http://localhost:9101/imagestatus" with session id "48" getting return status 200 and finally containing the following json body
+      | fitnoteStatus | SUCCEEDED |
+
+  @FitnoteSubmitTest
+  Scenario: Submit a pdf a scanned fitnote is an expanded search using edge detection at 300dpi colour
+    Given the http client is up
+    When I hit the service url "http://localhost:9101/photo" with the following json body
+      | image     | /expanded_fitnote.pdf |
+      | sessionId | "49"                  |
+    Then I receive a HTTP response of 202
+    And I hit the service url "http://localhost:9101/imagestatus" with session id "49" getting return status 200 and finally containing the following json body
+      | fitnoteStatus | SUCCEEDED |
 
   @FitnoteSubmitTest
   Scenario: Submit readable fitnote - small

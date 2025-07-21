@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.junittoolbox.PollingWait;
 import com.googlecode.junittoolbox.RunnableAssert;
 import jakarta.ws.rs.core.Response;
+import nu.pattern.OpenCV;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.hc.core5.http.ParseException;
@@ -19,6 +20,7 @@ import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
 import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.domain.StatusItem;
+import uk.gov.dwp.health.fitnotecontroller.domain.StringToMatch;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageCompressException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
@@ -28,10 +30,14 @@ import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import uk.gov.dwp.health.fitnotecontroller.utils.MemoryChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 
+import javax.imageio.ImageIO;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +61,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.dwp.health.fitnotecontroller.utils.ImageUtilsTest.getMatchingStringsMethod;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"squid:S1192", "squid:S3008", "squid:S00116"})
@@ -68,6 +75,9 @@ public class FitnoteSubmitResourceTest {
 
   private static byte[] COMPRESSED_PAGE_LARGE;
   private static byte[] COMPRESSED_PAGE_FINAL;
+  private static byte[] EXPANDED_CROP_FINAL;
+  private static byte[] NHS_FINAL;
+  private static byte[] EXPANDED_EDGE_FINAL;
 
   private static final Optional<String> SESSION_ID = Optional.of(SESSION);
   private static final Optional<String> UNKNOWN_SESSION_ID = Optional.of("Unknown session id");
@@ -80,6 +90,8 @@ public class FitnoteSubmitResourceTest {
   private static String PDF_PASSWORD_FITNOTE_IMAGE;
   private static String PDF_NHS_FITNOTE_IMAGE;
   private static String LARGE_JPG_IMAGE;
+  private static String EXPANDED_CROP_IMAGE;
+  private static String EXPANDED_EDGE_IMAGE;
   private static String HEIC_IMAGE;
   private static String LARGE_HEIC;
   private static String EXR_IMAGE;
@@ -91,6 +103,8 @@ public class FitnoteSubmitResourceTest {
   private static String PDF_JSON;
   private static String PDF_PASSWORD_JSON;
   private static String PDF_NHS_JSON;
+  private static String EXPANDED_CROP_JSON;
+  private static String EXPANDED_EDGE_JSON;
   private static String HEIC_JSON;
   private static String LARGE_HEIC_JSON;
   private static String EXR_JSON;
@@ -127,12 +141,17 @@ public class FitnoteSubmitResourceTest {
 
     COMPRESSED_PAGE_LARGE = FileUtils.readFileToByteArray(new File("src/test/resources/EmptyPageBigger.jpg"));
     COMPRESSED_PAGE_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/EmptyPage.jpg"));
+    EXPANDED_CROP_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/fitnoteExpandedSearch.jpg"));
+    NHS_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/NHS_fitnote.jpg"));
+    EXPANDED_EDGE_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/fitnotes/newSample/IMG_0009.JPG"));
 
     LANDSCAPE_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Landscape.jpg");
     PORTRAIT_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.jpg");
     PDF_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.pdf");
     PDF_PASSWORD_FITNOTE_IMAGE = getEncodedImage("src/test/resources/password.pdf");
     PDF_NHS_FITNOTE_IMAGE = getEncodedImage("src/test/resources/NHS_fitnote.pdf");
+    EXPANDED_CROP_IMAGE = getEncodedImage("src/test/resources/fitnoteExpandedSearch.jpg");
+    EXPANDED_EDGE_IMAGE = getEncodedImage("src/test/resources/fitnotes/newSample/IMG_0009.JPG");
     HEIC_IMAGE = getEncodedImage("src/test/resources/DarkPage.heic");
     LARGE_HEIC = getEncodedImage("src/test/resources/5MB.heic");
     EXR_IMAGE = getEncodedImage("src/test/resources/test-fail-type.txt");
@@ -145,6 +164,8 @@ public class FitnoteSubmitResourceTest {
     PDF_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     PDF_PASSWORD_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_PASSWORD_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     PDF_NHS_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_NHS_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    EXPANDED_CROP_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXPANDED_CROP_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    EXPANDED_EDGE_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXPANDED_EDGE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + HEIC_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     EXR_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXR_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     LARGE_HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + LARGE_HEIC + "\",\"sessionId\":\"" + SESSION + "\"}";
@@ -158,6 +179,7 @@ public class FitnoteSubmitResourceTest {
     when(controllerConfiguration.getScanTargetImageSizeKb()).thenReturn(3);
     when(controllerConfiguration.getTargetImageSizeKB()).thenReturn(2);
     when(controllerConfiguration.isGreyScale()).thenReturn(true);
+    when(controllerConfiguration.getOcrVerticalSlice()).thenReturn(6);
 
     resourceUnderTest = new FitnoteSubmitResource(controllerConfiguration, validator, ocrChecker, imageStorage, imageCompressor, msDataMatrixCreatorHandler);
 
@@ -165,6 +187,7 @@ public class FitnoteSubmitResourceTest {
     returnValue.setSessionId(SESSION);
 
     when(imageStorage.getPayload(anyString())).thenReturn(returnValue);
+    OpenCV.loadLocally();
 
     long freeMemory = MemoryChecker.returnCurrentAvailableMemoryInMb(Runtime.getRuntime());
     OVER_MAX_MEMORY = (int) freeMemory + 300;
@@ -299,8 +322,10 @@ public class FitnoteSubmitResourceTest {
     ImagePayload imagePayload = imageStorage.getPayload(SESSION);
     imagePayload.setImage(LANDSCAPE_FITNOTE_IMAGE);
     createAndValidateImage(VALID_JSON, true, imagePayload);
+    ExpectedFitnoteFormat fitnoteFormat = new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null);
+    fitnoteFormat.setMatchAngle(90);
     when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
-            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+            .thenReturn(fitnoteFormat);
 
     Response response = resourceUnderTest.submitFitnote(VALID_JSON);
     verify(validator).validateAndTranslateSubmission(VALID_JSON);
@@ -339,11 +364,88 @@ public class FitnoteSubmitResourceTest {
     ImagePayload imagePayload = imageStorage.getPayload(SESSION);
     imagePayload.setImage(PDF_NHS_FITNOTE_IMAGE);
     createAndValidateImage(PDF_NHS_JSON, true, imagePayload);
+    ExpectedFitnoteFormat fitnoteFormat = new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null);
+    BufferedImage image = ImageIO.read( new ByteArrayInputStream(NHS_FINAL));
+    // enable test to match NHS logic due to using jpg v PDF conversion
+    BufferedImage nhsImage =
+        image.getSubimage(0, 0, image.getWidth(), image.getHeight() / 4);
+    fitnoteFormat.setFinalImage(nhsImage);
+
 
     when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
-            .thenReturn(new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null));
+            .thenReturn(fitnoteFormat);
     Response response = resourceUnderTest.submitFitnote(PDF_NHS_JSON);
     verify(validator).validateAndTranslateSubmission(PDF_NHS_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
+
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+  @Test
+  public void jsonIsPassedIntoServiceWithOcrEnabledAnd202IsReturnedExpandedCropStyle() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), eq(2), eq(true))).thenReturn(EXPANDED_CROP_FINAL);
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(EXPANDED_CROP_IMAGE);
+    createAndValidateImage(EXPANDED_CROP_JSON, true, imagePayload);
+    ExpectedFitnoteFormat fitnoteFormat = new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null);
+    fitnoteFormat.setTopHeight(200);
+    fitnoteFormat.setBottomHeight(950);
+    BufferedImage image = ImageIO.read( new ByteArrayInputStream(EXPANDED_CROP_FINAL));
+    fitnoteFormat.setFinalImage(image);
+    Map<ExpectedFitnoteFormat.StringLocation, StringToMatch> strings =
+            (Map<ExpectedFitnoteFormat.StringLocation, StringToMatch>) getMatchingStringsMethod().invoke(fitnoteFormat);
+    StringToMatch stringToMatch = new StringToMatch(null);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_LEFT, stringToMatch);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT, stringToMatch);
+    stringToMatch.setupPercentage(100);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT, stringToMatch);
+    stringToMatch.setupPercentage(61);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_LEFT, stringToMatch);
+
+
+    when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
+            .thenReturn(fitnoteFormat);
+    Response response = resourceUnderTest.submitFitnote(EXPANDED_CROP_JSON);
+    verify(validator).validateAndTranslateSubmission(EXPANDED_CROP_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("SUCCEEDED");
+
+    verify(imageCompressor, times(2)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+  @Test
+  public void jsonIsPassedIntoServiceWithOcrEnabledAnd202IsReturnedExpandedCropStyleAlt() throws ImagePayloadException, IOException, CryptoException, ImageCompressException, InterruptedException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    when(imageCompressor.compressBufferedImage(anyString(), any(BufferedImage.class), eq(2), eq(true))).thenReturn(EXPANDED_CROP_FINAL);
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(EXPANDED_CROP_IMAGE);
+    createAndValidateImage(EXPANDED_CROP_JSON, true, imagePayload);
+    ExpectedFitnoteFormat fitnoteFormat = new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null);
+    fitnoteFormat.setTopHeight(200);
+    fitnoteFormat.setBottomHeight(950);
+    BufferedImage image = ImageIO.read( new ByteArrayInputStream(EXPANDED_CROP_FINAL));
+    fitnoteFormat.setFinalImage(image);
+    Map<ExpectedFitnoteFormat.StringLocation, StringToMatch> strings =
+        (Map<ExpectedFitnoteFormat.StringLocation, StringToMatch>) getMatchingStringsMethod().invoke(fitnoteFormat);
+    StringToMatch stringToMatch = new StringToMatch(null);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_LEFT, new StringToMatch(null));
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT, new StringToMatch(null));
+    stringToMatch.setupPercentage(100);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT, stringToMatch);
+    stringToMatch.setupPercentage(61);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_LEFT, stringToMatch);
+
+
+    when(ocrChecker.imageContainsReadableText(any(ImagePayload.class)))
+        .thenReturn(fitnoteFormat);
+    Response response = resourceUnderTest.submitFitnote(EXPANDED_CROP_JSON);
+    verify(validator).validateAndTranslateSubmission(EXPANDED_CROP_JSON);
     assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
 
     examineImageStatusResponseForValueOrTimeout("SUCCEEDED");

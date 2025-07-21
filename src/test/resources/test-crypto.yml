@@ -70,6 +70,9 @@ baseLeftText:
 baseRightText:
   - "Performance Platform"
   - "beginning to end"
+baseRightAltText:
+  - "minister responsible"
+  - "performance data"
 
 htmlToPdfServiceUrl: http://localhost:3009/generate-data-matrix
 htmlToPdfConformanceLevel: PDF_UA

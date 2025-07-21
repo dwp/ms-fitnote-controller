@@ -77,6 +77,12 @@ public class FitnoteControllerConfiguration extends Configuration {
   @JsonProperty("diagonalTarget")
   private int diagonalTarget = 20;
 
+  @JsonProperty("diagonalTargetStrict")
+  private int diagonalTargetStrict = 50;
+
+  @JsonProperty("strictTarget")
+  private int strictTarget = 70;
+
   @JsonProperty("contrastCutOff")
   private int contrastCutOff = 105;
 
@@ -98,6 +104,10 @@ public class FitnoteControllerConfiguration extends Configuration {
   @NotNull
   @JsonProperty("baseRightText")
   private List<String> baseRightText;
+
+  @NotNull
+  @JsonProperty("baseRightAltText")
+  private List<String> baseRightAltText;
 
   @JsonProperty("estimatedRequestMemoryMb")
   private int estimatedRequestMemoryMb = 25;
@@ -213,6 +223,14 @@ public class FitnoteControllerConfiguration extends Configuration {
     return diagonalTarget;
   }
 
+  public int getDiagonalTargetStrict() {
+    return diagonalTargetStrict;
+  }
+
+  public int getStrictTarget() {
+    return strictTarget;
+  }
+
   public int getContrastCutOff() {
     return contrastCutOff;
   }
@@ -231,6 +249,10 @@ public class FitnoteControllerConfiguration extends Configuration {
 
   public List<String> getBaseRightText() {
     return baseRightText;
+  }
+
+  public List<String> getBaseRightAltText() {
+    return baseRightAltText;
   }
 
   public int getEstimatedRequestMemoryMb() {

@@ -141,14 +141,14 @@ public class FitnoteSubmitResource extends AbstractResource {
                         ""));
         LOG.info("Processing image for {} ", incomingPayload.getLogMessage());
         imageStore.updateImageHashStore(incomingPayload);
-        LOG.info("Updated image hashstore for {}", incomingPayload.getLogMessage());
+        LOG.debug("Updated image hashstore for {}", incomingPayload.getLogMessage());
 
         ImagePayload storedPayload = imageStore.getPayload(incomingPayload.getSessionId());
-        LOG.info("Retrieved image payload for {}", incomingPayload.getLogMessage());
+        LOG.debug("Retrieved image payload for {}", incomingPayload.getLogMessage());
         storedPayload.setFitnoteCheckStatus(incomingPayload.getFitnoteCheckStatus());
         storedPayload.setImage(incomingPayload.getImage());
         imageStore.updateImageDetails(storedPayload);
-        LOG.info("Updated image details for {}", incomingPayload.getLogMessage());
+        LOG.debug("Updated image details for {}", incomingPayload.getLogMessage());
 
         response =
                 createResponseOf(
@@ -224,7 +224,7 @@ public class FitnoteSubmitResource extends AbstractResource {
                 }
                 byte[] origImage = Base64.decodeBase64(payload.getImage());
                 final boolean isPdf = fileMimeType.equals("pdf");
-                byte[] convertedImg = convertAndCompressImage(payload, fileMimeType);
+                byte[] convertedImg = convertImage(payload, fileMimeType);
                 fileMimeType = "jpg";
                 if (convertedImg.length != origImage.length) {
                   displayLogs(fileMimeType, payload);
@@ -232,13 +232,14 @@ public class FitnoteSubmitResource extends AbstractResource {
                 }
 
                 ExpectedFitnoteFormat expectedFitnoteFormat =
-                        validateAndOcrImageFromInputTypes(payload, fileMimeType);
+                        ocrImage(payload, fileMimeType);
                 if (!expectedFitnoteFormat.getStatus().equals(SUCCESS)) {
                   imageStore.updateImageDetails(payload);
                   logTimeTaken(startTime, payload.getFitnoteCheckStatus());
                   return;
                 }
 
+                origImage = rotateAndCropImage(origImage, expectedFitnoteFormat, payload);
                 byte[] compressedImage = Base64.decodeBase64(payload.getImage());
                 int targetImageSizeKb = controllerConfiguration.getTargetImageSizeKB();
                 try (ByteArrayInputStream imageStream =
@@ -252,7 +253,7 @@ public class FitnoteSubmitResource extends AbstractResource {
                 }
                 errorIfNull(compressedImage);
                 byte[] finalImage = improveDMRegion(compressedImage, origImage,
-                        expectedFitnoteFormat.getMatchAngle(), payload.getSessionId(), isPdf);
+                        payload.getSessionId(), isPdf);
                 setPayloadImageFinal(finalImage, payload);
                 imageStore.updateImageDetails(payload);
                 logTimeTaken(startTime, payload.getFitnoteCheckStatus());
@@ -269,7 +270,7 @@ public class FitnoteSubmitResource extends AbstractResource {
             .start();
   }
 
-  private byte[] convertAndCompressImage(ImagePayload payload, String fileMimeType) throws
+  private byte[] convertImage(ImagePayload payload, String fileMimeType) throws
           ImageTransformException, IOException, ImagePayloadException, InterruptedException,
           IM4JavaException, ImageCompressException {
     byte[] origImage = Base64.decodeBase64(payload.getImage());
@@ -326,42 +327,56 @@ public class FitnoteSubmitResource extends AbstractResource {
   }
 
   private byte[] improveDMRegion(byte[] compressedImage, byte[] origImage,
-                                 int angle, String sessionId, boolean isPdf) throws IOException {
-    byte[] image = compressedImage;
+                                 String sessionId, boolean isPdf) {
+    byte[] image;
     final long startTime = System.currentTimeMillis();
-    if (angle == 0) {
-      BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(origImage));
-      if (!ImageUtils.isLandscape(bufferedImage)) {
-        LOG.info("NHS style fitnote found");
-        BufferedImage halfImage =
-                bufferedImage.getSubimage(
-                        0, 0, bufferedImage.getWidth(), bufferedImage.getHeight() / 2);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(halfImage, "jpg", baos);
-        origImage = baos.toByteArray();
-      }
-    }
     LOG.debug("Before layer dm region file size (bytes) = {}", compressedImage.length);
-    image = overlayDataMatrix(origImage, sessionId, compressedImage, angle, isPdf);
+    image = overlayDataMatrix(origImage, sessionId, compressedImage, isPdf);
     if (image == null) {
       LOG.info("Failed overlayDataMatrix, will attempt layerDMRegionOnImage");
-      image = ImageUtils.layerDMRegionOnImage(compressedImage, origImage, angle);
+      image = ImageUtils.layerDMRegionOnImage(compressedImage, origImage);
     }
     LOG.debug("After improve dm region file size (bytes) = {}", image.length);
-    LOG.debug("Time taken to improve DM region = seconds {}",
+    LOG.info("Time taken to improve DM region = seconds {}",
             (System.currentTimeMillis() - startTime) / 1000);
     return image;
   }
 
+  private byte[] rotateAndCropImage(byte[] origImage, ExpectedFitnoteFormat fitnoteFormat,
+                                    ImagePayload payload) throws IOException {
+    try (ByteArrayInputStream origIS = new ByteArrayInputStream(origImage);
+        ByteArrayOutputStream origOS = new ByteArrayOutputStream()) {
+      BufferedImage bufferedImage = ImageIO.read(origIS);
+      if (fitnoteFormat.getMatchAngle() > 0) {
+        bufferedImage = ImageUtils.createRotatedCopy(bufferedImage, fitnoteFormat.getMatchAngle());
+      }
+      int verticalSliceHeight = bufferedImage.getHeight()
+          / controllerConfiguration.getOcrVerticalSlice();
+      int bottomSlice = verticalSliceHeight * 5;
+      if (fitnoteFormat.getMatchAngle() == 0 && !ImageUtils.isLandscape(bufferedImage)
+          && fitnoteFormat.getTopHeight() == 0 && fitnoteFormat.getFinalImage() != null
+          && bufferedImage.getHeight() / 2 == fitnoteFormat.getFinalImage().getHeight()) {
+        LOG.info("NHS style fitnote found");
+        bufferedImage =
+                bufferedImage
+                        .getSubimage(
+                                0, 0, bufferedImage.getWidth(), bufferedImage.getHeight() / 2);
+      } else if (fitnoteFormat.getTopHeight() > 0 || (fitnoteFormat.getBottomHeight() > 0
+          && fitnoteFormat.getBottomHeight() < bottomSlice)) {
+        LOG.info("Expanded style fitnote found");
+        return ImageUtils.cropOrExtractImage(bufferedImage, fitnoteFormat, payload,
+            verticalSliceHeight, controllerConfiguration.getStrictTarget());
+      }
+      ImageIO.write(bufferedImage, "jpg", origOS);
+      return origOS.toByteArray();
+    }
+  }
+
   private byte[] overlayDataMatrix(byte[] origImage, String sessionId, byte[] compressedImage,
-                                   int angle, boolean isPdf) {
+                                   boolean isPdf) {
     DataMatrixResult dataMatrixResult = null;
     try {
-      byte[] rotatedImage = origImage;
-      if (angle > 0) {
-        rotatedImage = ImageUtils.createRotatedCopy(origImage, angle);
-      }
-      String base64Img = Base64.encodeBase64String(rotatedImage);
+      String base64Img = Base64.encodeBase64String(origImage);
       dataMatrixResult = msDataMatrixCreatorHandler.generateBase64DataMatrixFromImage(sessionId,
               base64Img, isPdf);
     } catch (IOException e) {
@@ -398,53 +413,9 @@ public class FitnoteSubmitResource extends AbstractResource {
             "{\"fitnoteStatus\":\"%s\"}", fitnoteStatus);
   }
 
-  private ExpectedFitnoteFormat validateAndOcrImageFromInputTypes(ImagePayload payload,
-                                                                  String fileMimeType)
-          throws IOException, ImagePayloadException, ImageCompressException,
-          ImageTransformException {
-    ExpectedFitnoteFormat fitnoteFormat = null;
-    try {
-      if (validatePayloadImageJpg(payload)) {
-        fitnoteFormat = ocrImage(payload, fileMimeType);
-      } else {
-        fitnoteFormat = new ExpectedFitnoteFormat(FAILED, "Failed: Image is not landscape");
-      }
-
-    } catch (ImageTransformException e) {
-      LOG.debug(e.getClass().getName(), e);
-
-      throw new ImageTransformException(
-              "The encoded string could not be transformed to a BufferedImage");
-    }
-
-    return fitnoteFormat;
-  }
-
-  private boolean validatePayloadImageJpg(ImagePayload payload)
-          throws IOException, ImagePayloadException, ImageTransformException {
-    if (payload.getImage() == null) {
-      throw new ImagePayloadException(
-              "The encoded string is null.  Cannot be transformed to an image");
-    }
-
-    BufferedImage imageBuf;
-    try (ByteArrayInputStream imageStream =
-                 new ByteArrayInputStream(Base64.decodeBase64(payload.getImage()))) {
-      imageBuf = ImageIO.read(imageStream);
-    }
-
-    if (imageBuf == null) {
-      throw new ImageTransformException(
-              "The encoded string could not be transformed to a BufferedImage");
-    }
-
-    payload.setFitnoteCheckStatus(ImagePayload.Status.PASS_IMG_SIZE);
-    LOG.info("NO LANDSCAPE ENFORCEMENT FOR IMAGE DIMENSIONS");
-    return true;
-  }
-
   private ExpectedFitnoteFormat ocrImage(ImagePayload payload, String fileMimeType)
           throws IOException, ImageCompressException {
+    payload.setFitnoteCheckStatus(ImagePayload.Status.PASS_IMG_SIZE);
 
     if (!controllerConfiguration.isOcrChecksEnabled()) {
       LOG.info("NO OCR CHECKS OR ROTATION CONFIGURED IMAGES");
@@ -455,12 +426,12 @@ public class FitnoteSubmitResource extends AbstractResource {
       byte[] compressedImage = Base64.decodeBase64(payload.getImage());
       int scanTargetImageSizeKb = controllerConfiguration.getScanTargetImageSizeKb();
       try (ByteArrayInputStream imageStream =
-               new ByteArrayInputStream(compressedImage)) {
+                   new ByteArrayInputStream(compressedImage)) {
         compressedImage = compressedImage.length < (scanTargetImageSizeKb * 1000)
             ? compressedImage : imageCompressor.compressBufferedImage(fileMimeType,
-            ImageIO.read(imageStream),
-            scanTargetImageSizeKb,
-            controllerConfiguration.isGreyScale());
+                        ImageIO.read(imageStream),
+                        scanTargetImageSizeKb,
+                        controllerConfiguration.isGreyScale());
       }
 
       errorIfNull(compressedImage);

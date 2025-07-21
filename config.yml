@@ -53,6 +53,8 @@ scanTargetImageSize: ${SCAN_TARGET_IMAGE_SIZE:-1000}
 
 highTarget: ${HIGH_TARGET:-100}
 diagonalTarget: ${DIAGONAL_TARGET:-20}
+diagonalTargetStrict: ${DIAGONAL_TARGET_STRICT:-50}
+strictTarget: ${STRICT_TARGET:-70}
 
 maxLogChars: ${MAX_LOG_CHARS:-50}
 targetBrightness: ${TARGET_BRIGHTNESS:-178}
@@ -64,14 +66,17 @@ estimatedRequestMemoryMb: ${ESTIMATED_REQUEST_MEMORY_MB:-100}
 topLeftText:
   - "Fitness for work"
 topRightText:
-  - "what to do now"
-  - "may be collected"
   - "What your advice means"
+  - "Help getting back"
+  - "what to do now"
 baseLeftText:
   - "Unique ID: Med 3"
 baseRightText:
-  - "signed this"
   - "make a claim"
+  - "signed this"
+baseRightAltText:
+  - "healthcare professional"
+  - "form to the office dealing"
 
 dataMatrixCreatorServiceUrl: ${DATA_MATRIX_CREATOR_SERVICE_URL:-http://localhost:3009/generate-data-matrix}
 dataMatrixCreatorTruststoreFile: ${DATA_MATRIX_CREATOR_TRUSTSTORE_FILE:-null}

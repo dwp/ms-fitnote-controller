@@ -11,14 +11,21 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Objects;
 import javax.imageio.ImageIO;
+import nu.pattern.OpenCV;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.im4java.core.IM4JavaException;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.dwp.health.fitnotecontroller.domain.DataMatrixResult;
+import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
+import uk.gov.dwp.health.fitnotecontroller.domain.StringToMatch;
 
 
 public class ImageUtilsTest extends ImageUtils {
@@ -27,6 +34,8 @@ public class ImageUtilsTest extends ImageUtils {
     private static final String PDF_FILE = "/FullPage_Portrait.pdf";
     private static final String TEXT_FILE = "/test-fail-type.txt";
     private static final String DATA_MATRIX_FILE = "/datamatrix.png";
+    private static final String EDGE_DETECTION_FILE = "/fitnotes/newSample/IMG_0009.JPG";
+    private static final String CROP_FILE = "/fitnotes/newSample/IMG_0015_flipped.JPG";
 
     private BufferedImage localImage;
 
@@ -34,7 +43,11 @@ public class ImageUtilsTest extends ImageUtils {
         String imageString = getEncodedImage(this.getClass().getResource(file).getPath());
         byte[] decode = org.apache.commons.codec.binary.Base64.decodeBase64(imageString);
 
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(decode);
+        return getBufferedImage(decode);
+    }
+
+    private BufferedImage getBufferedImage(byte[] byteArray) throws IOException {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArray);
         return ImageIO.read(inputStream);
     }
 
@@ -58,6 +71,7 @@ public class ImageUtilsTest extends ImageUtils {
         // String myPath="/Users/dillon.vaghela/.homebrew/Cellar/imagemagick/7.1.1-4_1/bin";
         // ProcessStarter.setGlobalSearchPath(myPath);
         // -------------
+        OpenCV.loadLocally();
     }
 
     @Test
@@ -120,18 +134,7 @@ public class ImageUtilsTest extends ImageUtils {
         BufferedImage updatedImage = changeBrightness(localImage, -10);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(updatedImage, "jpg", baos);
-        byte[] compressedImage = layerDMRegionOnImage(origImage, baos.toByteArray(), 0);
-        assertNotEquals(compressedImage, origImage);
-    }
-
-    @Test
-    public void validateImageDMRegion90() throws IOException {
-        ImagePayload payload = getImagePayload(IMAGE_FILE);
-        byte[] origImage = org.apache.commons.codec.binary.Base64.decodeBase64(payload.getImage());
-        BufferedImage updatedImage = changeBrightness(localImage, -10);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(updatedImage, "jpg", baos);
-        byte[] compressedImage = layerDMRegionOnImage(origImage, baos.toByteArray(), 90);
+        byte[] compressedImage = layerDMRegionOnImage(origImage, baos.toByteArray());
         assertNotEquals(compressedImage, origImage);
     }
 
@@ -268,6 +271,52 @@ public class ImageUtilsTest extends ImageUtils {
     public void testImagePortrait() {
         BufferedImage rotatedImage = createRotatedCopy(localImage, 90);
         assertFalse(isLandscape(rotatedImage));
+    }
+
+    @Test
+    public void testCompressImage1MB() throws IOException, InterruptedException, IM4JavaException {
+        byte[] image = getObjectAsByte(IMAGE_FILE);
+        int length = Objects.requireNonNull(compressImage(image, 1000)).length;
+        assertTrue(length < (1000 * 1000));
+    }
+
+    @Test
+    public void testCompressImage500KB() throws IOException, InterruptedException, IM4JavaException {
+        byte[] image = getObjectAsByte(IMAGE_FILE);
+        int length = Objects.requireNonNull(compressImage(image, 500)).length;
+        assertTrue(length < (500 * 1000));
+    }
+
+    @Test
+    public void testCropImage() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        BufferedImage image = getTestImage(CROP_FILE);
+        ImagePayload payload = getImagePayload(CROP_FILE);
+        ExpectedFitnoteFormat fitnoteFormat = new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.SUCCESS, null);
+        fitnoteFormat.setFinalImage(image);
+        fitnoteFormat.setTopHeight(504);
+        fitnoteFormat.setBottomHeight(2520);
+        Map<ExpectedFitnoteFormat.StringLocation, StringToMatch> strings =
+                (Map<ExpectedFitnoteFormat.StringLocation, StringToMatch>) getMatchingStringsMethod().invoke(fitnoteFormat);
+        StringToMatch stringToMatch = new StringToMatch(null);
+        strings.put(ExpectedFitnoteFormat.StringLocation.TOP_LEFT, stringToMatch);
+        strings.put(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT, stringToMatch);
+        stringToMatch.setupPercentage(100);
+        strings.put(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT, stringToMatch);
+        stringToMatch.setupPercentage(61);
+        strings.put(ExpectedFitnoteFormat.StringLocation.BASE_LEFT, stringToMatch);
+
+
+        byte[] newImage = ImageUtils.cropOrExtractImage(image, fitnoteFormat,
+                payload, image.getHeight()/6, 70);
+        BufferedImage cropImage = getBufferedImage(newImage);
+        assertEquals(4032, cropImage.getWidth());
+        assertEquals(2520, cropImage.getHeight());
+    }
+
+    public static Method getMatchingStringsMethod() throws NoSuchMethodException {
+        Method method = ExpectedFitnoteFormat.class.getDeclaredMethod("getMatchingStrings");
+        method.setAccessible(true);
+        return method;
     }
 
     private String getEncodedImage(String imageFileName) throws IOException {

@@ -5,10 +5,10 @@ services:
 
   localstack:
     container_name: localstack
-    image: localstack/localstack:4.1.1@sha256:97ccc65daec3542bd2cb3160d7355f11e89ad8027fd3c834b9d1197d197d866f
+    image: localstack/localstack:4.6.0@sha256:5a97e0f9917a3f0d9630bb13b9d8ccf10cbe52f33252807d3b4e21418cc21348
     environment:
       SERVICES: ${LOCALSTACK_SERVICES}
-      HOSTNAME_EXTERNAL: ${LOCALSTACK_HOSTNAME}
+      LOCALSTACK_HOST: ${LOCALSTACK_HOSTNAME}
     healthcheck:
       test: ["CMD", "curl", "http://localhost:4566/_localstack/health"]
       interval: 10s
@@ -22,7 +22,7 @@ services:
       - ./localstack/docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d
 
   redis-cluster:
-    image: bitnami/redis-cluster@sha256:e4e34073db6c66e253fb60c06e760888a0cc1a378b2094fe6d938ace03f75cf4
+    image: bitnami/redis-cluster@sha256:f3ba5f05dd817d14d661dba900fc6f56cf8efeff70d15af6ce6738045873f60f
     ports:
       - '6379:6379'
     healthcheck:

@@ -68,4 +68,12 @@
         <Class name="uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat"/>
         <Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" />
     </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.utils.OcrApplyImageFilters"/>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.utils.OcrApplyImageFilters"/>
+        <Bug pattern="SE_BAD_FIELD" />
+    </Match>
 </FindBugsFilter>

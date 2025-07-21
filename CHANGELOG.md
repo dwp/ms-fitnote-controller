@@ -1,3 +1,26 @@
+<a name="5.1.0"></a>
+# 5.1.0 (2025-07-16)
+
+* release: set version to candidate version in dwp metadata file 5.1.0 ([1f31c93](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/1f31c93))
+* release: set version to candidate version in pom 5.1.0 ([67288ce](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/67288ce))
+* bug: remove image edge detection cropping ([128b510](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/128b510))
+* feat: clean up catalog ([ba6690d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ba6690d))
+* Edit pom.xml [skip ci] ([d5ebe91](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/d5ebe91))
+
+
+<a name="5.0.0"></a>
+# 5.0.0 (2025-07-07)
+
+* release: set version to candidate version in dwp metadata file 5.0.0 ([93f1ba4](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/93f1ba4))
+* release: set version to candidate version in pom 5.0.0 ([3f4ce73](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3f4ce73))
+* fix compression algorithm dispose objects to free up memory ([240807a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/240807a))
+* chore: update bitnami/redis-cluster docker digest to f3ba5f0 ([f34c86a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/f34c86a))
+* chore: update localstack/localstack docker tag to v4.6.0 ([ac33831](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ac33831))
+* chore: update bitnami/redis-cluster docker digest to fafa029 ([f2cbc2d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/f2cbc2d))
+* chore: update maven docker tag to v3.9.10 ([4f96f18](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/4f96f18))
+* release: set version from 4.1.0 to snapshot 4.2.0-SNAPSHOT [skip ci] ([8b81ba1](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/8b81ba1))
+
+
 <a name="4.1.0"></a>
 # 4.1.0 (2025-05-12)
 

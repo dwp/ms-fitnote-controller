@@ -3,11 +3,12 @@ package uk.gov.dwp.health.fitnotecontroller.application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.core.Application;
-
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.cluster.RedisClusterClient;
+import nu.pattern.OpenCV;
+import org.im4java.process.ProcessStarter;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
 import uk.gov.dwp.health.crypto.MessageEncoder;
@@ -48,6 +49,9 @@ public class FitnoteControllerApplication extends Application<FitnoteControllerC
       mqKmsCrypto =
               new CryptoDataManager(fitnoteControllerConfiguration.getSnsKmsCryptoConfiguration());
     }
+
+    // load OpenCV
+    OpenCV.loadLocally();
 
     CryptoDataManager redisMqKmsCrypto = null;
     if (fitnoteControllerConfiguration.isRedisEncryptMessages()

@@ -1,16 +1,12 @@
 package uk.gov.dwp.health.fitnotecontroller.utils.fitnotes;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
-import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
-import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
-import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
-import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,14 +16,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
+import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
+import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
+import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"squid:S1192", "squid:S00101"})
@@ -43,6 +42,7 @@ public class FITNOTE_OcrCheckerTest {
     List<String> topLeftList = new LinkedList<>();
     List<String> topRightList = new LinkedList<>();
     List<String> baseRightList = new LinkedList<>();
+    List<String> baseRightAltList = new LinkedList<>();
     List<String> baseLeftList = new LinkedList<>();
     topLeftList.add("Fitness for work");
     topRightList.add("what to do now");
@@ -50,12 +50,15 @@ public class FITNOTE_OcrCheckerTest {
     baseLeftList.add("Unique ID: Med 3");
     baseRightList.add("signed this");
     baseRightList.add("make a claim");
+    baseRightAltList.add("healthcare professional");
+    baseRightAltList.add("form to the office dealing");
 
     when(mockConfig.getTesseractFolderPath()).thenReturn("src/main/properties/tessdata");
     when(mockConfig.getBorderLossPercentage()).thenReturn(10);
     when(mockConfig.getMaxLogChars()).thenReturn(2000);
     when(mockConfig.getTargetBrightness()).thenReturn(179);
     when(mockConfig.getDiagonalTarget()).thenReturn(20);
+    when(mockConfig.getDiagonalTargetStrict()).thenReturn(50);
     when(mockConfig.getHighTarget()).thenReturn(100);
     when(mockConfig.getContrastCutOff()).thenReturn(105);
     when(mockConfig.getOcrVerticalSlice()).thenReturn(6);
@@ -63,6 +66,7 @@ public class FITNOTE_OcrCheckerTest {
     when(mockConfig.getTopRightText()).thenReturn(topRightList);
     when(mockConfig.getBaseLeftText()).thenReturn(baseLeftList);
     when(mockConfig.getBaseRightText()).thenReturn(baseRightList);
+    when(mockConfig.getBaseRightAltText()).thenReturn(baseRightAltList);
 
     checker = new OcrChecker(mockConfig);
   }
@@ -86,7 +90,8 @@ public class FITNOTE_OcrCheckerTest {
     samplePictures.put("/fitnotes/newSample/IMG_0002.JPG", ExpectedFitnoteFormat.Status.SUCCESS);
     samplePictures.put("/fitnotes/newSample/IMG_0006.JPG", ExpectedFitnoteFormat.Status.SUCCESS);
     samplePictures.put("/fitnotes/newSample/IMG_0012.JPG", ExpectedFitnoteFormat.Status.SUCCESS);
-    samplePictures.put("/fitnotes/newSample/IMG_0015.JPG", ExpectedFitnoteFormat.Status.FAILED);
+    samplePictures.put("/fitnotes/newSample/IMG_0015.JPG", ExpectedFitnoteFormat.Status.SUCCESS);
+    samplePictures.put("/fitnotes/newSample/temp.jpg", ExpectedFitnoteFormat.Status.FAILED);
 
     for (Map.Entry<String, ExpectedFitnoteFormat.Status> item : samplePictures.entrySet()) {
       assertThat(String.format("%s :: expected result was %s", item.getKey(), item.getValue()), checker.imageContainsReadableText(getTestImage(item.getKey())).getStatus(), is(equalTo(item.getValue())));
@@ -99,8 +104,8 @@ public class FITNOTE_OcrCheckerTest {
   }
 
   @Test
-  public void confirmOldStyleFitnoteIsUnsuccessfulWithStandardSixthSlice() throws IOException {
-    assertThat(checker.imageContainsReadableText(getTestImage("/fitnotes/oldStyleSubmittedFitnote.jpg")).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.PARTIAL)));
+  public void confirmOldStyleFitnoteIsSuccessfulWithStandardSixthSlice() throws IOException {
+    assertThat(checker.imageContainsReadableText(getTestImage("/fitnotes/oldStyleSubmittedFitnote.jpg")).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
   }
 
   @Test
@@ -145,7 +150,7 @@ public class FITNOTE_OcrCheckerTest {
     ExpectedFitnoteFormat format = checker.imageContainsReadableText(getTestImage("/fitnotes/right_hand_side_only.jpg"));
 
     assertThat(format.getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.FAILED)));
-    assertThat(format.getFailureReason(), is(equalTo("{0=FAILED - checkHighMarks, 90=FAILED - checkHighMarks, 180=FAILED - Portrait image, 270=FAILED - checkHighMarks}")));
+    assertThat(format.getFailureReason(), is(equalTo("{0=FAILED - checkHighMarks, 90=FAILED - checkHighMarks, 180=FAILED - checkHighMarks, 270=FAILED - checkHighMarks}")));
 
   }
 
@@ -181,6 +186,18 @@ public class FITNOTE_OcrCheckerTest {
   public void confirmOriginalPartialMatchImageIsNowAPass() throws IOException {
     ImagePayload payload = getTestImage("/fitnotes/PartialMatch.jpg");
     assertThat("expecting new return status to be SUCCESS", checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
+  }
+
+  @Test
+  public void confirmExpandedSearchFullPageLandscapeFormatWorked() throws IOException {
+    ImagePayload payload = getTestImage("/fitnotes/newSample/IMG_0007.JPG");
+    assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
+  }
+
+  @Test
+  public void confirmExpandedSearchFormatWorked() throws IOException {
+    ImagePayload payload = getTestImage("/fitnotes/newSample/IMG_0009.JPG");
+    assertThat(checker.imageContainsReadableText(payload).getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.SUCCESS)));
   }
 
   // Ignoring this test as it conflicts with pi tests
