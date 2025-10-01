@@ -1,3 +1,32 @@
+<a name="5.1.2"></a>
+# 5.1.2 (2025-09-16)
+
+* release: update fragments ([d5fe459](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/d5fe459))
+* release: set version to candidate version in catalog info file 5.1.2 ([b55e71e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/b55e71e))
+* release: set version to candidate version in pom 5.1.2 ([541dbdb](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/541dbdb))
+* pull in develop pull in develop ([cfe9b66](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/cfe9b66))
+* Edit catalog-info.yaml [skip ci] ([3a3dea4](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3a3dea4))
+* release: set version from 5.1.1 to snapshot 5.2.0-SNAPSHOT [skip ci] ([cb9d7b7](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/cb9d7b7))
+* ci: fix slack messages ([0786145](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/0786145))
+
+
+<a name="5.1.1"></a>
+# 5.1.1 (2025-08-26)
+
+* release: set version to candidate version in catalog info file 5.1.1 ([b8bbf7a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/b8bbf7a))
+* release: set version to candidate version in pom 5.1.1 ([316de6a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/316de6a))
+* chore: update non-major maven dependency updates ([2eedccf](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/2eedccf))
+* chore: update bitnami/redis-cluster docker digest to 00cd760 ([ba94358](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ba94358))
+* pull in develop pull in develop ([cb798fd](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/cb798fd))
+* chore: update bitnami/redis-cluster docker digest to 77e11f1 ([c07e5fd](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/c07e5fd))
+* feat: update catalog [skip ci] ([2e13d09](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/2e13d09))
+* chore: update localstack/localstack docker tag to v4.7.0 ([a6b6885](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a6b6885))
+* chore: update bash:5 docker digest to cc444a5 ([c999dc4](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/c999dc4))
+* feat: post slack messages for jobs ([ab925ce](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ab925ce))
+* release: set version from 5.1.0 to snapshot 5.2.0-SNAPSHOT [skip ci] ([ab0ea12](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ab0ea12))
+* chore: update bitnami/redis-cluster docker digest to babd700 ([2e3ef47](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/2e3ef47))
+
+
 <a name="5.1.0"></a>
 # 5.1.0 (2025-07-16)
 

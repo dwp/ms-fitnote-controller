@@ -6,7 +6,12 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>5.1.0</version>
+    <version>5.1.2</version>
+
+    <!--  Only show/update plugins for maven this version  -->
+    <prerequisites>
+        <maven>3.9.10</maven>
+    </prerequisites>
 
     <properties>
         <dwp.message-utility.version>5.1.0-fc6aebea</dwp.message-utility.version>
@@ -15,61 +20,75 @@
         <dwp.encoded-log.version>3.0.0-dfda47f2</dwp.encoded-log.version>
         <dwp.postcode.version>2.0.0-8cab2309</dwp.postcode.version>
         <dwp.drsinteg.version>1.7.0-008b5a52</dwp.drsinteg.version>
-        <dwp.cryptography.version>4.1.0-b8944d7d</dwp.cryptography.version>
+        <dwp.cryptography.version>4.2.0-7f1487d8</dwp.cryptography.version>
         <dwp.nino.version>1.3.2-7c450b4d</dwp.nino.version>
         <dwp.vinfo.version>2.0.0-0f63d3b5</dwp.vinfo.version>
 
         <java.source.version>17</java.source.version>
         <java.target.version>17</java.target.version>
 
-        <plugin.spring-boot.version>3.5.3</plugin.spring-boot.version>
+        <plugin.spring-boot.version>4.0.0-M2</plugin.spring-boot.version>
         <plugin.compiler.version>3.14.0</plugin.compiler.version>
-        <plugin.maven.spotbugs.version>4.9.3.2</plugin.maven.spotbugs.version>
-        <plugin.spotbugs.version>4.9.3</plugin.spotbugs.version>
-        <plugin.surefire.version>3.5.3</plugin.surefire.version>
+        <plugin.maven.spotbugs.version>4.9.5.0</plugin.maven.spotbugs.version>
+        <plugin.spotbugs.version>4.9.5</plugin.spotbugs.version>
+        <plugin.surefire.version>3.5.4</plugin.surefire.version>
         <plugin.jacoco.version>0.8.13</plugin.jacoco.version>
         <plugin.site.version>4.0.0-M16</plugin.site.version>
-        <plugin.update.versions>2.18.0</plugin.update.versions>
+        <plugin.update.versions>2.19.0</plugin.update.versions>
 
         <doxia.version>2.0.0</doxia.version>
 
         <log4j.version>2.25.1</log4j.version>
-        <hibernate-validator.version>8.0.2.Final</hibernate-validator.version>
+        <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lettuce-redis.version>6.7.1.RELEASE</lettuce-redis.version>
-        <cucumber-core.version>7.25.0</cucumber-core.version>
-        <tesseract.version>5.5.0-1.5.11</tesseract.version>
+        <lettuce-redis.version>6.8.1.RELEASE</lettuce-redis.version>
+        <cucumber-core.version>7.28.2</cucumber-core.version>
+        <tesseract.version>5.5.1-1.5.12</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>4.0.14</dropwizard.version>
-        <commons-io.version>2.19.0</commons-io.version>
+        <dropwizard.version>4.0.16</dropwizard.version>
+        <commons-io.version>2.20.0</commons-io.version>
         <wiremock.version>3.13.1</wiremock.version>
         <mockito.version>4.11.0</mockito.version>
-        <jackson.version>2.19.1</jackson.version>
+        <jackson.version>2.20.0</jackson.version>
         <pdfbox.version>3.0.5</pdfbox.version>
         <pdfbox.jbig2.version>3.0.4</pdfbox.jbig2.version>
         <owasp.version>12.1.3</owasp.version>
         <junit.version>4.13.2</junit.version>
         <zxing.version>3.5.3</zxing.version>
-        <netty.version>4.2.2.Final</netty.version>
+        <netty.version>4.2.6.Final</netty.version>
         <slf4j.version>2.0.17</slf4j.version>
         <guava.version>33.4.8-jre</guava.version>
-        <tika.version>3.2.1</tika.version>
+        <tika.version>3.2.3</tika.version>
         <im4java.version>1.4.0</im4java.version>
         <jai.image.io.version>1.4.0</jai.image.io.version>
         <httpclient5.version>5.5</httpclient5.version>
+        <opencv.version>4.9.0-0</opencv.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <netty-codec-http2.version>4.2.6.Final</netty-codec-http2.version>
+        <bc-fips.version>2.1.1</bc-fips.version>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bc-fips</artifactId>
+            <version>${bc-fips.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty-codec-http2.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openpnp</groupId>
             <artifactId>opencv</artifactId>
-            <version>4.9.0-0</version>
+            <version>${opencv.version}</version>
         </dependency>
         <dependency>
             <groupId>org.im4java</groupId>
@@ -405,6 +424,7 @@
                     <excludes>
                         <exclude>org.mockito:mockito-core:*</exclude>
                         <exclude>org.bytedeco:tesseract-platform:*</exclude>
+                        <exclude>org.hibernate.validator:hibernate-validator:*</exclude>
                     </excludes>
                     <generateBackupPoms>false</generateBackupPoms>
                     <rulesUri>${project.baseUri}/properties/maven-version-rules.xml</rulesUri>

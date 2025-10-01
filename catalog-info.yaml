@@ -4,7 +4,7 @@ kind: Component
 
 metadata:
   name: fitnote.service.ms-fitnote-controller
-  title: "fitnote/ms-fitnote-controller"
+  title: "Ms-Fitnote-Controller"
   description: |
     "Main service functionality for submitting, checking and adding additional claimant details to a submitted fit note.   "
 
@@ -12,11 +12,11 @@ metadata:
     gitlab.com/project-slug: dwp/health/fitnote/components/ms-fitnote-controller
 
   labels:
-    dwp.gov.uk/version: 5.1.0
+    dwp.gov.uk/version: 5.1.2
     dwp.gov.uk/license: MIT
 
     dwp.gov.uk/last-verified.by: aayush.srikanth
-    dwp.gov.uk/last-verified.on: 2025-07-16
+    dwp.gov.uk/last-verified.on: 2025-09-16
 
     dwp.gov.uk/open-source.approved: "true"
     dwp.gov.uk/open-source.location: https://github.com/dwp/ms-fitnote-controller
