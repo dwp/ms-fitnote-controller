@@ -1,3 +1,41 @@
+<a name="5.2.0"></a>
+# 5.2.0 (2026-01-19)
+
+* ci: fix pipeline ([033295f8](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/033295f8))
+* chore: update non-major maven dependency updates ([50327eb9](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/50327eb9))
+* chore: update pipeline-solutions/gitlab to v2.2.0 ([5412942f](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/5412942f))
+* build: OIDC implementation ([a54754b7](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a54754b7))
+* chore: update automerge/common-ci-updates ([9b68875c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/9b68875c))
+* chore: update maven:3.9.11-eclipse-temurin-17 docker digest to e4a7ace ([78ddd96a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/78ddd96a))
+* chore: update maven:3.9.11-eclipse-temurin-17 docker digest to aaa8835 ([aba8bbbe](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/aba8bbbe))
+
+
+<a name="5.1.4"></a>
+# 5.1.4 (2025-11-12)
+
+* release: set version to candidate version in catalog info file 5.1.4 ([7153bf6](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/7153bf6))
+* release: set version to candidate version in pom 5.1.4 ([c0f3505](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/c0f3505))
+* chore: update fragments & dependencies ([929e8b4](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/929e8b4))
+* chore: update pipeline-solutions/gitlab to v5 ([bc50432](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/bc50432))
+* chore: update dependency org.springframework.boot:spring-boot-maven-plugin to v4.0.0-rc1 ([7fa75e5](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/7fa75e5))
+* chore: update automerge/common-ci-updates ([440eb9e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/440eb9e))
+* chore: update non-major maven dependency updates ([642f644](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/642f644))
+* release: set version from 5.1.3 to snapshot 5.2.0-SNAPSHOT [skip ci] ([ecf1974](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ecf1974))
+* chore: update non-major maven dependency updates ([b7e9d96](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/b7e9d96))
+* chore: update maven:3.9.11-eclipse-temurin-17 docker digest to e195e8d ([805aa08](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/805aa08))
+* chore: update localstack/localstack docker tag to v4.9.2 ([28686be](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/28686be))
+
+
+<a name="5.1.3"></a>
+# 5.1.3 (2025-10-14)
+
+* release: set version to candidate version in catalog info file 5.1.3 ([64f79c5](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/64f79c5))
+* release: set version to candidate version in pom 5.1.3 ([3ffb93e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3ffb93e))
+* chore: update bash:5 docker digest to ae4668c ([a11c783](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a11c783))
+* ci: fix pipelines ([41cf91a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/41cf91a))
+* release: set version from 5.1.2 to snapshot 5.2.0-SNAPSHOT [skip ci] ([829e264](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/829e264))
+
+
 <a name="5.1.2"></a>
 # 5.1.2 (2025-09-16)
 

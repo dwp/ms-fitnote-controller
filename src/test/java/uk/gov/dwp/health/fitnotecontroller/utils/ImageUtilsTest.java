@@ -16,7 +16,6 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Objects;
 import javax.imageio.ImageIO;
-import nu.pattern.OpenCV;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.im4java.core.IM4JavaException;
@@ -71,7 +70,7 @@ public class ImageUtilsTest extends ImageUtils {
         // String myPath="/Users/dillon.vaghela/.homebrew/Cellar/imagemagick/7.1.1-4_1/bin";
         // ProcessStarter.setGlobalSearchPath(myPath);
         // -------------
-        OpenCV.loadLocally();
+
     }
 
     @Test

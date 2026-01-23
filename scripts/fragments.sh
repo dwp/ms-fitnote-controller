@@ -12,7 +12,7 @@ do
   isFeatureBranchToggle=0
   export current_project="$i"
   CURRENT_REF_ORG=$(yq '.include.[] | select(.project == env(current_project)) | .ref' $FRAGMENT_INCLUDE_PATH)
-  LATEST_REF_ORG=$(git ls-remote --tags --refs --sort="v:refname" ssh://git@gitlab.com/"$i".git | tail -n1 | cut -f2 -d$'\t' | cut -f3 -d/)
+  LATEST_REF_ORG=$(git ls-remote --tags --refs --sort="v:refname" https://gitlab.com/"$i".git | tail -n1 | cut -f2 -d$'\t' | cut -f3 -d/)
 
 
   if [[ "$CURRENT_REF_ORG" =~ $featureRegexCheck ]] && [[ "$CI_COMMIT_REF_NAME" =~ $featureRegexCheck ]]; then

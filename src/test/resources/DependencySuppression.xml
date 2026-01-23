@@ -3,12 +3,21 @@
     <suppress>
         <notes>
             <![CDATA[
-                file name: metrics-httpclient5-4.2.33.jar
+                file name: metrics-httpclient5-4.2.37.jar
             ]]>
         </notes>
         <packageUrl regex="true">^pkg:maven/io\.dropwizard\.metrics/metrics\-httpclient5@.*$</packageUrl>
         <cve>CVE-2020-13956</cve>
         <cve>CVE-2014-3577</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-transport-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-transport@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
     </suppress>
     <suppress>
         <notes>
@@ -20,26 +29,108 @@
         <cve>CVE-2025-55163</cve>
         <cve>CVE-2025-58056</cve>
         <cve>CVE-2025-58057</cve>
+        <cve>CVE-2025-67735</cve>
     </suppress>
     <suppress>
         <notes>
             <![CDATA[
-                file name: netty-codec-4.1.124.Final.jar
+                file name: netty-transport-native-unix-common-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-transport\-native\-unix\-common@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-codec-4.1.126.Final.jar
             ]]>
         </notes>
         <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec@.*$</packageUrl>
-        <cve>CVE-2025-58056</cve>
-        <cve>CVE-2025-58057</cve>
+        <cve>CVE-2025-67735</cve>
     </suppress>
     <suppress>
         <notes>
             <![CDATA[
-                file name: netty-transport-classes-epoll-4.1.124.Final.jar
+                file name: netty-buffer-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-buffer@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-common-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-common@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-handler-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-handler@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-resolver-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-resolver@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-codec-base-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-base@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-codec-http-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-http@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-codec-http2-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-http2@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-codec-compression-4.2.7.Final.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-compression@.*$</packageUrl>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: netty-transport-classes-epoll-4.1.126.Final.jar
             ]]>
         </notes>
         <packageUrl regex="true">^pkg:maven/io\.netty/netty\-transport\-classes\-epoll@.*$</packageUrl>
         <cve>CVE-2025-58056</cve>
         <cve>CVE-2025-58057</cve>
+        <cve>CVE-2025-67735</cve>
     </suppress>
     <suppress>
         <notes>
@@ -51,5 +142,36 @@
         <cve>CVE-2025-55163</cve>
         <cve>CVE-2025-58056</cve>
         <cve>CVE-2025-58057</cve>
+        <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: jetty-setuid-jna-2.0.3.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty\.toolchain\.setuid/jetty\-setuid\-jna@.*$</packageUrl>
+        <cve>CVE-2022-2047</cve>
+        <cve>CVE-2022-2048</cve>
+        <cve>CVE-2020-27216</cve>
+        <cve>CVE-2017-7658</cve>
+        <cve>CVE-2017-7657</cve>
+        <cve>CVE-2017-7656</cve>
+        <cve>CVE-2017-9735</cve>
+        <cve>CVE-2021-28169</cve>
+        <cve>CVE-2023-26048</cve>
+        <cve>CVE-2023-26049</cve>
+        <cve>CVE-2009-5046</cve>
+        <cve>CVE-2009-5045</cve>
+        <cve>CVE-2023-44487</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name: opencv-4.9.0-0.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.openpnp/opencv@.*$</packageUrl>
+        <cve>CVE-2025-53644</cve>
     </suppress>
 </suppressions>

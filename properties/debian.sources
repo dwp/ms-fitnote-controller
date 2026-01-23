@@ -1,0 +1,13 @@
+Types: deb
+# http://snapshot.debian.org/archive/debian/20251208T000000Z
+URIs: https://nexus.nonprod.dwpcloud.uk/repository/debian-bookworm
+Suites: bookworm bookworm-updates
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Types: deb
+# http://snapshot.debian.org/archive/debian-security/20251208T000000Z
+URIs: https://nexus.nonprod.dwpcloud.uk/repository/debian-bookworm
+Suites: bookworm-security
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg

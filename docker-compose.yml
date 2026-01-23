@@ -5,7 +5,7 @@ services:
 
   localstack:
     container_name: localstack
-    image: localstack/localstack:4.7.0@sha256:12253acd9676770e9bd31cbfcf17c5ca6fd7fb5c0c62f3c46dd701f20304260c
+    image: nexus.nonprod.dwpcloud.uk/docker/localstack/localstack:4.10.0@sha256:a65ee2a9d45a7a34a1f1faae515d2e577ce11210312c077700ccc82daefec238
     environment:
       SERVICES: ${LOCALSTACK_SERVICES}
       LOCALSTACK_HOST: ${LOCALSTACK_HOSTNAME}
@@ -22,7 +22,7 @@ services:
       - ./localstack/docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d
 
   redis-cluster:
-    image: bitnami/redis-cluster@sha256:00cd760641dc73dca95826e6be8fa2b02b844086c0e1d2314bec0f78c69aefaa
+    image: nexus.nonprod.dwpcloud.uk/docker/bitnami/redis-cluster:latest@sha256:6ba912345c06af50647577549d882b8e154adce0ac0c1281ba767717a11b6631
     ports:
       - '6379:6379'
     healthcheck:
@@ -41,10 +41,16 @@ services:
       - test
 
   cucumber-tests:
-    image: ${MAVEN_IMAGE}
+    image: ${MAVEN_DEBIAN_IMAGE}
     entrypoint: /bin/bash -c
     command:
       - |
+        cat properties/debian.sources > /etc/apt/sources.list.d/debian.sources
+        echo "${NEXUS_CA_CERT}" > /etc/ssl/certs/ca-certificates.crt
+        echo "$NEXUS_CA_CERT" > /root.pem
+        keytool -import -file "/root.pem" -alias "dwproot" -cacerts -noprompt && rm /root.pem
+        update-ca-certificates --fresh
+        pwd
         sh /usr/src/scripts/InstallImageMagick.sh
         sleep 5 #wait for keys to be created once localstack services are available (aws cli not available)
         mvn -Dtest=uk.gov.dwp.health.fitnotecontroller.integration.RunCukesTest ${MVN_OPTS} ${MVN_CLI_OPTS} test
@@ -59,6 +65,7 @@ services:
       - JVM_OPTS=-Xmx12g -Xms12g -XX:MaxPermSize=2048m
       - IP=0.0.0.0
       - APT_DIR=/root/.apt
+      - MAGICK_BUILD_DIR=magick/builddind
 
     networks:
       - test
