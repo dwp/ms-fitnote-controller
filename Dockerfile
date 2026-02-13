@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 	libheif-dev=1.15.1-1+deb12u1 \
 	libjpeg-dev=1:2.1.5-2 \
 	libtiff-dev=4.5.0-6+deb12u3 \
-	libmagickcore-dev=8:6.9.11.60+dfsg-1.6+deb12u5 \
+	libmagickcore-dev=8:6.9.11.60+dfsg-1.6+deb12u6 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>5.2.0</version>
+    <version>5.2.1</version>
 
     <!--  Only show/update plugins for maven this version  -->
     <prerequisites>

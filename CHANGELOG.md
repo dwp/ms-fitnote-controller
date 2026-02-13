@@ -1,3 +1,14 @@
+<a name="5.2.1"></a>
+# 5.2.1 (2026-02-06)
+
+* release: update changelog ([3e16f25e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3e16f25e))
+* release: update fragments ([a39651a0](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a39651a0))
+* release: set version to candidate version in catalog info file 5.2.1 ([d1602f4c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/d1602f4c))
+* release: set version to candidate version in pom 5.2.1 ([31967538](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/31967538))
+* chore: update dockerfile for Imagebrick version ([1d2b1ced](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/1d2b1ced))
+* release: set version from 5.2.0 to snapshot 5.3.0-SNAPSHOT [skip ci] ([22ee8cb3](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/22ee8cb3))
+
+
 <a name="5.2.0"></a>
 # 5.2.0 (2026-01-19)
 
