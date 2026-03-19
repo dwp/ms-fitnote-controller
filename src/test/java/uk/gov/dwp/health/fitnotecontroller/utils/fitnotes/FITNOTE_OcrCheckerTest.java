@@ -146,6 +146,14 @@ public class FITNOTE_OcrCheckerTest {
   }
 
   @Test
+  public void confirmOcrCheckerPartialOnTopLeft() throws IOException {
+    ExpectedFitnoteFormat format = checker.imageContainsReadableText(getTestImage("/fitnotes/fitnoteQRPageTL.jpg"));
+    assertThat(format.getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.PARTIAL)));
+    assertThat(format.getFailureReason(), is(equalTo("PARTIAL - leftHandSide")));
+
+  }
+
+  @Test
   public void rightHandSidePageIsNotAccepted() throws IOException {
     ExpectedFitnoteFormat format = checker.imageContainsReadableText(getTestImage("/fitnotes/right_hand_side_only.jpg"));
 

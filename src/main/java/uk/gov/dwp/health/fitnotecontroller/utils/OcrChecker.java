@@ -336,6 +336,11 @@ public class OcrChecker {
       }
       if (!checkNHS) {
         LOG.info("no need to continue scanning as already failed as non NHS");
+        // Scan bottom to perform full image scan
+        ForkJoinTask.invokeAll(new OcrApplyImageFilters(workingImage, ocr, fitnoteFormat, "BR",
+            configuration.getHighTarget(), configuration));
+        fitnoteFormat.validateFitnotePassed(checkNHS, strictMatch,
+            configuration.getStrictTarget());
         return;
       }
       checkNHS = false;

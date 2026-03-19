@@ -6,6 +6,9 @@ import static org.bytedeco.tesseract.global.tesseract.PSM_SPARSE_TEXT;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.bytedeco.javacpp.BytePointer;
@@ -15,35 +18,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
 import uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat;
+import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 
 public class OcrUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(OcrUtils.class.getName());
 
-  public static void ocrApplyImageFilters(
-      BufferedImage subImage,
-      TessBaseAPI ocr,
-      ExpectedFitnoteFormat fitnoteFormat,
-      String location,
-      int targetPercentage,
-      FitnoteControllerConfiguration configuration) {
+  public static void ocrApplyImageFilters(BufferedImage subImage, TessBaseAPI ocr,
+                                          ExpectedFitnoteFormat fitnoteFormat, String location,
+                                          int targetPercentage,
+                                          FitnoteControllerConfiguration configuration) {
     BufferedImage workingImage = null;
     int filterApplications = 0;
     int highPercentage = 0;
     String filter = "";
 
-    LOG.info(
-        "*** START {} CHECKS, AIMING FOR {} PERCENTAGE @ {} ROTATION ***",
-        location,
-        targetPercentage,
-        fitnoteFormat.getMatchAngle());
+    LOG.info("*** START {} CHECKS, AIMING FOR {} PERCENTAGE @ {} ROTATION ***", location,
+        targetPercentage, fitnoteFormat.getMatchAngle());
     while (highPercentage < targetPercentage && filterApplications < 4) {
       switch (filterApplications) {
         case 0:
           workingImage =
-              ImageUtils.normaliseBrightness(
-                  subImage,
-                  configuration.getTargetBrightness(),
+              ImageUtils.normaliseBrightness(subImage, configuration.getTargetBrightness(),
                   configuration.getBorderLossPercentage());
           filter = "brightness";
           break;
@@ -56,9 +52,8 @@ public class OcrUtils {
           filter = "contrast";
           break;
         case 3:
-          workingImage =
-              ImageUtils.increaseContrast(
-                  ImageUtils.formatGrayScale(subImage), configuration.getContrastCutOff());
+          workingImage = ImageUtils.increaseContrast(ImageUtils.formatGrayScale(subImage),
+              configuration.getContrastCutOff());
           filter = "gr contrast";
           break;
         default:
@@ -67,11 +62,8 @@ public class OcrUtils {
       }
 
       if (workingImage != null) {
-        LOG.info(
-            "OCR checking using filter '{}' on {} page location at {} rotation",
-            filter,
-            location,
-            fitnoteFormat.getMatchAngle());
+        LOG.info("OCR checking using filter '{}' on {} page location at {} rotation", filter,
+            location, fitnoteFormat.getMatchAngle());
 
         try {
           if ("TL".equalsIgnoreCase(location)) {
@@ -96,12 +88,9 @@ public class OcrUtils {
       }
 
       if (filterApplications == 1 && highPercentage < configuration.getDiagonalTarget()) {
-        LOG.info(
-            "Abandoned time-costly checks after 2 filters with < {} "
-                + "percentage OCR for location {} at rotation {}",
-            configuration.getDiagonalTarget(),
-            location,
-            fitnoteFormat.getMatchAngle());
+        LOG.info("Abandoned time-costly checks after 2 filters with < {} "
+               + "percentage OCR for location {} at rotation {}",
+            configuration.getDiagonalTarget(), location, fitnoteFormat.getMatchAngle());
         return;
       }
 
@@ -141,5 +130,64 @@ public class OcrUtils {
       }
     }
     return returnString;
+  }
+
+  public static void setPartialErrorMessage(ImagePayload payload,
+                                            ExpectedFitnoteFormat expectedFitnoteFormat) {
+    List<ExpectedFitnoteFormat.StringLocation> matchingCorners =
+        expectedFitnoteFormat.getHighMarks();
+    if (matchingCorners.size() > 1) {
+      payload.setVisibleRegion(classifyRegion(matchingCorners));
+    } else {
+      ExpectedFitnoteFormat.StringLocation matchCorner = matchingCorners.get(0);
+      ImagePayload.SubStatus originalMatchingCorner = getOriginalCorner(matchCorner);
+      payload.setVisibleRegion(originalMatchingCorner);
+    }
+  }
+
+  private static ImagePayload.SubStatus classifyRegion(
+      List<ExpectedFitnoteFormat.StringLocation> matchingCorners) {
+    Set<ExpectedFitnoteFormat.StringLocation> matchingCornersSet = new HashSet<>(matchingCorners);
+
+    final boolean hasTopHalf =
+        matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.TOP_LEFT)
+            && matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT);
+    final boolean hasBottomHalf =
+        matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.BASE_LEFT)
+            && matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT);
+    final boolean hasLeftSide =
+        matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.TOP_LEFT)
+            && matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.BASE_LEFT);
+    final boolean hasRightSide =
+        matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT)
+            && matchingCornersSet.contains(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT);
+
+    if (hasTopHalf) {
+      return ImagePayload.SubStatus.TOP_HALF;
+    }
+    if (hasBottomHalf) {
+      return ImagePayload.SubStatus.BASE_HALF;
+    }
+    if (hasLeftSide) {
+      return ImagePayload.SubStatus.LEFT_SIDE;
+    }
+    if (hasRightSide) {
+      return ImagePayload.SubStatus.RIGHT_SIDE;
+    }
+
+    return ImagePayload.SubStatus.NULL;
+  }
+
+
+  private static ImagePayload.SubStatus getOriginalCorner(
+      ExpectedFitnoteFormat.StringLocation rotatedCorner) {
+
+    return switch (rotatedCorner) {
+      case TOP_LEFT -> ImagePayload.SubStatus.TOP_LEFT;
+      case TOP_RIGHT -> ImagePayload.SubStatus.TOP_RIGHT;
+      case BASE_LEFT -> ImagePayload.SubStatus.BASE_LEFT;
+      case BASE_RIGHT -> ImagePayload.SubStatus.BASE_RIGHT;
+      default -> ImagePayload.SubStatus.NULL;
+    };
   }
 }

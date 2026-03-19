@@ -20,12 +20,14 @@ RUN apt-get update && apt-get install -y \
 	build-essential=12.9 \
 	curl=7.88.1-10+deb12u14 \
 	libcurl3-gnutls=7.88.1-10+deb12u14 \
-	libpng-dev=1.6.39-2+deb12u1 \
+	libpng-dev=1.6.39-2+deb12u3 \
 	libde265-0=1.0.11-1+deb12u2 \
 	libheif-dev=1.15.1-1+deb12u1 \
 	libjpeg-dev=1:2.1.5-2 \
 	libtiff-dev=4.5.0-6+deb12u3 \
-	libmagickcore-dev=8:6.9.11.60+dfsg-1.6+deb12u6 \
+	libmagickcore-dev=8:6.9.11.60+dfsg-1.6+deb12u7 \
+    libssl3=3.0.18-1~deb12u2 \
+    libpam-modules=1.5.2-6+deb12u2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

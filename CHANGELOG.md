@@ -1,3 +1,15 @@
+<a name="5.3.0"></a>
+# 5.3.0 (2026-03-11)
+
+* release: update fragments ([8e854ff](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/8e854ff))
+* release: set version to candidate version in catalog info file 5.3.0 ([73c7aff](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/73c7aff))
+* release: set version to candidate version in pom 5.3.0 ([9a0167d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/9a0167d))
+* chore: maintenance and vuln overrides ([df34c47](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/df34c47))
+* chore: remove env from messages, update fragment + catalogue ([3f3e07f](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3f3e07f))
+* ci: fix pipeline ([052f30a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/052f30a))
+* release: set version from 5.2.1 to snapshot 5.3.0-SNAPSHOT [skip ci] ([5b30644](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/5b30644))
+
+
 <a name="5.2.1"></a>
 # 5.2.1 (2026-02-06)
 

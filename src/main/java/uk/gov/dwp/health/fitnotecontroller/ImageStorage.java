@@ -6,7 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.crypto.CryptoDataManager;
 import uk.gov.dwp.health.crypto.CryptoMessage;
@@ -16,12 +21,6 @@ import uk.gov.dwp.health.fitnotecontroller.domain.ImageHashStore;
 import uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImageHashException;
 import uk.gov.dwp.health.fitnotecontroller.exception.ImagePayloadException;
-import org.slf4j.Logger;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 
 public class ImageStorage {
@@ -207,6 +206,7 @@ public class ImageStorage {
     ImagePayload payloadToChange = getPayload(payload.getSessionId());
     LOG.debug("Updating image data for session id {}", payload.getSessionId());
     payloadToChange.setFitnoteCheckStatus(payload.getFitnoteCheckStatus());
+    payloadToChange.setVisibleRegion(payload.getVisibleRegion());
     payloadToChange.setImage(payload.getImage());
 
     setAndUpdateImagePayloadItem(

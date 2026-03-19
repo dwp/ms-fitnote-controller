@@ -1,7 +1,10 @@
 package uk.gov.dwp.health.fitnotecontroller;
 
 import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.FAILED;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.PARTIAL;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ExpectedFitnoteFormat.Status.SUCCESS;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.FAILED_IMG_OCR;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.FAILED_IMG_OCR_PARTIAL;
 import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.Status.PASS_IMG_OCR;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -49,12 +52,14 @@ import uk.gov.dwp.health.fitnotecontroller.utils.ImageUtils;
 import uk.gov.dwp.health.fitnotecontroller.utils.JsonValidator;
 import uk.gov.dwp.health.fitnotecontroller.utils.MemoryChecker;
 import uk.gov.dwp.health.fitnotecontroller.utils.OcrChecker;
+import uk.gov.dwp.health.fitnotecontroller.utils.OcrUtils;
 import uk.gov.dwp.health.fitnotecontroller.utils.PdfImageExtractor;
 
 @Path("/")
 public class FitnoteSubmitResource extends AbstractResource {
   private static final Logger LOG = LoggerFactory.getLogger(FitnoteSubmitResource.class.getName());
   private static final String LOG_STANDARD_REGEX = "[\\u0000-\\u001f]";
+  private static final String PDF_FILE_TYPE = "pdf";
   private FitnoteControllerConfiguration controllerConfiguration;
   private ImageCompressor imageCompressor;
   private OcrChecker ocrChecker;
@@ -102,7 +107,7 @@ public class FitnoteSubmitResource extends AbstractResource {
               Response.status(Response.Status.OK)
                       .entity(
                               createStatusOnlyResponseFrom(
-                                      payload.getFitnoteCheckStatus()))
+                                      payload))
                       .build();
     } else {
       response = Response.status(Response.Status.BAD_REQUEST).build();
@@ -223,7 +228,7 @@ public class FitnoteSubmitResource extends AbstractResource {
                   return;
                 }
                 byte[] origImage = Base64.decodeBase64(payload.getImage());
-                final boolean isPdf = fileMimeType.equals("pdf");
+                final boolean isPdf = fileMimeType.equals(PDF_FILE_TYPE);
                 byte[] convertedImg = convertImage(payload, fileMimeType);
                 fileMimeType = "jpg";
                 if (convertedImg.length != origImage.length) {
@@ -234,6 +239,14 @@ public class FitnoteSubmitResource extends AbstractResource {
                 ExpectedFitnoteFormat expectedFitnoteFormat =
                         ocrImage(payload, fileMimeType);
                 if (!expectedFitnoteFormat.getStatus().equals(SUCCESS)) {
+                  if (expectedFitnoteFormat.getStatus().equals(PARTIAL)
+                      || expectedFitnoteFormat.getStatus().equals(FAILED)) {
+                    if (expectedFitnoteFormat.getMatchAngle() > 0) {
+                      origImage = ImageUtils.createRotatedCopy(origImage,
+                          expectedFitnoteFormat.getMatchAngle());
+                    }
+                    payload.setImage(Base64.encodeBase64String(origImage));
+                  }
                   imageStore.updateImageDetails(payload);
                   logTimeTaken(startTime, payload.getFitnoteCheckStatus());
                   return;
@@ -274,7 +287,7 @@ public class FitnoteSubmitResource extends AbstractResource {
           ImageTransformException, IOException, ImagePayloadException, InterruptedException,
           IM4JavaException, ImageCompressException {
     byte[] origImage = Base64.decodeBase64(payload.getImage());
-    if (fileMimeType.equals("pdf")) {
+    if (fileMimeType.equals(PDF_FILE_TYPE)) {
       convertPdf(payload);
       origImage = Base64.decodeBase64(payload.getImage());
     } else if (!fileMimeType.equals("jpg")) {
@@ -408,9 +421,16 @@ public class FitnoteSubmitResource extends AbstractResource {
   }
 
   private String createStatusOnlyResponseFrom(
-          ImagePayload.Status fitnoteStatus) {
+          ImagePayload payload) {
+    ImagePayload.Status fitnoteStatus = payload.getFitnoteCheckStatus();
+    if (fitnoteStatus == FAILED_IMG_OCR || fitnoteStatus == FAILED_IMG_OCR_PARTIAL) {
+      return String.format(
+          "{\"fitnoteStatus\":\"%s\",\"visibleRegion\":\"%s\",\"image\":\"%s\"}",
+          fitnoteStatus, payload.getVisibleRegion(), payload.getImage());
+    }
     return String.format(
-            "{\"fitnoteStatus\":\"%s\"}", fitnoteStatus);
+            "{\"fitnoteStatus\":\"%s\"}",
+        fitnoteStatus);
   }
 
   private ExpectedFitnoteFormat ocrImage(ImagePayload payload, String fileMimeType)
@@ -440,16 +460,19 @@ public class FitnoteSubmitResource extends AbstractResource {
       ExpectedFitnoteFormat expectedFitnoteFormat = ocrChecker.imageContainsReadableText(payload);
       ExpectedFitnoteFormat.Status imageStatus = expectedFitnoteFormat.getStatus();
       if (imageStatus.equals(SUCCESS)) {
+        payload.setVisibleRegion(null);
         payload.setFitnoteCheckStatus(PASS_IMG_OCR);
 
-      } else if (imageStatus.equals(ExpectedFitnoteFormat.Status.PARTIAL)) {
+      } else if (imageStatus.equals(PARTIAL)) {
         payload.setFitnoteCheckStatus(ImagePayload.Status.FAILED_IMG_OCR_PARTIAL);
         payload.setImage(null);
+        OcrUtils.setPartialErrorMessage(payload, expectedFitnoteFormat);
 
       } else if (imageStatus.equals(FAILED)
               || imageStatus.equals(ExpectedFitnoteFormat.Status.INITIALISED)) {
         payload.setFitnoteCheckStatus(ImagePayload.Status.FAILED_IMG_OCR);
         payload.setImage(null);
+        payload.setVisibleRegion(null);
 
         LOG.warn("Unable to OCR the fitnote");
       }
@@ -489,7 +512,7 @@ public class FitnoteSubmitResource extends AbstractResource {
   private List<String> getAcceptedTypes() {
     ArrayList<String> acceptedTypes = new ArrayList<>();
     acceptedTypes.addAll(Arrays.asList(ImageIO.getReaderFileSuffixes()));
-    acceptedTypes.add("pdf");
+    acceptedTypes.add(PDF_FILE_TYPE);
     acceptedTypes.add("heic");
     acceptedTypes.add("heif");
     return acceptedTypes;

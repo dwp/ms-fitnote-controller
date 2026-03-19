@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.dwp.health.fitnote</groupId>
     <artifactId>ms-fitnote-controller</artifactId>
-    <version>5.2.1</version>
+    <version>5.3.0</version>
 
     <!--  Only show/update plugins for maven this version  -->
     <prerequisites>
@@ -17,7 +17,7 @@
         <dwp.message-utility.version>5.1.0-fc6aebea</dwp.message-utility.version>
         <dwp.secure-sockets.version>2.0.0-a5f0c266</dwp.secure-sockets.version>
         <dwp.securestrings.version>2.3.0-d1b1a74d</dwp.securestrings.version>
-        <dwp.encoded-log.version>3.0.0-dfda47f2</dwp.encoded-log.version>
+        <dwp.encoded-log.version>3.0.0-49f155f8</dwp.encoded-log.version>
         <dwp.postcode.version>2.0.0-8cab2309</dwp.postcode.version>
         <dwp.drsinteg.version>1.7.0-008b5a52</dwp.drsinteg.version>
         <dwp.cryptography.version>4.3.0-28983942</dwp.cryptography.version>
@@ -27,14 +27,14 @@
         <java.source.version>17</java.source.version>
         <java.target.version>17</java.target.version>
 
-        <plugin.spring-boot.version>4.0.0</plugin.spring-boot.version>
-        <plugin.compiler.version>3.14.1</plugin.compiler.version>
+        <plugin.spring-boot.version>4.1.0-M2</plugin.spring-boot.version>
+        <plugin.compiler.version>3.15.0</plugin.compiler.version>
         <plugin.maven.spotbugs.version>4.9.8.2</plugin.maven.spotbugs.version>
         <plugin.spotbugs.version>4.9.8</plugin.spotbugs.version>
-        <plugin.surefire.version>3.5.4</plugin.surefire.version>
+        <plugin.surefire.version>3.5.5</plugin.surefire.version>
         <plugin.jacoco.version>0.8.14</plugin.jacoco.version>
         <plugin.site.version>4.0.0-M16</plugin.site.version>
-        <plugin.update.versions>2.20.1</plugin.update.versions>
+        <plugin.update.versions>2.21.0</plugin.update.versions>
 
         <doxia.version>2.0.0</doxia.version>
 
@@ -42,34 +42,41 @@
         <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lettuce-redis.version>6.8.1.RELEASE</lettuce-redis.version>
-        <cucumber-core.version>7.32.0</cucumber-core.version>
+        <lettuce-redis.version>7.5.0.RELEASE</lettuce-redis.version>
+        <cucumber-core.version>7.34.3</cucumber-core.version>
         <tesseract.version>5.5.1-1.5.12</tesseract.version>
         <junit-toolbox.version>2.4</junit-toolbox.version>
-        <dropwizard.version>4.0.16</dropwizard.version>
+        <dropwizard.version>5.0.0</dropwizard.version>
         <commons-io.version>2.21.0</commons-io.version>
         <wiremock.version>3.13.2</wiremock.version>
         <mockito.version>4.11.0</mockito.version>
-        <jackson.version>2.20.1</jackson.version>
-        <pdfbox.version>3.0.6</pdfbox.version>
+        <jackson.version>2.21.1</jackson.version>
+        <pdfbox.version>3.0.7</pdfbox.version>
         <pdfbox.jbig2.version>3.0.4</pdfbox.jbig2.version>
-        <owasp.version>12.1.9</owasp.version>
+        <owasp.version>12.2.0</owasp.version>
         <junit.version>4.13.2</junit.version>
         <zxing.version>3.5.4</zxing.version>
-        <netty.version>4.2.7.Final</netty.version>
+        <netty.version>4.2.10.Final</netty.version>
         <slf4j.version>2.0.17</slf4j.version>
         <guava.version>33.5.0-jre</guava.version>
         <tika.version>3.2.3</tika.version>
         <im4java.version>1.4.0</im4java.version>
         <jai.image.io.version>1.4.0</jai.image.io.version>
-        <httpclient5.version>5.5.1</httpclient5.version>
+        <httpclient5.version>5.6</httpclient5.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <netty-codec-http2.version>4.2.7.Final</netty-codec-http2.version>
+        <netty-codec-http2.version>4.2.10.Final</netty-codec-http2.version>
         <bc-fips.version>2.1.2</bc-fips.version>
-        <amqp-client.version>5.26.0</amqp-client.version>
+        <amqp-client.version>5.29.0</amqp-client.version>
+        <httpcore5.version>5.4.2</httpcore5.version>
+        <jetty.version>12.1.7</jetty.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
+            <version>${httpcore5.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
@@ -170,6 +177,32 @@
             <groupId>org.bytedeco</groupId>
             <artifactId>tesseract-platform</artifactId>
             <version>${tesseract.version}</version>
+        </dependency>
+        <!-- DropWizard -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-session</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>

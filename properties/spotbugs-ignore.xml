@@ -76,4 +76,8 @@
         <Class name="uk.gov.dwp.health.fitnotecontroller.utils.OcrApplyImageFilters"/>
         <Bug pattern="SE_BAD_FIELD" />
     </Match>
+    <Match>
+        <Class name="uk.gov.dwp.health.fitnotecontroller.FitnoteSubmitResource"/>
+        <Bug pattern="EC_UNRELATED_TYPES" />
+    </Match>
 </FindBugsFilter>

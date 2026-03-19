@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -20,6 +21,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.SubStatus.BASE_HALF;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.SubStatus.BASE_RIGHT;
+import static uk.gov.dwp.health.fitnotecontroller.domain.ImagePayload.SubStatus.RIGHT_SIDE;
 import static uk.gov.dwp.health.fitnotecontroller.utils.ImageUtilsTest.getMatchingStringsMethod;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,7 +79,6 @@ public class FitnoteSubmitResourceTest {
   private static byte[] COMPRESSED_PAGE_FINAL;
   private static byte[] EXPANDED_CROP_FINAL;
   private static byte[] NHS_FINAL;
-  private static byte[] EXPANDED_EDGE_FINAL;
 
   private static final Optional<String> SESSION_ID = Optional.of(SESSION);
   private static final Optional<String> UNKNOWN_SESSION_ID = Optional.of("Unknown session id");
@@ -94,6 +97,9 @@ public class FitnoteSubmitResourceTest {
   private static String LARGE_HEIC;
   private static String EXR_IMAGE;
   private static String DATA_MATRIX_IMAGE;
+  private static String OCR_RHS_IMAGE;
+  private static String OCR_BRC_IMAGE;
+  private static String PDF_BASE_HALF_IMAGE;
 
   private static String PORTRAIT_JSON;
   private static String VALID_JSON;
@@ -102,10 +108,12 @@ public class FitnoteSubmitResourceTest {
   private static String PDF_PASSWORD_JSON;
   private static String PDF_NHS_JSON;
   private static String EXPANDED_CROP_JSON;
-  private static String EXPANDED_EDGE_JSON;
   private static String HEIC_JSON;
   private static String LARGE_HEIC_JSON;
   private static String EXR_JSON;
+  private static String OCR_RHS_JSON;
+  private static String OCR_BRC_JSON;
+  private static String PDF_BASE_HALF_IMAGE_JSON;
 
   private int OVER_MAX_MEMORY;
 
@@ -141,7 +149,6 @@ public class FitnoteSubmitResourceTest {
     COMPRESSED_PAGE_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/EmptyPage.jpg"));
     EXPANDED_CROP_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/fitnoteExpandedSearch.jpg"));
     NHS_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/NHS_fitnote.jpg"));
-    EXPANDED_EDGE_FINAL = FileUtils.readFileToByteArray(new File("src/test/resources/fitnotes/newSample/IMG_0009.JPG"));
 
     LANDSCAPE_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Landscape.jpg");
     PORTRAIT_FITNOTE_IMAGE = getEncodedImage("src/test/resources/FullPage_Portrait.jpg");
@@ -155,6 +162,9 @@ public class FitnoteSubmitResourceTest {
     EXR_IMAGE = getEncodedImage("src/test/resources/test-fail-type.txt");
     LARGE_JPG_IMAGE = getEncodedImage("src/test/resources/DarkPageLargeSize.jpg");
     DATA_MATRIX_IMAGE = getEncodedImage("src/test/resources/datamatrix.png");
+    OCR_RHS_IMAGE = getEncodedImage("src/test/resources/OcrTest_RHS.jpg");
+    OCR_BRC_IMAGE = getEncodedImage("src/test/resources/OcrTest_BRC.jpg");
+    PDF_BASE_HALF_IMAGE = getEncodedImage("src/test/resources/FullPage_bottomHalf.pdf");
 
     PORTRAIT_JSON = "{" + OCR_LOGGING_DATA +  "\"image\":\"" + PORTRAIT_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     VALID_JSON = "{" + OCR_LOGGING_DATA  + "\"image\":\"" + LANDSCAPE_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
@@ -163,10 +173,12 @@ public class FitnoteSubmitResourceTest {
     PDF_PASSWORD_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_PASSWORD_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     PDF_NHS_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_NHS_FITNOTE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     EXPANDED_CROP_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXPANDED_CROP_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
-    EXPANDED_EDGE_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXPANDED_EDGE_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + HEIC_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     EXR_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + EXR_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
     LARGE_HEIC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + LARGE_HEIC + "\",\"sessionId\":\"" + SESSION + "\"}";
+    OCR_RHS_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + OCR_RHS_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    OCR_BRC_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + OCR_BRC_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
+    PDF_BASE_HALF_IMAGE_JSON = "{" + OCR_LOGGING_DATA + "\"image\":\"" + PDF_BASE_HALF_IMAGE + "\",\"sessionId\":\"" + SESSION + "\"}";
   }
 
   @Before
@@ -631,7 +643,123 @@ public class FitnoteSubmitResourceTest {
     examineImageStatusResponseForValueOrTimeout("FAILED_IMG_PASSWORD");
   }
 
+  @Test
+  public void imagePartialError()
+      throws ImagePayloadException, IOException, CryptoException, ImageCompressException,
+      InterruptedException, NoSuchMethodException, InvocationTargetException,
+      IllegalAccessException {
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(OCR_RHS_IMAGE);
+    when(validator.validateAndTranslateSubmission(OCR_RHS_JSON)).thenReturn(imagePayload);
+
+    ExpectedFitnoteFormat fitnoteFormat =
+        new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.PARTIAL, "");
+    Map<ExpectedFitnoteFormat.StringLocation, StringToMatch> strings =
+        (Map<ExpectedFitnoteFormat.StringLocation, StringToMatch>) getMatchingStringsMethod().invoke(fitnoteFormat);
+    StringToMatch stringToMatch = new StringToMatch(null);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_LEFT, stringToMatch);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_LEFT, stringToMatch);
+    StringToMatch stringToMatchRight = new StringToMatch(null);
+    stringToMatchRight.setupPercentage(100);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT, stringToMatchRight);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT, stringToMatchRight);
+
+    when(ocrChecker.imageContainsReadableText(imagePayload))
+        .thenReturn(fitnoteFormat);
+
+    Response response = resourceUnderTest.submitFitnote(OCR_RHS_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_OCR_PARTIAL", RIGHT_SIDE);
+
+    verify(imageCompressor, times(1)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+  @Test
+  public void imagePartialErrorSingleBottomRightCorner()
+      throws ImagePayloadException, IOException, CryptoException, ImageCompressException,
+      InterruptedException, NoSuchMethodException, InvocationTargetException,
+      IllegalAccessException {
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(OCR_BRC_IMAGE);
+    when(validator.validateAndTranslateSubmission(OCR_BRC_JSON)).thenReturn(imagePayload);
+
+    ExpectedFitnoteFormat fitnoteFormat =
+        new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.PARTIAL, "");
+    Map<ExpectedFitnoteFormat.StringLocation, StringToMatch> strings =
+        (Map<ExpectedFitnoteFormat.StringLocation, StringToMatch>) getMatchingStringsMethod().invoke(fitnoteFormat);
+    StringToMatch stringToMatch = new StringToMatch(null);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_LEFT, stringToMatch);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_LEFT, stringToMatch);
+    StringToMatch stringToMatchBaseRight = new StringToMatch(null);
+    stringToMatchBaseRight.setupPercentage(100);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT, stringToMatch);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT, stringToMatchBaseRight);
+
+    when(ocrChecker.imageContainsReadableText(imagePayload))
+        .thenReturn(fitnoteFormat);
+
+    Response response = resourceUnderTest.submitFitnote(OCR_BRC_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_OCR_PARTIAL", BASE_RIGHT);
+
+    verify(imageCompressor, times(1)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
+  @Test
+  public void imagePartialErrorSingleBottomRightCornerpdf()
+      throws ImagePayloadException, IOException, CryptoException, ImageCompressException,
+      InterruptedException, NoSuchMethodException, InvocationTargetException,
+      IllegalAccessException {
+    when(controllerConfiguration.isOcrChecksEnabled()).thenReturn(true);
+    when(controllerConfiguration.getPdfScanDPI()).thenReturn(300);
+    ImagePayload imagePayload = imageStorage.getPayload(SESSION);
+    imagePayload.setImage(PDF_BASE_HALF_IMAGE);
+    when(validator.validateAndTranslateSubmission(PDF_BASE_HALF_IMAGE_JSON)).thenReturn(imagePayload);
+
+    ExpectedFitnoteFormat fitnoteFormat =
+        new ExpectedFitnoteFormat(ExpectedFitnoteFormat.Status.PARTIAL, "");
+    Map<ExpectedFitnoteFormat.StringLocation, StringToMatch> strings =
+        (Map<ExpectedFitnoteFormat.StringLocation, StringToMatch>) getMatchingStringsMethod().invoke(fitnoteFormat);
+    StringToMatch stringToMatch = new StringToMatch(null);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_LEFT, stringToMatch);
+    StringToMatch stringToMatchBase = new StringToMatch(null);
+    stringToMatchBase.setupPercentage(100);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_LEFT, stringToMatchBase);
+    strings.put(ExpectedFitnoteFormat.StringLocation.TOP_RIGHT, stringToMatch);
+    strings.put(ExpectedFitnoteFormat.StringLocation.BASE_RIGHT, stringToMatchBase);
+
+    when(ocrChecker.imageContainsReadableText(imagePayload))
+        .thenReturn(fitnoteFormat);
+
+    Response response = resourceUnderTest.submitFitnote(PDF_BASE_HALF_IMAGE_JSON);
+    assertThat(response.getStatus(), is(equalTo(SC_ACCEPTED)));
+
+    examineImageStatusResponseForValueOrTimeout("FAILED_IMG_OCR_PARTIAL", BASE_HALF);
+
+    verify(imageCompressor, times(1)).compressBufferedImage(anyString(), any(BufferedImage.class), anyInt(), anyBoolean());
+  }
+
   private void examineImageStatusResponseForValueOrTimeout(String expectedStatus) throws InterruptedException {
+    TimeUnit.SECONDS.sleep(
+        1); // pause before first execution to allow for async processes to begin/end
+    PollingWait wait = new PollingWait().timeoutAfter(59, SECONDS).pollEvery(1, SECONDS);
+
+    wait.until(new RunnableAssert("checking /imagestatus for current session") {
+      @Override
+      public void run() throws Exception {
+        Response response = resourceUnderTest.checkFitnote(SESSION_ID);
+        assertEquals(expectedStatus,
+            decodeResponse(response.getEntity().toString()).getFitnoteStatus());
+      }
+    });
+  }
+
+  private void examineImageStatusResponseForValueOrTimeout(String expectedStatus,
+                                                           ImagePayload.SubStatus visibleRegion) throws InterruptedException {
     TimeUnit.SECONDS.sleep(1); // pause before first execution to allow for async processes to begin/end
     PollingWait wait = new PollingWait().timeoutAfter(59, SECONDS).pollEvery(1, SECONDS);
 
@@ -640,6 +768,10 @@ public class FitnoteSubmitResourceTest {
       public void run() throws Exception {
         Response response = resourceUnderTest.checkFitnote(SESSION_ID);
         assertEquals(expectedStatus, decodeResponse(response.getEntity().toString()).getFitnoteStatus());
+        assertEquals(visibleRegion.toString(),
+            decodeResponse(response.getEntity().toString()).getVisibleRegion());
+        assertNotNull(decodeResponse(response.getEntity().toString()).getBase64Image());
+
       }
     });
   }

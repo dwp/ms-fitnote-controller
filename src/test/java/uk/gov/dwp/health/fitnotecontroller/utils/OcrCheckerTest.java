@@ -150,6 +150,14 @@ public class OcrCheckerTest {
   }
 
   @Test
+  public void BottomRightHandSidePageIsNotAccepted() throws IOException {
+    ExpectedFitnoteFormat format = checker.imageContainsReadableText(getTestImage("/OcrTest_BRC.jpg"));
+    assertThat(format.getStatus(), is(equalTo(ExpectedFitnoteFormat.Status.PARTIAL)));
+    assertThat(format.getFailureReason(), is(equalTo("PARTIAL - rightHandSide")));
+
+  }
+
+  @Test
   public void testTesseractFailure() throws IOException {
     when(mockConfig.getTesseractFolderPath()).thenReturn("/Missing-Tesseract-File");
     String tessdataLabel = "TESSDATA_PREFIX";

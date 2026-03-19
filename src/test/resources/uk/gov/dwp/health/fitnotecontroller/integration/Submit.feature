@@ -31,6 +31,16 @@ Feature: Fitnote submit
         | fitnoteStatus | FAILED_IMG_OCR_PARTIAL |
 
   @FitnoteSubmitTest
+  Scenario: Submit unreadable fitnote bottom right corner
+    Given the http client is up
+    When I hit the service url "http://localhost:9101/photo" with the following json body
+      | image     | /OcrTest_BRC.jpg |
+      | sessionId | "50"             |
+    Then I receive a HTTP response of 202
+    And I hit the service url "http://localhost:9101/imagestatus" with session id "50" getting return status 200 and finally containing the following json body
+      | fitnoteStatus | FAILED_IMG_OCR_PARTIAL |
+
+  @FitnoteSubmitTest
   Scenario: Submit readable Fitnote with an empty session Id
       Given the http client is up
       When I hit the service url "http://localhost:9101/photo" with the following json body

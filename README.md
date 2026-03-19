@@ -83,10 +83,12 @@ Returns:-
 Returns:-
 
     {
-        "fitnoteStatus":"<status>"
+        "fitnoteStatus":<status>",
+        "visibleRegion":"[<substatus>]",
+        "image", "base64-encoded-string"
     }
     
-* **200** :: Success.  Returns json status
+* **200** :: Success.  Returns json status, with visibleRegion if fitnoteStatus is FAILED_IMG_OCR_PARTIAL else NONE
 * **400** :: Missing session-id in json (error is logged)
 
 currently the list of statuses are

@@ -37,6 +37,18 @@ public class ImagePayload {
     FAILED_ERROR
   }
 
+  public enum SubStatus {
+    NULL,
+    TOP_LEFT,
+    TOP_RIGHT,
+    BASE_LEFT,
+    BASE_RIGHT,
+    LEFT_SIDE,
+    RIGHT_SIDE,
+    TOP_HALF,
+    BASE_HALF
+  }
+
   @JsonView({
       Views.SessionOnly.class,
       Views.QueryNinoDetails.class,
@@ -70,6 +82,10 @@ public class ImagePayload {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   @JsonView(Views.FitnoteStatus.class)
   private Status fitnoteCheckStatus;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @JsonView(Views.FitnoteStatus.class)
+  private SubStatus visibleRegion;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   @JsonView(Views.QueryAddressDetails.class)
@@ -177,6 +193,14 @@ public class ImagePayload {
 
   public Status getFitnoteCheckStatus() {
     return fitnoteCheckStatus;
+  }
+
+  public void setVisibleRegion(SubStatus visibleRegion) {
+    this.visibleRegion = visibleRegion;
+  }
+
+  public SubStatus getVisibleRegion() {
+    return visibleRegion;
   }
 
   public Address getClaimantAddress() {

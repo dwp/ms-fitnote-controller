@@ -1,5 +1,6 @@
 package uk.gov.dwp.health.fitnotecontroller.domain;
 
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.dwp.health.fitnotecontroller.application.FitnoteControllerConfiguration;
@@ -321,6 +322,14 @@ public class ExpectedFitnoteFormat {
       }
     });
     return zeroCount.get();
+  }
+
+  public List<StringLocation> getHighMarks() {
+    return matchingStrings.entrySet()
+        .stream()
+        .filter(e -> e.getValue().getPercentageFound() >= getHighTarget())
+        .map(Map.Entry::getKey)
+        .toList();
   }
 
   private boolean validateDiagonals(boolean strictMatch) {
