@@ -55,7 +55,7 @@ public class ImageCompressorTest {
 
     @Test
     public void testWithColourNormalPngImageMagick() throws ImageCompressException, IOException {
-        writeToFile("CompressorTest_Colour.png", "CompressorTest_Colour.png", false);
+        writeToFile("CompressorTest_Colour.png", "CompressorTest_Colour_OutPutFile.png", false);
     }
 
     private void writeToFile(String inputFileName, String ouputFileName, boolean useGreyScale) throws ImageCompressException, IOException {
@@ -79,7 +79,7 @@ public class ImageCompressorTest {
 
         ImageCompressor instance = new ImageCompressor(config);
         try {
-            instance.compressBufferedImage("jpg", baseImageNormal, 100, false);
+            instance.compressBufferedImage("jpg", baseImageNormal, 80, false);
             fail("should have thrown an error");
 
         } catch (ImageCompressException e) {
@@ -141,7 +141,7 @@ public class ImageCompressorTest {
         ImageCompressor instance = new ImageCompressor(config);
         try {
 
-            instance.compressBufferedImage("jpg", ImageIO.read(new ByteArrayInputStream(PdfImageExtractor.extractImage(standardPdfDoc, 600))), 280, false);
+            instance.compressBufferedImage("jpg", ImageIO.read(new ByteArrayInputStream(PdfImageExtractor.extractImage(standardPdfDoc, 600))), 200, false);
             fail("should have thrown an error");
 
         } catch (ImageCompressException e) {

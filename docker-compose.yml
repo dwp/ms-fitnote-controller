@@ -5,7 +5,7 @@ services:
 
   localstack:
     container_name: localstack
-    image: nexus.nonprod.dwpcloud.uk/docker/localstack/localstack:4.10.0@sha256:a65ee2a9d45a7a34a1f1faae515d2e577ce11210312c077700ccc82daefec238
+    image: nexus.nonprod.dwpcloud.uk/docker/localstack/localstack:4.14.0@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a
     environment:
       SERVICES: ${LOCALSTACK_SERVICES}
       LOCALSTACK_HOST: ${LOCALSTACK_HOSTNAME}
@@ -22,7 +22,7 @@ services:
       - ./localstack/docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d
 
   redis-cluster:
-    image: nexus.nonprod.dwpcloud.uk/docker/bitnami/redis-cluster:latest@sha256:6ba912345c06af50647577549d882b8e154adce0ac0c1281ba767717a11b6631
+    image: nexus.nonprod.dwpcloud.uk/docker/bitnami/redis-cluster:latest@sha256:e7fff92e15c9254efd2c7ae2d0cf9832ffdbe5fa24bea2403111bf1f6b39ac1d
     ports:
       - '6379:6379'
     healthcheck:

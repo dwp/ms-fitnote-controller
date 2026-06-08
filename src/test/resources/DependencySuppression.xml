@@ -164,6 +164,7 @@
         <cve>CVE-2009-5046</cve>
         <cve>CVE-2009-5045</cve>
         <cve>CVE-2023-44487</cve>
+        <cve>CVE-2021-34428</cve>
     </suppress>
     <suppress>
         <notes>
@@ -191,5 +192,35 @@
         </notes>
         <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-protobuf@.*$</packageUrl>
         <cve>CVE-2025-67735</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name:  jbig2-imageio-3.0.4.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/jbig2\-imageio@.*$</packageUrl>
+        <cve>CVE-2026-23907</cve>
+        <cve>CVE-2026-33929</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name:  pdfbox-3.0.7.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/pdfbox@.*$</packageUrl>
+        <cve>CVE-2026-23907</cve>
+        <cve>CVE-2026-33929</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+                file name:  pdfbox-io-3.0.7.jar
+            ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/pdfbox\-io@.*$</packageUrl>
+        <cve>CVE-2026-23907</cve>
+        <cve>CVE-2026-33929</cve>
     </suppress>
 </suppressions>

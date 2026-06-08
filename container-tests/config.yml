@@ -3,13 +3,13 @@ schemaVersion: "2.0.0"
 
 fileExistenceTests:
   - name: 'Jar File'
-    path: '/ms-fitnote-controller.jar'
+    path: '/app/ms-fitnote-controller.jar'
     shouldExist: true
   - name: 'Config File'
-    path: '/config.yml'
+    path: '/app/config.yml'
     shouldExist: true
   - name: 'Tessdata File'
-    path: '/tessdata'
+    path: '/app/tessdata'
 
 metadataTest:
-  entrypoint: [ "java", "-jar", "/ms-fitnote-controller.jar", "server", "/config.yml" ]
+  entrypoint: [ "java", "-jar", "/app/ms-fitnote-controller.jar", "server", "/app/config.yml" ]

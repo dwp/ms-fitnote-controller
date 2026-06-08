@@ -56,9 +56,12 @@ public class ImageCompressor {
       if (jpegData == null
           || jpegData.length > (targetImageSizeKB * 1000) && isRejectingOversizeImages()) {
         jpegData = compressUsingImageMagick(jpegData, targetImageSizeKB);
+        LOGGER.info("Compression completed using imageMagick");
       }
 
-      if (jpegData == null || (jpegData.length > (targetImageSizeKB * 1000)
+      //Allow a small size buffer since compression is approximate;
+      //Reject only if the image exceeds this threshold
+      if (jpegData == null || (jpegData.length > (targetImageSizeKB * 1400)
           && isRejectingOversizeImages())) {
         LOGGER.info("Time taken to fail image compression = seconds {}",
             (System.currentTimeMillis() - startTime) / 1000);

@@ -41,7 +41,7 @@ snsConfiguration:
 
 ocrChecksEnabled: ${OCR_CHECKS_ENABLED:-true}
 forceLandscapeImageSubmission: ${FORCE_LANDSCAPE_IMAGE_SUBMISSION:-false}
-tesseractFolderPath: /tessdata
+tesseractFolderPath: /app/tessdata
 ocrVerticalSlice: ${OCR_VERTICAL_SLICE:-6}
 
 rejectingOversizeImages: ${REJECTING_OVERSIZE_IMAGES:-true}

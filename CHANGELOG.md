@@ -1,3 +1,26 @@
+<a name="5.5.0"></a>
+# 5.5.0 (2026-06-02)
+
+* release: set version to candidate version in catalog info file 5.5.0 ([edc49fa](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/edc49fa))
+* release: set version to candidate version in pom 5.5.0 ([082d29c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/082d29c))
+* chore: fragment update maintenance ([3a659a4](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/3a659a4))
+* chore: renovate maintenance and vuln fixes ([471cd3e](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/471cd3e))
+* release: set version from 5.4.0 to snapshot 5.5.0-SNAPSHOT [skip ci] ([294360d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/294360d))
+
+
+<a name="5.4.0"></a>
+# 5.4.0 (2026-04-28)
+
+* release: set version to candidate version in catalog info file 5.4.0 ([fa34fdf](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/fa34fdf))
+* release: set version to candidate version in pom 5.4.0 ([eb8677f](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/eb8677f))
+* Revert "chore: rename jobs" ([a723390](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a723390))
+* chore: migrate to chainguard ([7b63e45](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/7b63e45))
+* chore: update docker to e7fff92 ([381fc85](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/381fc85))
+* feat:fit for prod ([9ec6312](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/9ec6312))
+* chore: suppress pdfbox vulns and add cve to jetty setuid ([e58c68d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/e58c68d))
+* release: set version from 5.3.0 to snapshot 5.4.0-SNAPSHOT [skip ci] ([a8cf815](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a8cf815))
+
+
 <a name="5.3.0"></a>
 # 5.3.0 (2026-03-11)
 
