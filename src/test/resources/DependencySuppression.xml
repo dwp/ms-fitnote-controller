@@ -223,4 +223,14 @@
         <cve>CVE-2026-23907</cve>
         <cve>CVE-2026-33929</cve>
     </suppress>
+    <suppress>
+        <packageUrl regex="true">^pkg:maven/tools\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cve>CVE-2026-54518</cve>
+        <cve>CVE-2026-54512</cve>
+        <cve>CVE-2026-54513</cve>
+        <cve>CVE-2026-54516</cve>
+        <cve>CVE-2026-54517</cve>
+        <cve>CVE-2026-54514</cve>
+        <cve>CVE-2026-54515</cve>
+    </suppress>
 </suppressions>

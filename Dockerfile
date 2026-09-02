@@ -1,4 +1,5 @@
-ARG APP_IMAGE=nexus.nonprod.dwpcloud.uk/docker/dwp.gov.uk/jre:openjdk-21.0.10-dev@sha256:6ef345cbe9344f01a2fdcb327bc1a126fc9a1149caf7bda11ba3e16be34593b6
+
+ARG APP_IMAGE=nexus.nonprod.dwpcloud.uk/docker/dwp.gov.uk/jre:openjdk-21.0.11-dev@sha256:e5dd1d049a72caec966edc4533d5f132d895add8f569e573efbb7c47a8bdd92b
 FROM ${APP_IMAGE} AS builder
 
 USER root
@@ -8,25 +9,25 @@ ENV IMAGE_MAGICK_VERSION=7.1.1-10
 RUN apk update && apk add --no-cache \
     # Build tools
     build-base=1-r9 \
-    libstdc++-dev=15.2.0-r11 \
+    libstdc++-dev=16.1.0-r4 \
     autoconf=2.73-r0 \
     automake=1.18.1-r5 \
     libtool=2.5.4-r3 \
-    git=2.53.0-r2 \
+    git=2.55.0-r4 \
     # Library development packages for ImageMagick features
     bzip2-dev=1.0.8-r23 \
     fontconfig-dev=2.17.1-r6 \
-    freetype-dev=2.14.3-r2 \
+    freetype-dev=2.14.3-r3 \
     libheif-dev=1.21.2-r2 \
     ghostscript-dev=10.07.0-r1 \
     graphviz-dev=14.1.5-r0 \
-    libjpeg-turbo-dev=3.1.4.1-r2 \
+    libjpeg-turbo-dev=3.2.0-r1 \
     openjpeg-dev=2.5.4-r2 \
-    libpng-dev=1.6.58-r0 \
+    libpng-dev=1.6.58-r1 \
     tiff-dev=4.7.1-r4 \
     libxml2-dev=2.15.3-r0 \
-    zlib-dev=1.3.2-r2 \
-    lcms2-dev=2.18-r0 \
+    zlib-dev=1.3.2-r3 \
+    lcms2-dev=2.19.1-r1 \
     libwebp-dev=1.6.0-r3 \
     fftw-dev=3.3.10-r7 \
     pango-dev=1.56.4-r4 \
@@ -50,7 +51,7 @@ RUN ./configure \
     --with-freetype \
     --with-heic \
     --with-gslib \
-    --with-gvc \
+    --without-gvc\
     --with-jpeg \
     --with-openjp2 \
     --with-png \
@@ -62,7 +63,7 @@ RUN ./configure \
     && make install DESTDIR=/imagemagick-install
 
 # Switch back to non root (required for docker lint)
-USER nobody 
+USER nobody
 # Stage 2: Runtime image
 FROM ${APP_IMAGE}
 
@@ -72,23 +73,23 @@ USER root
 RUN apk update && apk add --no-cache \
     bzip2=1.0.8-r23 \
     fontconfig=2.17.1-r6 \
-    freetype=2.14.3-r2 \
+    freetype=2.14.3-r3 \
     libheif=1.21.2-r2 \
     ghostscript=10.07.0-r1 \
     graphviz=14.1.5-r0 \
-    libjpeg-turbo=3.1.4.1-r2 \
+    libjpeg-turbo=3.2.0-r1 \
     openjpeg=2.5.4-r2 \
-    libpng=1.6.58-r0 \
+    libpng=1.6.58-r1 \
     tiff=4.7.1-r5 \
     libxml2=2.15.3-r0 \
-    zlib=1.3.2-r2 \
-    lcms2=2.18-r0 \
+    zlib=1.3.2-r3 \
+    lcms2=2.19.1-r1 \
     libwebp=1.6.0-r3 \
     fftw=3.3.10-r7 \
     pango=1.56.4-r4 \
     cairo=1.18.4-r6 \
     libgomp=15.2.0-r11 \
-    libstdc++=15.2.0-r11 \
+    libstdc++=16.1.0-r4 \
     openexr=3.4.11-r0 \
     ghostscript-fonts=8.11-r1
 

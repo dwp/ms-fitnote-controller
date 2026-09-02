@@ -1,3 +1,25 @@
+<a name="5.7.0"></a>
+# 5.7.0 (2026-09-01)
+
+* release: set version to candidate version in catalog info file 5.7.0 ([26834bc](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/26834bc))
+* release: set version to candidate version in pom 5.7.0 ([490a78d](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/490a78d))
+* chore: update docker to v29.7.2 ([a836379](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a836379))
+* chore: maintenance ([5c2b882](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/5c2b882))
+* chore: update docker to 12e683a ([61b3742](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/61b3742))
+* chore: maintenance - updated various packages and fragments ([60ad803](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/60ad803))
+* release: set version from 5.6.0 to snapshot 5.7.0-SNAPSHOT [skip ci] ([f1a1dab](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/f1a1dab))
+
+
+<a name="5.6.0"></a>
+# 5.6.0 (2026-06-23)
+
+* release: update fragments ([bf66501](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/bf66501))
+* release: set version to candidate version in catalog info file 5.6.0 ([ec1ae8a](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/ec1ae8a))
+* release: set version to candidate version in pom 5.6.0 ([97acb27](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/97acb27))
+* chore: maintenance ([a8a9729](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/a8a9729))
+* release: set version from 5.5.0 to snapshot 5.6.0-SNAPSHOT [skip ci] ([289a82c](https://gitlab.com/dwp/health/fitnote/components/ms-fitnote-controller/-/commit/289a82c))
+
+
 <a name="5.5.0"></a>
 # 5.5.0 (2026-06-02)
 
